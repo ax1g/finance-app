@@ -1,0 +1,14 @@
+[project]
+name = "fastapi-finance-app-fr"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "psycopg>=3.3.4",
+]
+
+[tool.uv.workspace]
+members = [
+    "backend",
+]

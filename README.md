@@ -1,0 +1,1 @@
+a finance app (for real this time) in fastapi + react.
