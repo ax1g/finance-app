@@ -1,12 +1,12 @@
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 
-from app.config import settings
+from app.core.config import settings
 from app.transactions.router import router as txn_router
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
-    return f"{route.tags[0]}-{route.name}"
+    return route.name
 
 
 app = FastAPI(

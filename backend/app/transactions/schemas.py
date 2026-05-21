@@ -1,14 +1,9 @@
 from datetime import datetime
-from enum import StrEnum
 from decimal import Decimal
 
 from pydantic import BaseModel, Field, ConfigDict
 
-
-class TransactionType(StrEnum):
-    INCOME = "income"
-    EXPENSE = "expense"
-    TRANSFER = "transfer"
+from app.core.enums import TransactionType
 
 
 # shared properties

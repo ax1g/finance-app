@@ -1,18 +1,11 @@
 from datetime import datetime
 from decimal import Decimal
-from enum import StrEnum
 
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String, Numeric, DateTime, Enum
 
-from app.base import Base, TimestampMixin
-
-
-# transaction types: income, expense or transfer
-class TransactionType(StrEnum):
-    INCOME = "income"
-    EXPENSE = "expense"
-    TRANSFER = "transfer"
+from app.core.base import Base, TimestampMixin
+from app.core.enums import TransactionType
 
 
 # Database model for transaction
