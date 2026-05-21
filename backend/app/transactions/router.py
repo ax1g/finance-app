@@ -9,6 +9,7 @@ from app.transactions.schemas import (
     TransactionCreate,
     TransactionUpdate,
 )
+from app.core.enums import TransactionType
 from app.core.db import SessionDep
 from app.transactions.repository import TransactionRepo
 from app.transactions.services import TransactionService
@@ -16,6 +17,9 @@ from app.transactions.services import TransactionService
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
+# ------------------------------------------------------
+# DEPENDENCIES
+# ------------------------------------------------------
 
 def get_txn_service(db: SessionDep) -> TransactionService:
     repo = TransactionRepo(db)
@@ -24,23 +28,31 @@ def get_txn_service(db: SessionDep) -> TransactionService:
 
 ServiceDep = Annotated[TransactionService, Depends(get_txn_service)]
 
+# ------------------------------------------------------
+# TRANSACTION ROUTES
+# ------------------------------------------------------
 
 @router.get("/", response_model=list[TransactionRead], status_code=status.HTTP_200_OK)
 async def read_transactions(
     service: ServiceDep,
-    start: datetime | None = None,
-    end: datetime | None = None,
     limit: int = Query(default=100, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
+    start: datetime | None = None,              # Optional filter
+    end: datetime | None = None,                # Optional filter
+    txn_type: TransactionType | None = None,    # Optional filter
 ):
-    if start and end:
-        if start > end:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid date range"
-            )
-        return await service.get_transactions_by_date_range(limit, offset, start, end)
+    if start and end and (start > end):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid date range"
+        )
 
-    return await service.get_all_transactions(limit, offset)
+    return await service.get_transactions(
+        limit=limit,
+        offset=offset,
+        start=start,
+        end=end,
+        txn_type=txn_type
+    )
 
 
 @router.get("/{txn_id}", response_model=TransactionRead, status_code=status.HTTP_200_OK)

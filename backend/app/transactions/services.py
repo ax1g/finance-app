@@ -1,6 +1,7 @@
 # app/transactions/services
 from datetime import datetime
 
+from app.core.enums import TransactionType
 from app.transactions.schemas import TransactionCreate, TransactionUpdate
 from app.transactions.models import Transaction
 from app.transactions.repository import TransactionRepo
@@ -24,8 +25,8 @@ class TransactionService:
 
         return await self.repo.create(new_txn)
 
-    async def get_all_transactions(self, limit: int, offset: int):
-        return await self.repo.get_all(limit, offset)
+    async def get_transactions(self, limit: int, offset: int, txn_type: TransactionType | None, start: datetime | None, end: datetime| None):
+        return await self.repo.get_transactions(limit, offset, txn_type, start,end)
 
     async def get_transaction_by_id(self, txn_id: int):
         return await self.repo.get_by_id(txn_id)
@@ -35,8 +36,3 @@ class TransactionService:
 
     async def delete_transaction(self, txn_id):
         return await self.repo.delete(txn_id)
-
-    async def get_transactions_by_date_range(
-        self, limit: int, offset: int, start: datetime, end: datetime
-    ):
-        return await self.repo.get_by_date_range(limit, offset, start, end)
