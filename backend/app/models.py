@@ -1,1 +1,1 @@
-from .transactions.models import Transaction
+from app.transactions.models import Transaction
