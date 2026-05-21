@@ -9,7 +9,7 @@ from app.transactions.repository import TransactionRepo
 
 class TransactionService:
     """
-    This class handles business logic & dependency injection.
+        Handles Business & specialize field logic.
     """
 
     def __init__(self, repo: TransactionRepo):

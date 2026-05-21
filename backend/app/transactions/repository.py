@@ -30,9 +30,6 @@ class TransactionRepo:
             start: datetime | None = None,
             end: datetime | None = None
     ):
-        # stmt = select(Transaction).limit(limit).offset(offset)
-        # result = await self.db.execute(stmt)
-        # return result.scalars().all()
         query = select(Transaction)
 
         # Dynamically apply filters if they are passed
@@ -81,20 +78,3 @@ class TransactionRepo:
         await self.db.delete(txn)
         await self.db.commit()
         return txn
-
-    # async def get_by_date_range(
-    #     self, limit: int, offset: int, start: datetime, end: datetime
-    # ):
-    #     stmt = (
-    #         select(Transaction)
-    #         .where(Transaction.txn_date.between(start, end))
-    #         .limit(limit)
-    #         .offset(offset)
-    #     )
-    #     result = await self.db.execute(stmt)
-    #     return result.scalars().all()
-
-    # async def filter_by_type(self, limit: int, offset: int, txn_type: TransactionType):
-    #     stmt = select(Transaction).where(Transaction.txn_type == txn_type).limit(limit).offset(offset)
-    #     result = await self.db.execute(stmt)
-    #     return result.scalars().all()
