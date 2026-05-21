@@ -12,3 +12,8 @@ dependencies = [
 members = [
     "backend",
 ]
+
+[dependency-groups]
+dev = [
+    "faker>=40.18.0",
+]

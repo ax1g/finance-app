@@ -1,16 +1,27 @@
 [project]
 name = "backend"
 version = "0.1.0"
-description = "Add your description here"
+description = "a finance api to track money."
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "alembic>=1.18.4",
-    "fastapi[standard]>=0.136.1",
-    "pre-commit>=4.6.0",
+    "fastapi>=0.136.1",
+    "psycopg[binary]>=3.3.4",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.14.1",
+    "uvicorn>=0.47.0",
+    "uvloop>=0.22.1",
+    "watchfiles>=1.2.0",
+    "websockets>=16.0",
 ]
 
 [dependency-groups]
 dev = [
+    "fastapi-cli>=0.0.24",
+    "pre-commit>=4.6.0",
+    "pytest>=9.0.3",
+    "rich-toolkit>=0.19.9",
     "ruff>=0.15.13",
+    "typer>=0.25.1",
 ]

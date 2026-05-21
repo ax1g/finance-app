@@ -12,7 +12,7 @@ class TransactionBase(BaseModel):
 
     txn_type: TransactionType
 
-    amount: Decimal = Field(gt=0)
+    amount: Decimal = Field(ge=0, max_digits=12, decimal_places=2)
 
     category: str = Field(min_length=3, max_length=100)
 
@@ -39,7 +39,7 @@ class TransactionUpdate(BaseModel):
 
     txn_type: TransactionType | None = None
 
-    amount: Decimal | None = Field(default=None, gt=0)
+    amount: Decimal | None = Field(default=None, ge=0, max_digits=12, decimal_places=2)
 
     category: str | None = Field(default=None, min_length=3, max_length=100)
 

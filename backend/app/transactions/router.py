@@ -1,6 +1,8 @@
 # app/transactions/router
+from datetime import datetime
 
-from fastapi import APIRouter
+from typing import Annotated
+from fastapi import APIRouter, Depends, status, HTTPException, Query
 
 from app.transactions.schemas import (
     TransactionRead,
@@ -14,30 +16,67 @@ from app.transactions.services import TransactionService
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
-repo = TransactionRepo()
-service = TransactionService(repo)
+
+def get_txn_service(db: SessionDep) -> TransactionService:
+    repo = TransactionRepo(db)
+    return TransactionService(repo)
 
 
-@router.get("/")
-async def read_transactions(db: SessionDep):
-    return await service.get_all_transactions(db)
+ServiceDep = Annotated[TransactionService, Depends(get_txn_service)]
 
 
-@router.get("/{txn_id}")
-async def read_transaction(db: SessionDep, txn_id: int):
-    return await service.get_transaction_by_id(db, txn_id)
+@router.get("/", response_model=list[TransactionRead], status_code=status.HTTP_200_OK)
+async def read_transactions(
+    service: ServiceDep,
+    start: datetime | None = None,
+    end: datetime | None = None,
+    limit: int = Query(default=100, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+):
+    if start and end:
+        if start > end:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid date range"
+            )
+        return await service.get_transactions_by_date_range(limit, offset, start, end)
+
+    return await service.get_all_transactions(limit, offset)
 
 
-@router.post("/", response_model=TransactionRead)
-async def create_transactions(txn_data: TransactionCreate, db: SessionDep):
-    return await service.create_transaction(db, txn_data)
+@router.get("/{txn_id}", response_model=TransactionRead, status_code=status.HTTP_200_OK)
+async def read_transaction(txn_id: int, service: ServiceDep):
+    txn = await service.get_transaction_by_id(txn_id)
+    if not txn:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found"
+        )
+    return txn
 
 
-@router.patch("/{txn_id}")
-async def update_transaction(db: SessionDep, txn_id: int, txn_data: TransactionUpdate):
-    return await service.update_transaction(db, txn_id, txn_data)
+@router.post("/", response_model=TransactionRead, status_code=status.HTTP_201_CREATED)
+async def create_transaction(txn_data: TransactionCreate, service: ServiceDep):
+    return await service.create_transaction(txn_data)
 
 
-@router.delete("/{txn_id}")
-async def delete_transaction(db: SessionDep, txn_id: int):
-    return await service.delete_transaction(db, txn_id)
+@router.patch(
+    "/{txn_id}", response_model=TransactionRead, status_code=status.HTTP_200_OK
+)
+async def update_transaction(
+    txn_id: int, txn_data: TransactionUpdate, service: ServiceDep
+):
+    updated_txn = await service.update_transaction(txn_id, txn_data)
+    if not updated_txn:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found"
+        )
+    return updated_txn
+
+
+@router.delete("/{txn_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_transaction(txn_id: int, service: ServiceDep):
+    deleted = await service.delete_transaction(txn_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found"
+        )
+    # 204 returns no content body automatically
