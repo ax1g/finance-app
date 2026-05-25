@@ -31,5 +31,5 @@ async def get_expense_categories(service: ServiceDep):
 
 
 @router.post('/', response_model=CategoryRead, status_code=status.HTTP_201_CREATED)
-async def create_category(service: ServiceDep, new_account: CategoryCreate):
-    return await service.create_category(new_account)
+async def create_category(service: ServiceDep, new_category: CategoryCreate):
+    return await service.create_category(new_category)

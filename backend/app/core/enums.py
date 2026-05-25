@@ -20,3 +20,9 @@ class AccountType(StrEnum):
 class CategoryType(StrEnum):
     INCOME = "income"
     EXPENSE = "expense"
+
+
+class AccountStatus(StrEnum):
+    ACTIVE = "active"
+    CLOSED = "closed"
+    SUSPENDED = "suspended"

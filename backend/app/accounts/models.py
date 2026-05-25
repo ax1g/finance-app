@@ -5,7 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Integer, String, Numeric, Enum, Date
 
 from app.core.base import Base, TimestampMixin
-from app.core.enums import AccountType
+from app.core.enums import AccountType, AccountStatus
 
 
 # Database model for Account
@@ -24,4 +24,16 @@ class Account(Base, TimestampMixin):
 
     opening_balance_date: Mapped[date] = mapped_column(Date, nullable=False)
 
-    transactions: Mapped[list["Transaction"]] = relationship("Transaction", back_populates="account")  # type: ignore # noqa
+    status: Mapped[AccountStatus] = mapped_column(Enum(AccountStatus), default=AccountStatus.ACTIVE)
+
+    closed_at: Mapped[date] = mapped_column(Date, default=None, nullable=True)
+
+    #---------------------------
+    # RELATIONSHIPS
+    #---------------------------
+
+    # Many-to-One: Many accounts belong to one user
+    user: Mapped["User"] = relationship("User", back_populates="accounts") # type: ignore # noqa
+
+    # One-to-Many: One account has many transactions
+    transactions: Mapped[list["Transaction"]] = relationship("Transaction", back_populates="accounts")  # type: ignore # noqa

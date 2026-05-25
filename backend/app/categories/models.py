@@ -23,4 +23,12 @@ class Category(Base, TimestampMixin):
 
     sort_order: Mapped[int] = mapped_column(default=0)
 
-    transactions: Mapped[list["Transaction"]] = relationship("Transaction", back_populates="category")  # type: ignore # noqa
+    #---------------------------
+    # RELATIONSHIPS
+    #---------------------------
+
+    # Many-to-One: Many categories belong to one user
+    user: Mapped["User"] = relationship("User", back_populates="categories") # type: ignore # noqa
+
+    # One-to-Many: One account has many transactions
+    transactions: Mapped[list["Transaction"]] = relationship("Transaction", back_populates="categories")  # type: ignore  # noqa

@@ -1,12 +1,10 @@
 [project]
-name = "fastapi-finance-app-fr"
+name = "fastapi-finance-app"
 version = "0.1.0"
-description = "Add your description here"
+description = "A fullstack personal finance app for simple people like us and (Forrest Gump ofc!)."
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = [
-    "psycopg>=3.3.4",
-]
+dependencies = []
 
 [tool.uv.workspace]
 members = [
@@ -14,6 +12,4 @@ members = [
 ]
 
 [dependency-groups]
-dev = [
-    "faker>=40.18.0",
-]
+dev = []

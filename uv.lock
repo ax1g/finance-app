@@ -5,7 +5,7 @@ requires-python = ">=3.14"
 [manifest]
 members = [
     "backend",
-    "fastapi-finance-app-fr",
+    "fastapi-finance-app",
 ]
 
 [[package]]
@@ -62,6 +62,7 @@ dependencies = [
     { name = "psycopg", extra = ["binary"] },
     { name = "pydantic" },
     { name = "pydantic-settings" },
+    { name = "sqlalchemy" },
     { name = "uvicorn" },
     { name = "uvloop" },
     { name = "watchfiles" },
@@ -70,6 +71,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "faker" },
     { name = "fastapi-cli" },
     { name = "pre-commit" },
     { name = "pytest" },
@@ -85,6 +87,7 @@ requires-dist = [
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.4" },
     { name = "pydantic", specifier = ">=2.13.4" },
     { name = "pydantic-settings", specifier = ">=2.14.1" },
+    { name = "sqlalchemy", specifier = ">=2.0.49" },
     { name = "uvicorn", specifier = ">=0.47.0" },
     { name = "uvloop", specifier = ">=0.22.1" },
     { name = "watchfiles", specifier = ">=1.2.0" },
@@ -93,6 +96,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "faker", specifier = ">=40.18.0" },
     { name = "fastapi-cli", specifier = ">=0.0.24" },
     { name = "pre-commit", specifier = ">=4.6.0" },
     { name = "pytest", specifier = ">=9.0.3" },
@@ -186,20 +190,11 @@ wheels = [
 name = "fastapi-finance-app-fr"
 version = "0.1.0"
 source = { virtual = "." }
-dependencies = [
-    { name = "psycopg" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "faker" },
-]
 
 [package.metadata]
-requires-dist = [{ name = "psycopg", specifier = ">=3.3.4" }]
 
 [package.metadata.requires-dev]
-dev = [{ name = "faker", specifier = ">=40.18.0" }]
+dev = []
 
 [[package]]
 name = "filelock"

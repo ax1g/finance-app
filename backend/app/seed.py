@@ -19,13 +19,10 @@ async def seed_db(num_records: int = 500):
                 # Generate a random date between 1 year ago and today
                 txn_date=fake.date_time_between(start_date="-1y", end_date="now"),
                 txn_type=random.choice(["income", "expense"]),
-                category=fake.catch_phrase(),
-                # Assuming you have an amount and description/title field
-                amount=round(random.uniform(5.0, 5000.0), 2),
-                account=random.choice(["cash", "bank", "esewa"]),
+                category_id=random.choice(range(1,5)),
+                amount=round(random.uniform(100.0, 10000.0), 2),
+                account_id=random.choice(range(1,5)),
                 description=fake.catch_phrase(),
-                # If you have status fields, you can randomize them too:
-                # status=random.choice(["pending", "completed", "failed"])
             )
             dummy_data.append(txn)
 

@@ -1,7 +1,7 @@
 # app/transactions/repository
 from datetime import datetime
 
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.transactions.models import Transaction
@@ -35,19 +35,13 @@ class TransactionRepo:
         # Dynamically apply filters if they are passed
         if txn_type:
             query = query.where(Transaction.txn_type == txn_type)
-
         if start:
             query = query.where(Transaction.txn_date >= start)
-        
         if end:
             query = query.where(Transaction.txn_date <= end)
 
-        #  CRITICAL: Sort before paginating
-        # desc() ensures newest transactions are at the top
-        query = query.order_by(desc(Transaction.txn_date))
-
-        # Apply pagination last
-        query = query.offset(offset).limit(limit)
+        # Order by newest first, then paginate
+        query = query.order_by(desc(Transaction.txn_date)).offset(offset).limit(limit)
 
         result = await self.db.execute(query)
         return result.scalars().all()
@@ -69,12 +63,10 @@ class TransactionRepo:
         await self.db.refresh(db_transaction)
         return db_transaction
 
-    async def delete(self, txn_id: int):
-        txn = await self.db.get(Transaction, txn_id)
+    async def delete(self, txn_id: int) -> bool:
+        stmt = delete(Transaction).where(Transaction.id == txn_id)
+        result = await self.db.execute(stmt)
+        return result.rowcount > 0          # type: ignore
 
-        if not txn:
-            return None
 
-        await self.db.delete(txn)
-        await self.db.commit()
-        return txn
+    

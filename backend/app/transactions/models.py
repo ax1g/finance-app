@@ -26,11 +26,22 @@ class Transaction(Base, TimestampMixin):
 
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
+
     # Foreign keys
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=False, index=True)
-
-    category: Mapped["Category"] = relationship("Category",back_populates="transactions", lazy="joined")  # type: ignore # noqa
-
+   
     account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), nullable=False, index=True)
 
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+
+
+    #---------------------------
+    # RELATIONSHIPS
+    #---------------------------
+
+    # Many-to-One: Many transactions belong to One category, account and user
+    category: Mapped["Category"] = relationship("Category",back_populates="transactions", lazy="joined")   # type: ignore # noqa
+
     account: Mapped["Account"] = relationship("Account",back_populates="transactions", lazy="joined")   # type: ignore # noqa
+
+    user: Mapped["User"] = relationship("User", back_populates="transactions", lazy="joined")       # type: ignore # noqa
