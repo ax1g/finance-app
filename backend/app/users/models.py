@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import Integer, String, Boolean, DateTime
+from sqlalchemy import String, Boolean, DateTime, func
 
 from app.core.base import Base,TimestampMixin
 
@@ -10,15 +10,13 @@ from app.core.base import Base,TimestampMixin
 class User(Base, TimestampMixin):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-
     username: Mapped[str] = mapped_column(String(18),unique=True, nullable=False, index=True)
 
     email: Mapped[str] = mapped_column(String(255),unique=True, nullable=False, index=True)
 
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
 
-    last_login: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    last_login: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=func.now())
 
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 

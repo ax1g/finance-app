@@ -1,8 +1,9 @@
+import uuid
 from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Numeric, DateTime, Enum, ForeignKey, Integer
+from sqlalchemy import String, Numeric, DateTime, Enum, ForeignKey
 
 from app.core.base import Base, TimestampMixin
 from app.core.enums import TransactionType
@@ -11,8 +12,6 @@ from app.core.enums import TransactionType
 # Database model for transaction
 class Transaction(Base, TimestampMixin):
     __tablename__ = "transactions"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
     txn_date: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, index=True
@@ -28,11 +27,11 @@ class Transaction(Base, TimestampMixin):
 
 
     # Foreign keys
-    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=False, index=True)
+    category_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("categories.id"), nullable=False, index=True)
    
-    account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), nullable=False, index=True)
+    account_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("accounts.id"), nullable=False, index=True)
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
 
 
     #---------------------------
