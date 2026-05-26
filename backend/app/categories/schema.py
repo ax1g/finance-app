@@ -1,3 +1,4 @@
+import uuid
 
 from pydantic import BaseModel, Field, ConfigDict
 
@@ -26,7 +27,7 @@ class CategoryCreate(CategoryBase):
 
 # read schema
 class CategoryRead(CategoryBase):
-    id: int
+    id: uuid.UUID
 
     model_config = ConfigDict(from_attributes=True)
 

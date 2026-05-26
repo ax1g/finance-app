@@ -1,3 +1,4 @@
+import uuid
 from decimal import Decimal
 from datetime import date
 
@@ -22,7 +23,7 @@ class AccountCreate(AccountBase):
 
 # read schema
 class AccountRead(AccountBase):
-    id: int
+    id: uuid.UUID
 
     model_config = ConfigDict(from_attributes=True)
 

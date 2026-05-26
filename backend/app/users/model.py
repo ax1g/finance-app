@@ -16,13 +16,13 @@ class User(Base, TimestampMixin):
 
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
 
-    last_login: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=func.now())
+    last_login: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
-    is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
-    is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
 
     #---------------------------

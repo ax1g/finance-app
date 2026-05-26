@@ -3,7 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Numeric, DateTime, Enum, ForeignKey
+from sqlalchemy import String, Numeric, DateTime, Enum, ForeignKey, func
 
 from app.core.base import Base, TimestampMixin
 from app.core.enums import TransactionType
@@ -13,8 +13,9 @@ from app.core.enums import TransactionType
 class Transaction(Base, TimestampMixin):
     __tablename__ = "transactions"
 
+
     txn_date: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, index=True
+        DateTime(timezone=True), nullable=False, index=True, server_default=func.now()
     )
 
     txn_type: Mapped[TransactionType] = mapped_column(

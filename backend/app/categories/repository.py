@@ -2,7 +2,7 @@
 from sqlalchemy import select, asc
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.categories.models import Category
+from app.categories.model import Category
 from app.core.enums import CategoryType
 
 

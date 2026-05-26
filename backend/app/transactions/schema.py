@@ -1,11 +1,12 @@
+import uuid
 from datetime import datetime
 from decimal import Decimal
 
 from pydantic import BaseModel, Field, ConfigDict
 
 from app.core.enums import TransactionType
-from app.accounts.schemas import AccountRead
-from app.categories.schemas import CategoryRead
+from app.accounts.schema import AccountRead
+from app.categories.schema import CategoryRead
 
 # shared properties
 class TransactionBase(BaseModel):
@@ -20,16 +21,16 @@ class TransactionBase(BaseModel):
 
 # Create Schema
 class TransactionCreate(TransactionBase):
-    account_id: int
-    category_id: int
+    account_id: uuid.UUID
+    category_id: uuid.UUID
     
 # Read Schema
 class TransactionRead(TransactionBase):
-    id: int
-    account_id: int
+    id: uuid.UUID
+    account_id: uuid.UUID
     account: AccountRead
 
-    category_id: int
+    category_id: uuid.UUID
     category: CategoryRead
 
     model_config = ConfigDict(from_attributes=True)
@@ -43,8 +44,8 @@ class TransactionUpdate(BaseModel):
 
     amount: Decimal | None = Field(default=None, ge=0, max_digits=12, decimal_places=2)
 
-    category_id: int | None = None
+    category_id: uuid.UUID | None = None
 
-    account_id: int | None = None
+    account_id: uuid.UUID | None = None
 
     description: str | None = Field(default=None, max_length=255)

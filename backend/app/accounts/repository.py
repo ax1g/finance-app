@@ -1,7 +1,10 @@
+import uuid
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, asc
 
-from app.accounts.models import Account
+from app.accounts.model import Account
+
 
 class AccountRepo:
     """
@@ -25,11 +28,11 @@ class AccountRepo:
         return result.scalars().all()
     
 
-    async def get_by_id(self, account_id: int):
+    async def get_by_id(self, account_id: uuid.UUID):
         return await self.db.get(Account, account_id)
 
 
-    async def update(self, account_id: int, data: dict):
+    async def update(self, account_id: uuid.UUID, data: dict):
         db_account = await self.db.get(Account, account_id)
 
         if not db_account:
@@ -43,7 +46,7 @@ class AccountRepo:
         return db_account
     
 
-    async def delete(self, account_id: int):
+    async def delete(self, account_id: uuid.UUID):
         account = await self.db.get(Account, account_id)
 
         if not account:

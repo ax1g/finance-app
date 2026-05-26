@@ -1,6 +1,6 @@
 from app.categories.repository import CategoryRepo
-from app.categories.schemas import CategoryCreate
-from app.categories.models import Category
+from app.categories.schema import CategoryCreate
+from app.categories.model import Category
 
 
 class CategoryService:

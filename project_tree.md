@@ -1,0 +1,62 @@
+.
+├── backend
+│   │   
+│   ├── alembic
+│   │   ├── env.py
+│   │   ├── README
+│   │   └── script.py.mako
+│   │   
+│   ├── app
+│   │   ├── accounts
+│   │   │   ├── __init__.py
+│   │   │   ├── model.py
+│   │   │   ├── repository.py
+│   │   │   ├── route.py
+│   │   │   ├── schema.py
+│   │   │   └── service.py
+│   │   │
+│   │   ├── categories
+│   │   │   ├── __init__.py
+│   │   │   ├── model.py
+│   │   │   ├── repository.py
+│   │   │   ├── route.py
+│   │   │   ├── schema.py
+│   │   │   └── service.py
+│   │   │
+│   │   ├── core
+│   │   │   ├── base.py
+│   │   │   ├── config.py
+│   │   │   ├── db.py
+│   │   │   ├── enums.py
+│   │   │   ├── __init__.py
+│   │   │   └── models.py
+│   │   │
+│   │   ├── transactions
+│   │   │   ├── __init__.py
+│   │   │   ├── model.py
+│   │   │   ├── repository.py
+│   │   │   ├── route.py
+│   │   │   ├── schema.py
+│   │   │   └── service.py
+│   │   │
+│   │   ├── users
+│   │   │   ├── __init__.py
+│   │   │   ├── model.py
+│   │   │   ├── repository.py
+│   │   │   ├── route.py
+│   │   │   ├── schema.py
+│   │   │   └── service.py
+│   │   │
+│   │   ├── __init__.py
+│   │   ├── main.py
+│   │   └── seed.py
+│   │   
+│   ├── AGENTS.md
+│   ├── alembic.ini
+│   ├── pyproject.toml
+│   └── README.md
+│   
+├── project_tree.md
+├── pyproject.toml
+├── README.md
+└── uv.lock

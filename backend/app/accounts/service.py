@@ -1,6 +1,8 @@
+import uuid
+
 from app.accounts.repository import AccountRepo
-from app.accounts.schemas import AccountCreate, AccountUpdate
-from app.accounts.models import Account
+from app.accounts.schema import AccountCreate, AccountUpdate
+from app.accounts.model import Account
 
 
 class AccountService:
@@ -19,11 +21,11 @@ class AccountService:
     async def get_accounts(self):
         return await self.repo.get_accounts()
 
-    async def get_account_by_id(self, account_id: int):
+    async def get_account_by_id(self, account_id: uuid.UUID):
         return await self.repo.get_by_id(account_id)
 
-    async def update_account(self, account_id: int, data: AccountUpdate):
+    async def update_account(self, account_id: uuid.UUID, data: AccountUpdate):
         return await self.repo.update(account_id, data.model_dump(exclude_unset=True))
     
-    async def delete_account(self, account_id: int):
+    async def delete_account(self, account_id: uuid.UUID):
         return await self.repo.delete(account_id)

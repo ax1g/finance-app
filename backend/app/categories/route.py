@@ -3,12 +3,12 @@ from fastapi import Depends, status
 from typing import Annotated
 
 from app.core.db import SessionDep
-from app.categories.services import CategoryService
+from app.categories.service import CategoryService
 from app.categories.repository import CategoryRepo
-from app.categories.schemas import CategoryRead, CategoryCreate
+from app.categories.schema import CategoryRead, CategoryCreate
 
 
-router = APIRouter(prefix='/categories', tags=["categories"])
+router = APIRouter()
 
 # ------------------------------------------------------
 # DEPENDENCIES

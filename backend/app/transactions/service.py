@@ -1,9 +1,9 @@
-# app/transactions/services
+import uuid
 from datetime import datetime
 
 from app.core.enums import TransactionType
-from app.transactions.schemas import TransactionCreate, TransactionUpdate
-from app.transactions.models import Transaction
+from app.transactions.schema import TransactionCreate, TransactionUpdate
+from app.transactions.model import Transaction
 from app.transactions.repository import TransactionRepo
 
 
@@ -28,10 +28,10 @@ class TransactionService:
     async def get_transactions(self, limit: int, offset: int, txn_type: TransactionType | None, start: datetime | None, end: datetime| None):
         return await self.repo.get_transactions(limit, offset, txn_type, start,end)
 
-    async def get_transaction_by_id(self, txn_id: int):
+    async def get_transaction_by_id(self, txn_id: uuid.UUID):
         return await self.repo.get_by_id(txn_id)
 
-    async def update_transaction(self, txn_id: int, data: TransactionUpdate):
+    async def update_transaction(self, txn_id: uuid.UUID, data: TransactionUpdate):
         return await self.repo.update(txn_id, data.model_dump(exclude_unset=True))
 
     async def delete_transaction(self, txn_id):

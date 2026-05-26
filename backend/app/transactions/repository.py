@@ -1,10 +1,10 @@
-# app/transactions/repository
+import uuid
 from datetime import datetime
 
 from sqlalchemy import select, desc, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.transactions.models import Transaction
+from app.transactions.model import Transaction
 from app.core.enums import TransactionType
 
 
@@ -47,10 +47,10 @@ class TransactionRepo:
         return result.scalars().all()
 
 
-    async def get_by_id(self, txn_id: int):
+    async def get_by_id(self, txn_id: uuid.UUID):
         return await self.db.get(Transaction, txn_id)
 
-    async def update(self, txn_id: int, data: dict):
+    async def update(self, txn_id: uuid.UUID, data: dict):
         db_transaction = await self.db.get(Transaction, txn_id)
 
         if not db_transaction:
@@ -63,7 +63,7 @@ class TransactionRepo:
         await self.db.refresh(db_transaction)
         return db_transaction
 
-    async def delete(self, txn_id: int) -> bool:
+    async def delete(self, txn_id: uuid.UUID) -> bool:
         stmt = delete(Transaction).where(Transaction.id == txn_id)
         result = await self.db.execute(stmt)
         return result.rowcount > 0          # type: ignore

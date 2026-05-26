@@ -1,7 +1,7 @@
 import asyncio
 import random
 from faker import Faker
-from app.transactions.models import Transaction
+from backend.app.transactions.model import Transaction
 
 # Import your async session maker from wherever you define your DB connection
 from app.core.db import AsyncSessionLocal
