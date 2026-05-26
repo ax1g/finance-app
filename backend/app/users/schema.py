@@ -32,3 +32,12 @@ class UserUpdate(BaseModel):
     username: str | None = None
 
     email: EmailStr | None = None
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: str | None = None

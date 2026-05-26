@@ -30,6 +30,16 @@ class UserRepo:
 
     async def get_user_by_id(self, user_id: uuid.UUID):
         return await self.db.get(User, user_id)
+
+    async def get_by_username(self, username: str):
+        query = select(User).where(User.username == username)
+        result = await self.db.execute(query)
+        return result.scalars().first()
+
+    async def get_by_email(self, email: str):
+        query = select(User).where(User.email == email)
+        result = await self.db.execute(query)
+        return result.scalars().first()
     
 
     async def update(self, user_id: uuid.UUID, data:dict):

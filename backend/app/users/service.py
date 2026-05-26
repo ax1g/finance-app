@@ -3,6 +3,7 @@ import uuid
 from app.users.repository import UserRepo
 from app.users.schema import UserCreate, UserUpdate
 from app.users.model import User
+from app.core.security import get_password_hash, verify_password
 
 class UserService:
     """
@@ -15,9 +16,26 @@ class UserService:
     
     async def create_user(self, user_data: UserCreate):
         user_dict = user_data.model_dump()
+        # hash the plain password before creating the user record
+        plain_password = user_dict.pop("password")
+        user_dict["hashed_password"] = get_password_hash(plain_password)
         new_user = User(**user_dict)
 
         return await self.repo.create(new_user)
+
+    async def authenticate_user(self, username: str, password: str) -> User | None:
+        # try by username first, then by email
+        user = await self.repo.get_by_username(username)
+        if not user:
+            user = await self.repo.get_by_email(username)
+
+        if not user:
+            return None
+
+        if not verify_password(password, user.hashed_password):
+            return None
+
+        return user
 
     async def get_users(self):
         return await self.repo.get_users()

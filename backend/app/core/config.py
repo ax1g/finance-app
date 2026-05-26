@@ -18,6 +18,11 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = ""
     POSTGRES_DB: str = ""
 
+    # Security / Auth
+    SECRET_KEY: str = "CHANGE_ME"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+
     @property
     def DATABASE_URL(self) -> str:
         return (

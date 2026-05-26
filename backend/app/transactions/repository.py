@@ -1,10 +1,13 @@
 import uuid
 from datetime import datetime
+from decimal import Decimal
 
-from sqlalchemy import select, desc, delete
+from sqlalchemy import select, desc, delete, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.transactions.model import Transaction
+from app.users.model import User
+from app.accounts.model import Account
 from app.core.enums import TransactionType
 
 
@@ -69,4 +72,18 @@ class TransactionRepo:
         return result.rowcount > 0          # type: ignore
 
 
-    
+    async def get_balance_by_account(self,user_id: uuid.UUID, account_id: uuid.UUID):
+        query = (
+            select(func.sum(Transaction.amount))
+            .where(User.id == user_id)
+            .where(Account.id == account_id)
+        )
+
+        result = await self.db.execute(query)
+
+        # Use 'or 0' to handle cases with no transactions
+        balance = result.scalar() or Decimal("0.00")
+        return balance
+        
+
+        

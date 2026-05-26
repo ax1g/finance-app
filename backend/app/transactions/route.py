@@ -12,7 +12,11 @@ from app.transactions.schema import (
 from app.core.enums import TransactionType
 from app.core.db import SessionDep
 from app.transactions.repository import TransactionRepo
+from app.accounts.repository import AccountRepo
+from app.categories.repository import CategoryRepo
 from app.transactions.service import TransactionService
+from app.accounts.service import AccountService
+from app.categories.service import CategoryService
 
 
 router = APIRouter()
@@ -22,8 +26,14 @@ router = APIRouter()
 # ------------------------------------------------------
 
 def get_txn_service(db: SessionDep) -> TransactionService:
-    repo = TransactionRepo(db)
-    return TransactionService(repo)
+    account_repo = AccountRepo(db)
+    account_service = AccountService(account_repo)
+
+    catgory_repo = CategoryRepo(db)
+    category_service = CategoryService(catgory_repo)
+
+    txn_repo = TransactionRepo(db)
+    return TransactionService(txn_repo, account_service, category_service)
 
 
 ServiceDep = Annotated[TransactionService, Depends(get_txn_service)]

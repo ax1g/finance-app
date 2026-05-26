@@ -23,6 +23,7 @@ class TransactionBase(BaseModel):
 class TransactionCreate(TransactionBase):
     account_id: uuid.UUID
     category_id: uuid.UUID
+    user_id: uuid.UUID
     
 # Read Schema
 class TransactionRead(TransactionBase):

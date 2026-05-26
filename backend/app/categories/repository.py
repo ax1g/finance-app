@@ -1,3 +1,4 @@
+import uuid
 
 from sqlalchemy import select, asc
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -31,4 +32,8 @@ class CategoryRepo:
         
         result = await self.db.execute(query)
         return list(result.scalars().all())
+    
+
+    async def get_by_id(self, category_id: uuid.UUID):
+        return await self.db.get(Category, category_id)
     
