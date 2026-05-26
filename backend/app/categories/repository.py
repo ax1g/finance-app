@@ -20,12 +20,15 @@ class CategoryRepo:
         await self.db.refresh(category)
         return category
     
-    async def get_income_categories(self):
-        query = select(Category).where(Category.type == CategoryType.INCOME).order_by(asc(Category.name))
+    # Fetch all categories from the database, filter if optional category_type is given
+    async def get(self, category_type: CategoryType | None = None) -> list[Category]:
+        query = select(Category)
+
+        if category_type: 
+            query = query.where(Category.type == category_type)
+
+        query = query.order_by(asc(Category.name))
+        
         result = await self.db.execute(query)
-        return result.scalars().all()
+        return list(result.scalars().all())
     
-    async def get_expense_categories(self):
-        query = select(Category).where(Category.type == CategoryType.EXPENSE).order_by(asc(Category.name))
-        result = await self.db.execute(query)
-        return result.scalars().all()

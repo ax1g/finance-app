@@ -22,10 +22,10 @@ class AccountRepo:
         return account
     
 
-    async def get_accounts(self):
+    async def get_accounts(self) -> list[Account]:
         query = select(Account).order_by(asc(Account.name))
         result = await self.db.execute(query)
-        return result.scalars().all()
+        return list(result.scalars().all())
     
 
     async def get_by_id(self, account_id: uuid.UUID):
