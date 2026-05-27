@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = ""
 
     # Security / Auth
-    SECRET_KEY: str = "CHANGE_ME"
+    SECRET_KEY: str = "4kc4F2YOf_EK-pafKgbQeZTOuVzzn8-aVI0yeDGEuR0"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 

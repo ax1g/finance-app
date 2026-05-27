@@ -15,9 +15,9 @@ dependencies = [
     "uvloop>=0.22.1",
     "watchfiles>=1.2.0",
     "websockets>=16.0",
-    "passlib[bcrypt]>=1.7.4",
     "python-jose[cryptography]>=3.3.0",
     "python-multipart>=0.0.29",
+    "pwdlib[argon2]>=0.3.0",
 ]
 
 [dependency-groups]

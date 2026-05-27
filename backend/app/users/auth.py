@@ -1,26 +1,57 @@
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db import get_db
+from app.core.dependencies import SessionDep
 from app.users.service import UserService
 from app.users.repository import UserRepo
 from app.core.security import create_access_token, decode_access_token
-from app.users.schema import Token
+from app.users.schema import Token, UserRead, UserCreate
+
 
 router = APIRouter()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
+# ------------------------------------------------------
+# DEPENDENCIES
+# ------------------------------------------------------
 
-def get_user_service(db: AsyncSession = Depends(get_db)) -> UserService:
+def get_user_service(db: SessionDep) -> UserService:
     repo = UserRepo(db)
     return UserService(repo)
 
+ServiceDep = Annotated[UserService, Depends(get_user_service)]
 
-@router.post("/token", response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), service: UserService = Depends(get_user_service)):
+
+# Get Current User : Dependency 
+async def get_current_user(service: ServiceDep, token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    try:
+        payload = decode_access_token(token)
+        username: str = payload.get("sub")  #type: ignore
+        if username is None:
+            raise credentials_exception
+    except Exception:
+        raise credentials_exception
+
+    user = await service.get_user_by_username(username)
+    if user is None:
+        raise credentials_exception
+    return user
+
+# ------------------------------------------------------
+# AUTH ROUTES
+# ------------------------------------------------------
+
+@router.post("/login", response_model=Token)
+async def login(service: ServiceDep, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     user = await service.authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -33,16 +64,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)):
-    try:
-        payload = decode_access_token(token)
-        username: str = payload.get("sub")  #type: ignore
-        if username is None:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+@router.post('/signup', response_model=UserRead, status_code=status.HTTP_201_CREATED)
+async def create_user(service: ServiceDep, new_user: UserCreate):
+    return await service.create_user(new_user)
 
-    user = await UserRepo(db).get_by_username(username)
-    if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-    return user

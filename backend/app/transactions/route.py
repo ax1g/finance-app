@@ -1,8 +1,7 @@
 import uuid
 from datetime import datetime
 
-from typing import Annotated
-from fastapi import APIRouter, Depends, status, HTTPException, Query
+from fastapi import APIRouter, status, HTTPException, Query
 
 from app.transactions.schema import (
     TransactionRead,
@@ -10,41 +9,16 @@ from app.transactions.schema import (
     TransactionUpdate,
 )
 from app.core.enums import TransactionType
-from app.core.db import SessionDep
-from app.transactions.repository import TransactionRepo
-from app.accounts.repository import AccountRepo
-from app.categories.repository import CategoryRepo
-from app.transactions.service import TransactionService
-from app.accounts.service import AccountService
-from app.categories.service import CategoryService
+
+from app.core.dependencies import TransactionServiceDep
 
 
 router = APIRouter()
 
-# ------------------------------------------------------
-# DEPENDENCIES
-# ------------------------------------------------------
-
-def get_txn_service(db: SessionDep) -> TransactionService:
-    account_repo = AccountRepo(db)
-    account_service = AccountService(account_repo)
-
-    catgory_repo = CategoryRepo(db)
-    category_service = CategoryService(catgory_repo)
-
-    txn_repo = TransactionRepo(db)
-    return TransactionService(txn_repo, account_service, category_service)
-
-
-ServiceDep = Annotated[TransactionService, Depends(get_txn_service)]
-
-# ------------------------------------------------------
-# TRANSACTION ROUTES
-# ------------------------------------------------------
 
 @router.get("/", response_model=list[TransactionRead], status_code=status.HTTP_200_OK)
 async def read_transactions(
-    service: ServiceDep,
+    service: TransactionServiceDep,
     limit: int = Query(default=100, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
     start: datetime | None = None,              # Optional filter
@@ -66,7 +40,7 @@ async def read_transactions(
 
 
 @router.get("/{txn_id}", response_model=TransactionRead, status_code=status.HTTP_200_OK)
-async def read_transaction(txn_id: uuid.UUID, service: ServiceDep):
+async def read_transaction(txn_id: uuid.UUID, service: TransactionServiceDep):
     txn = await service.get_transaction_by_id(txn_id)
     if not txn:
         raise HTTPException(
@@ -76,7 +50,7 @@ async def read_transaction(txn_id: uuid.UUID, service: ServiceDep):
 
 
 @router.post("/", response_model=TransactionRead, status_code=status.HTTP_201_CREATED)
-async def create_transaction(txn_data: TransactionCreate, service: ServiceDep):
+async def create_transaction(txn_data: TransactionCreate, service: TransactionServiceDep):
     return await service.create_transaction(txn_data)
 
 
@@ -84,7 +58,7 @@ async def create_transaction(txn_data: TransactionCreate, service: ServiceDep):
     "/{txn_id}", response_model=TransactionRead, status_code=status.HTTP_200_OK
 )
 async def update_transaction(
-    txn_id: uuid.UUID, txn_data: TransactionUpdate, service: ServiceDep
+    txn_id: uuid.UUID, txn_data: TransactionUpdate, service: TransactionServiceDep
 ):
     updated_txn = await service.update_transaction(txn_id, txn_data)
     if not updated_txn:
@@ -95,7 +69,7 @@ async def update_transaction(
 
 
 @router.delete("/{txn_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_transaction(txn_id: uuid.UUID, service: ServiceDep):
+async def delete_transaction(txn_id: uuid.UUID, service: TransactionServiceDep):
     deleted = await service.delete_transaction(txn_id)
     if not deleted:
         raise HTTPException(

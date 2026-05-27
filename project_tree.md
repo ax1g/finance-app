@@ -1,11 +1,12 @@
 .
 ├── backend
-│   │   
 │   ├── alembic
+│   │   ├── versions
+│   │   │   └── cfd8f3b80f6e_initial_migration.py
 │   │   ├── env.py
 │   │   ├── README
 │   │   └── script.py.mako
-│   │   
+│   │
 │   ├── app
 │   │   ├── accounts
 │   │   │   ├── __init__.py
@@ -14,7 +15,11 @@
 │   │   │   ├── route.py
 │   │   │   ├── schema.py
 │   │   │   └── service.py
-│   │   │
+│   │   │
+│   │   ├── api
+│   │   │   └── v1
+│   │   │       └── api.py
+│   │   │
 │   │   ├── categories
 │   │   │   ├── __init__.py
 │   │   │   ├── model.py
@@ -22,15 +27,16 @@
 │   │   │   ├── route.py
 │   │   │   ├── schema.py
 │   │   │   └── service.py
-│   │   │
+│   │   │
 │   │   ├── core
 │   │   │   ├── base.py
 │   │   │   ├── config.py
 │   │   │   ├── db.py
 │   │   │   ├── enums.py
 │   │   │   ├── __init__.py
-│   │   │   └── models.py
-│   │   │
+│   │   │   ├── models.py
+│   │   │   └── security.py
+│   │   │
 │   │   ├── transactions
 │   │   │   ├── __init__.py
 │   │   │   ├── model.py
@@ -38,24 +44,25 @@
 │   │   │   ├── route.py
 │   │   │   ├── schema.py
 │   │   │   └── service.py
-│   │   │
+│   │   │
 │   │   ├── users
+│   │   │   ├── auth.py
 │   │   │   ├── __init__.py
 │   │   │   ├── model.py
 │   │   │   ├── repository.py
 │   │   │   ├── route.py
 │   │   │   ├── schema.py
 │   │   │   └── service.py
-│   │   │
+│   │   │
 │   │   ├── __init__.py
 │   │   ├── main.py
 │   │   └── seed.py
-│   │   
+│   │
 │   ├── AGENTS.md
 │   ├── alembic.ini
 │   ├── pyproject.toml
 │   └── README.md
-│   
+│   
 ├── project_tree.md
 ├── pyproject.toml
 ├── README.md

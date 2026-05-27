@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, ConfigDict
 
 from app.core.enums import AccountType
 
+
 # shared properties
 class AccountBase(BaseModel):
     name: str = Field(min_length=3, max_length=64)
@@ -19,7 +20,7 @@ class AccountBase(BaseModel):
 
 # create schema
 class AccountCreate(AccountBase):
-    pass
+    user_id: uuid.UUID
 
 # read schema
 class AccountRead(AccountBase):

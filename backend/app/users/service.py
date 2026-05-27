@@ -23,6 +23,7 @@ class UserService:
 
         return await self.repo.create(new_user)
 
+
     async def authenticate_user(self, username: str, password: str) -> User | None:
         # try by username first, then by email
         user = await self.repo.get_by_username(username)
@@ -37,14 +38,22 @@ class UserService:
 
         return user
 
+
     async def get_users(self):
         return await self.repo.get_users()
 
+
     async def get_user_by_id(self, user_id: uuid.UUID):
         return await self.repo.get_user_by_id(user_id)
+    
+
+    async def get_user_by_username(self, username: str):
+        return await self.repo.get_by_username(username)
+
 
     async def update_user(self, user_id: uuid.UUID, data: UserUpdate):
         return await self.repo.update(user_id, data.model_dump(exclude_unset=True))
+    
     
     async def delete_user(self, user_id):
         return await self.repo.delete(user_id)

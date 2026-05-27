@@ -1,13 +1,13 @@
-from datetime import datetime, timedelta
+from datetime import datetime,timezone, timedelta
 from typing import Optional
 
-from passlib.context import CryptContext
+from pwdlib import PasswordHash
 from jose import jwt, JWTError
 
 from app.core.config import settings
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = PasswordHash.recommended()
 
 ALGORITHM = settings.ALGORITHM
 SECRET_KEY = settings.SECRET_KEY
@@ -22,7 +22,7 @@ def get_password_hash(password: str) -> str:
 
 
 def create_access_token(subject: str, expires_delta: Optional[timedelta] = None) -> str:
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode = {"exp": expire, "sub": subject}
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
