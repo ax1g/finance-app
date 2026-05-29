@@ -21,6 +21,12 @@ class CategoryType(StrEnum):
     EXPENSE = "expense"
 
 
+class CategoryStatus(StrEnum):
+    ACTIVE = "active"
+    CLOSED = "closed"
+    ARCHIVED = "archived"
+
+
 class AccountStatus(StrEnum):
     ACTIVE = "active"
     CLOSED = "closed"
