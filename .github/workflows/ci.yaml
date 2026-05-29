@@ -36,7 +36,7 @@ jobs:
       - name: Install Python and Sync
         run: |
           uv python install $(cat .python-version)
-          uv sync --all-members --dev
+          uv sync --all-extras --dev
 
       - name: Lint (ruff)
         run: uv run --package backend ruff check backend || true
