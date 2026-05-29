@@ -1,11 +1,12 @@
 from typing import Annotated, Type
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import decode_access_token
+from app.core.exceptions import AuthenticationError, AuthorizationError
 from app.users.schema import UserRead
 
 # Repos and Services
@@ -25,20 +26,32 @@ SessionDep = Annotated[AsyncSession, Depends(get_db)]
 
 def get_service(service_class: Type, repo_class: Type):
     """A factory to create service dependencies."""
-    def _get_service(db: SessionDep):
+
+    def _get_service(db: AsyncSession):
         return service_class(repo_class(db))
+
     return _get_service
 
 
 # My Models Dependencies
-AccountServiceDep = Annotated[AccountService, Depends(get_service(AccountService, AccountRepo))]
-CategoryServiceDep = Annotated[CategoryService, Depends(get_service(CategoryService, CategoryRepo))]
+AccountServiceDep = Annotated[
+    AccountService, Depends(get_service(AccountService, AccountRepo))
+]
+CategoryServiceDep = Annotated[
+    CategoryService, Depends(get_service(CategoryService, CategoryRepo))
+]
 UserServiceDep = Annotated[UserService, Depends(get_service(UserService, UserRepo))]
 
+
 # custom service for transactions since its quite spaghetti
-async def get_txn_service(db: SessionDep, account_service: AccountServiceDep, category_service: CategoryServiceDep):
+async def get_txn_service(
+    db: AsyncSession,
+    account_service: AccountServiceDep,
+    category_service: CategoryServiceDep,
+):
     txn_repo = TransactionRepo(db)
     return TransactionService(txn_repo, account_service, category_service)
+
 
 TransactionServiceDep = Annotated[TransactionService, Depends(get_txn_service)]
 
@@ -46,29 +59,21 @@ TransactionServiceDep = Annotated[TransactionService, Depends(get_txn_service)]
 # OAuth Dependecy for Current User
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
+
 # Auth Dependency Logic
 async def get_current_user(
-    service: UserServiceDep,
-    token: Annotated[str, Depends(oauth2_scheme)]
+    service: UserServiceDep, token: Annotated[str, Depends(oauth2_scheme)]
 ):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+    payload = decode_access_token(token)
+    username: str | None = payload.get("sub")
+    if username is None:
+        raise AuthenticationError("Could not validate credentials.")
 
-    try:
-        payload = decode_access_token(token)
-        username: str = payload.get("sub") # type: ignore
-        if username is None:
-            raise credentials_exception
-    except Exception:
-        raise credentials_exception
-    
     user = await service.get_user_by_username(username)
     if user is None:
-        raise credentials_exception
+        raise AuthenticationError("Could not validate credentials.")
     return user
+
 
 # Current User Injection
 CurrentUserDep = Annotated[UserRead, Depends(get_current_user)]

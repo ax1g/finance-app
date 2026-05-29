@@ -8,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from app.transactions.model import Transaction
 from app.transactions.schema import TransactionCreate, TransactionUpdate
-from app.transactions.exceptions import (
+from app.core.exceptions import (
     TransactionCreateError,
     TransactionUpdateError,
     RepositoryError,
@@ -44,12 +44,12 @@ class TransactionRepo:
         except IntegrityError as e:
             # Handles Foreign Key or Unique Constraint failures
             await self.db.rollback()
-            raise TransactionCreateError(f"Integrity violation: {str(e.orig)}")
+            raise TransactionCreateError(f"Integrity violation: {str(e.orig)}") from e
 
         except SQLAlchemyError as e:
             # Handles general DB connectivity or syntax issues
             await self.db.rollback()
-            raise RepositoryError(f"Database error: {str(e)}")
+            raise RepositoryError(f"Database error: {str(e)}") from e
 
     async def get_transactions(
         self,
@@ -83,7 +83,7 @@ class TransactionRepo:
             return result.scalars().all()
 
         except SQLAlchemyError as e:
-            raise RepositoryError(f"Database error: {str(e)}")
+            raise RepositoryError(f"Database error: {str(e)}") from e
 
     async def get_by_id(self, user_id: uuid.UUID, txn_id: uuid.UUID) -> Transaction:
         """
@@ -104,7 +104,7 @@ class TransactionRepo:
             return transaction
 
         except SQLAlchemyError as e:
-            raise RepositoryError(f"Database error: {str(e)}")
+            raise RepositoryError(f"Database error: {str(e)}") from e
 
     async def update(
         self, user_id: uuid.UUID, txn_id: uuid.UUID, data: TransactionUpdate
@@ -128,11 +128,11 @@ class TransactionRepo:
         except IntegrityError as e:
             # Handles Foreign Key or Unique Constraint failures
             await self.db.rollback()
-            raise TransactionUpdateError(f"Integrity violation: {str(e.orig)}")
+            raise TransactionUpdateError(f"Integrity violation: {str(e.orig)}") from e
 
-        except (SQLAlchemyError, ResourceNotFoundError):
+        except SQLAlchemyError as e:
             await self.db.rollback()
-            raise
+            raise RepositoryError(f"Database error: {str(e)}") from e
 
     async def delete(self, user_id: uuid.UUID, txn_id: uuid.UUID) -> None:
         """
@@ -148,4 +148,4 @@ class TransactionRepo:
 
         except SQLAlchemyError as e:
             await self.db.rollback()
-            raise RepositoryError(f"Database error: {str(e)}")
+            raise RepositoryError(f"Database error: {str(e)}") from e

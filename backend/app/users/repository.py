@@ -1,9 +1,11 @@
 import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import select, asc
 
 from app.users.model import User
+from app.core.exceptions import RepositoryError, ResourceNotFoundError
 
 
 class UserRepo:
@@ -15,52 +17,73 @@ class UserRepo:
         self.db = db
 
     async def create(self, user: User):
-        self.db.add(user)
-        await self.db.commit()
-        await self.db.refresh(user)
-        return user
+        try:
+            self.db.add(user)
+            await self.db.flush()
+            await self.db.refresh(user)
+            return user
+        except SQLAlchemyError as e:
+            await self.db.rollback()
+            raise RepositoryError(f"Database error: {str(e)}") from e
 
-    async def get_users(self, is_superuser) -> list[User]:
-
-        if is_superuser:
+    async def get_users(self) -> list[User]:
+        try:
             query = select(User).order_by(asc(User.username))
             result = await self.db.execute(query)
             return list(result.scalars().all())
-        else:
-            raise Exception("Not Authorized: Need Super User Privilages")
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}") from e
 
     async def get_by_id(self, user_id: uuid.UUID):
-        return await self.db.get(User, user_id)
+        try:
+            user = await self.db.get(User, user_id)
+            if not user:
+                raise ResourceNotFoundError(f"User {user_id} not found")
+            return user
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}") from e
 
     async def get_by_username(self, username: str):
-        query = select(User).where(User.username == username)
-        result = await self.db.execute(query)
-        return result.scalars().first()
+        try:
+            query = select(User).where(User.username == username)
+            result = await self.db.execute(query)
+            return result.scalars().first()
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}") from e
 
     async def get_by_email(self, email: str):
-        query = select(User).where(User.email == email)
-        result = await self.db.execute(query)
-        return result.scalars().first()
+        try:
+            query = select(User).where(User.email == email)
+            result = await self.db.execute(query)
+            return result.scalars().first()
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}") from e
 
     async def update(self, user_id: uuid.UUID, data: dict):
-        user = await self.db.get(User, user_id)
+        try:
+            user = await self.db.get(User, user_id)
+            if not user:
+                raise ResourceNotFoundError(f"User {user_id} not found")
 
-        if not user:
-            return None
+            for key, value in data.items():
+                setattr(user, key, value)
 
-        for key, value in data.items():
-            setattr(user, key, value)
-
-        await self.db.commit()
-        await self.db.refresh(user)
-        return user
+            await self.db.flush()
+            await self.db.refresh(user)
+            return user
+        except SQLAlchemyError as e:
+            await self.db.rollback()
+            raise RepositoryError(f"Database error: {str(e)}") from e
 
     async def delete(self, user_id: uuid.UUID):
-        user = await self.db.get(User, user_id)
+        try:
+            user = await self.db.get(User, user_id)
+            if not user:
+                raise ResourceNotFoundError(f"User {user_id} not found")
 
-        if not user:
-            return None
-
-        await self.db.delete(user)
-        await self.db.commit()
-        return user
+            await self.db.delete(user)
+            await self.db.flush()
+            return user
+        except SQLAlchemyError as e:
+            await self.db.rollback()
+            raise RepositoryError(f"Database error: {str(e)}") from e

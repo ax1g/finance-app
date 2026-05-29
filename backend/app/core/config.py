@@ -11,7 +11,7 @@ class Settings(BaseSettings):
 
     PROJECT_NAME: str
     API_V1_STR: str = "/api/v1"
-    ENVIRONMENT: str 
+    ENVIRONMENT: str
 
     POSTGRES_SERVER: str
     POSTGRES_PORT: int = 5432

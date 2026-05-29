@@ -17,8 +17,8 @@ async def read_user_me(current_user: CurrentUserDep):
 
 
 @router.get("/", response_model=list[UserRead], status_code=status.HTTP_200_OK)
-async def get_users(service: UserServiceDep, user: CurrentUserDep):
-    return await service.get_users(user.is_superuser)
+async def get_users(service: UserServiceDep, current_user: CurrentUserDep):
+    return await service.get_users(current_user.is_superuser)
 
 
 @router.get("/{user_id}", response_model=UserRead, status_code=status.HTTP_200_OK)

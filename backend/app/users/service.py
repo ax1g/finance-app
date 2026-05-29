@@ -4,6 +4,7 @@ from app.users.repository import UserRepo
 from app.users.schema import UserCreate, UserUpdate
 from app.users.model import User
 from app.core.security import get_password_hash, verify_password
+from app.core.exceptions import AuthorizationError, ResourceNotFoundError
 
 
 class UserService:
@@ -37,11 +38,10 @@ class UserService:
 
         return user
 
-    async def get_users(self, is_superuser):
-        try:
-            return await self.repo.get_users(is_superuser)
-        except Exception as e:
-            raise Exception(str(e))
+    async def get_users(self, is_superuser: bool):
+        if not is_superuser:
+            raise AuthorizationError("Not authorized: superuser privileges required.")
+        return await self.repo.get_users()
 
     async def get_user_by_id(self, user_id: uuid.UUID):
         return await self.repo.get_by_id(user_id)

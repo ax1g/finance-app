@@ -8,6 +8,7 @@ from sqlalchemy import select, asc
 from app.core.exceptions import (
     ResourceNotFoundError,
     RepositoryError,
+    ConflictError,
     AccountDeleteError,
 )
 from app.accounts.model import Account
@@ -38,13 +39,13 @@ class AccountRepo:
             await self.db.refresh(db_obj)
             return db_obj
 
-        except IntegrityError:
+        except IntegrityError as e:
             await self.db.rollback()
-            raise
+            raise ConflictError(f"Account already exists: {str(e.orig)}") from e
 
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
             await self.db.rollback()
-            raise
+            raise RepositoryError(f"Database error: {str(e)}") from e
 
     # TODO: filtering by account_type : cash,bank,investments etc.
     async def get_all(self, user_id: uuid.UUID) -> Sequence[Account]:
@@ -60,8 +61,8 @@ class AccountRepo:
 
             return result.scalars().all()
 
-        except SQLAlchemyError:
-            raise
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}") from e
 
     async def get_by_id(self, user_id: uuid.UUID, account_id: uuid.UUID) -> Account:
         try:
@@ -80,7 +81,7 @@ class AccountRepo:
             return account
 
         except SQLAlchemyError as e:
-            raise RepositoryError(f"Database error: {str(e)}")
+            raise RepositoryError(f"Database error: {str(e)}") from e
 
     async def update(
         self, user_id: uuid.UUID, account_id: uuid.UUID, data: AccountUpdate
@@ -97,13 +98,13 @@ class AccountRepo:
             await self.db.refresh(account)
             return account
 
-        except IntegrityError:
+        except IntegrityError as e:
             await self.db.rollback()
-            raise
+            raise ConflictError(f"Account update conflict: {str(e.orig)}") from e
 
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
             await self.db.rollback()
-            raise
+            raise RepositoryError(f"Database error: {str(e)}") from e
 
     async def delete(self, user_id: uuid.UUID, account_id: uuid.UUID, data: dict):
         """
@@ -112,8 +113,8 @@ class AccountRepo:
         try:
             account = await self.get_by_id(user_id, account_id)
 
-            if account.current_balance > 0:
-                raise AccountDeleteError("Account is not 0 balance to be deleted.")
+            if account.current_balance != 0:
+                raise AccountDeleteError("Account must have zero balance to be closed.")
 
             for key, val in data.items():
                 setattr(account, key, val)
@@ -121,6 +122,6 @@ class AccountRepo:
             await self.db.flush()
             await self.db.refresh(account)
 
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
             await self.db.rollback()
-            raise
+            raise RepositoryError(f"Database error: {str(e)}") from e

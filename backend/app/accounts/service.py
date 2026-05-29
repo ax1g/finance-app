@@ -1,9 +1,6 @@
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import HTTPException
-
-from app.core.exceptions import RepositoryError, AccountDeleteError
 from app.accounts.repository import AccountRepo
 from app.accounts.schema import AccountCreate, AccountUpdate
 from app.core.enums import AccountStatus
@@ -18,68 +15,31 @@ class AccountService:
         self.repo = repo
 
     async def create_account(self, user_id: uuid.UUID, data: AccountCreate):
-        try:
-            account = await self.repo.create(user_id, data)
-            await self.repo.db.commit()
-            return account
-
-        except RepositoryError:
-            raise HTTPException(
-                status_code=500,
-                detail="An error occurred while creating account.",
-            )
+        account = await self.repo.create(user_id, data)
+        await self.repo.db.commit()
+        return account
 
     async def get_accounts(
         self,
         user_id: uuid.UUID,
     ):
-        try:
-            return await self.repo.get_all(user_id)
-        except RepositoryError:
-            raise HTTPException(
-                status_code=500,
-                detail="An error occurred while fetching accounts.",
-            )
+        return await self.repo.get_all(user_id)
 
     async def get_account_by_id(self, user_id: uuid.UUID, account_id: uuid.UUID):
-        try:
-            return await self.repo.get_by_id(user_id, account_id)
-        except RepositoryError:
-            raise HTTPException(
-                status_code=500,
-                detail="An error occurred while fetching the account.",
-            )
+        return await self.repo.get_by_id(user_id, account_id)
 
     async def update_account(
         self, user_id: uuid.UUID, account_id: uuid.UUID, data: AccountUpdate
     ):
-        try:
-            account = await self.repo.update(user_id, account_id, data)
-
-            if not account:
-                raise HTTPException(status_code=404, detail="Account not found")
-
-            await self.repo.db.commit()
-            return account
-
-        except RepositoryError:
-            raise HTTPException(
-                status_code=500,
-                detail="An error occurred while updating the account.",
-            )
+        account = await self.repo.update(user_id, account_id, data)
+        await self.repo.db.commit()
+        return account
 
     async def delete_account(self, user_id: uuid.UUID, account_id: uuid.UUID):
-        try:
-            delete_payload = {
-                "status": AccountStatus.CLOSED,
-                "closed_at": datetime.now(timezone.utc),
-            }
+        delete_payload = {
+            "status": AccountStatus.CLOSED,
+            "closed_at": datetime.now(timezone.utc),
+        }
 
-            await self.repo.delete(user_id, account_id, delete_payload)
-            await self.repo.db.commit()
-
-        except (RepositoryError, AccountDeleteError) as e:
-            raise HTTPException(
-                status_code=500,
-                detail=f"{str(e)}",
-            )
+        await self.repo.delete(user_id, account_id, delete_payload)
+        await self.repo.db.commit()

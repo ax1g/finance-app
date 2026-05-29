@@ -19,7 +19,7 @@ class UserCreate(UserBase):
 # read schema
 class UserRead(UserBase):
     id: uuid.UUID
-    last_login : datetime
+    last_login: datetime
     is_verified: bool
     is_active: bool
     is_superuser: bool

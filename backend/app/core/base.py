@@ -8,9 +8,7 @@ from sqlalchemy.dialects.postgresql import UUID
 class Base(DeclarativeBase):
     # This ensures all models get a uuid (following DRY hope its the standard)
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid7
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid7
     )
 
 

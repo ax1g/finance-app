@@ -6,7 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from app.categories.model import Category
 from app.core.enums import CategoryType
-from app.core.exceptions import RepositoryError
+from app.core.exceptions import RepositoryError, ConflictError
 
 
 class CategoryRepo:
@@ -29,11 +29,11 @@ class CategoryRepo:
 
         except IntegrityError as e:
             await self.db.rollback()
-            raise RepositoryError(f"Integrity violation: {str(e.orig)}")
+            raise ConflictError(f"Category conflict: {str(e.orig)}") from e
 
         except SQLAlchemyError as e:
             await self.db.rollback()
-            raise RepositoryError(f"Database error: {str(e)}")
+            raise RepositoryError(f"Database error: {str(e)}") from e
 
     # Fetch all categories from the database, filter if optional category_type is given
     async def get(
@@ -50,7 +50,42 @@ class CategoryRepo:
             result = await self.db.execute(query)
             return list(result.scalars().all())
         except SQLAlchemyError as e:
-            raise RepositoryError(f"Database error: {str(e)}")
+            raise RepositoryError(f"Database error: {str(e)}") from e
+
+    async def update(self, user_id: uuid.UUID, category_id: uuid.UUID, data: dict):
+        try:
+            category = await self.get_by_id(user_id, category_id)
+            if not category:
+                return None
+
+            for key, val in data.items():
+                setattr(category, key, val)
+
+            await self.db.flush()
+            await self.db.refresh(category)
+            return category
+
+        except IntegrityError as e:
+            await self.db.rollback()
+            raise ConflictError(f"Category update conflict: {str(e.orig)}") from e
+
+        except SQLAlchemyError as e:
+            await self.db.rollback()
+            raise RepositoryError(f"Database error: {str(e)}") from e
+
+    async def delete(self, user_id: uuid.UUID, category_id: uuid.UUID):
+        try:
+            category = await self.get_by_id(user_id, category_id)
+            if not category:
+                return None
+
+            await self.db.delete(category)
+            await self.db.flush()
+            return category
+
+        except SQLAlchemyError as e:
+            await self.db.rollback()
+            raise RepositoryError(f"Database error: {str(e)}") from e
 
     async def get_by_id(self, user_id: uuid.UUID, category_id: uuid.UUID):
         query = (
@@ -62,4 +97,4 @@ class CategoryRepo:
             result = await self.db.execute(query)
             return result.scalar_one_or_none()
         except SQLAlchemyError as e:
-            raise RepositoryError(f"Database error: {str(e)}")
+            raise RepositoryError(f"Database error: {str(e)}") from e

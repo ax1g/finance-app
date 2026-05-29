@@ -5,11 +5,10 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 from app.core.config import settings
 
 
-
 # create async engine
 engine = create_async_engine(
     settings.DATABASE_URL,
-    echo=(settings.ENVIRONMENT == 'local'),  # True only during debugging
+    echo=(settings.ENVIRONMENT == "local"),  # True only during debugging
     pool_pre_ping=True,  # checks dead connections
     pool_recycle=3600,  # refresh stale connections
 )
@@ -25,5 +24,3 @@ SessionFactory = async_sessionmaker(
 async def get_db() -> AsyncGenerator[AsyncSession]:
     async with SessionFactory() as session:
         yield session
-
-

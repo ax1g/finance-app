@@ -1,26 +1,34 @@
-class RepositoryError(Exception):
-    """Base class for repository errors."""
+class AppError(Exception):
+    """Base exception for all application errors."""
 
-    pass
+
+class AuthenticationError(AppError):
+    """Raised when authentication fails (invalid credentials, expired token)."""
+
+
+class AuthorizationError(AppError):
+    """Raised when the user lacks permission for an operation."""
+
+
+class ResourceNotFoundError(AppError):
+    """Raised when a specific record is not found."""
+
+
+class ConflictError(AppError):
+    """Raised when an operation conflicts with current state (integrity, balance, etc.)."""
+
+
+class RepositoryError(AppError):
+    """Base for database/repository errors."""
 
 
 class TransactionCreateError(RepositoryError):
     """Raised when a transaction cannot be created."""
 
-    pass
-
 
 class TransactionUpdateError(RepositoryError):
     """Raised when a transaction cannot be updated."""
 
-    pass
 
-
-class ResourceNotFoundError(Exception):
-    """Raised when a specific record is not found in the database"""
-
-    pass
-
-
-class AccountDeleteError(Exception):
-    """Raised when account has funds when try to delete"""
+class AccountDeleteError(ConflictError):
+    """Raised when an account cannot be deleted (non-zero balance)."""

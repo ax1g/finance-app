@@ -45,4 +45,3 @@ class CategoryUpdate(BaseModel):
     is_active: bool | None = Field(default=None)
 
     sort_order: int | None = Field(default=None)
-
