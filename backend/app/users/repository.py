@@ -1,11 +1,11 @@
 import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy import select, asc
 
 from app.users.model import User
-from app.core.exceptions import RepositoryError, ResourceNotFoundError
+from app.core.exceptions import RepositoryError, ResourceNotFoundError, ConflictError
 
 
 class UserRepo:
@@ -22,6 +22,9 @@ class UserRepo:
             await self.db.flush()
             await self.db.refresh(user)
             return user
+        except IntegrityError as e:
+            await self.db.rollback()
+            raise ConflictError(f"User already exists: {str(e.orig)}") from e
         except SQLAlchemyError as e:
             await self.db.rollback()
             raise RepositoryError(f"Database error: {str(e)}") from e
@@ -71,6 +74,9 @@ class UserRepo:
             await self.db.flush()
             await self.db.refresh(user)
             return user
+        except IntegrityError as e:
+            await self.db.rollback()
+            raise ConflictError(f"User update conflict: {str(e.orig)}") from e
         except SQLAlchemyError as e:
             await self.db.rollback()
             raise RepositoryError(f"Database error: {str(e)}") from e

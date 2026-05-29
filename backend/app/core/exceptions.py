@@ -22,11 +22,11 @@ class RepositoryError(AppError):
     """Base for database/repository errors."""
 
 
-class TransactionCreateError(RepositoryError):
+class TransactionCreateError(ConflictError):
     """Raised when a transaction cannot be created."""
 
 
-class TransactionUpdateError(RepositoryError):
+class TransactionUpdateError(ConflictError):
     """Raised when a transaction cannot be updated."""
 
 

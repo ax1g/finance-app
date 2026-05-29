@@ -106,7 +106,7 @@ class AccountRepo:
             await self.db.rollback()
             raise RepositoryError(f"Database error: {str(e)}") from e
 
-    async def delete(self, user_id: uuid.UUID, account_id: uuid.UUID, data: dict):
+    async def delete(self, user_id: uuid.UUID, account_id: uuid.UUID, payload: dict):
         """
         Soft Deletes the account, status = closed
         """
@@ -116,7 +116,7 @@ class AccountRepo:
             if account.current_balance != 0:
                 raise AccountDeleteError("Account must have zero balance to be closed.")
 
-            for key, val in data.items():
+            for key, val in payload.items():
                 setattr(account, key, val)
 
             await self.db.flush()
