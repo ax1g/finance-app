@@ -33,19 +33,15 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Read Python version
-        run: echo "PYTHON_VERSION=$(cat .python-version)" >> $GITHUB_ENV
-
-      - name: Install Python via uv
-        run: uv python install $PYTHON_VERSION
-
-      - name: Sync dependencies with uv
-        run: uv sync --all-extras --dev
+      - name: Install Python and Sync
+        run: |
+          uv python install $(cat .python-version)
+          uv sync --all-members --dev
 
       - name: Lint (ruff)
-        run: uv run ruff check backend || true
+        run: uv run --package backend ruff check backend || true
 
       - name: Run tests
         env:
           DATABASE_URL: ${{ env.DATABASE_URL }}
-        run: uv run pytest -q backend/tests
+        run: uv run --package backend pytest -q backend/tests
