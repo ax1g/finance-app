@@ -5,9 +5,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy import select, asc
 
-from app.core.exceptions import ResourceNotFoundError, RepositoryError
+from app.core.exceptions import (
+    ResourceNotFoundError,
+    RepositoryError,
+    AccountDeleteError,
+)
 from app.accounts.model import Account
 from app.accounts.schema import AccountCreate, AccountUpdate
+from app.core.enums import AccountStatus
 
 
 class AccountRepo:
@@ -47,6 +52,7 @@ class AccountRepo:
             query = (
                 select(Account)
                 .where(Account.user_id == user_id)
+                .where(Account.status == AccountStatus.ACTIVE)
                 .order_by(asc(Account.type), asc(Account.name))
             )
 
@@ -99,12 +105,21 @@ class AccountRepo:
             await self.db.rollback()
             raise
 
-    async def delete(self, user_id: uuid.UUID, account_id: uuid.UUID):
+    async def delete(self, user_id: uuid.UUID, account_id: uuid.UUID, data: dict):
+        """
+        Soft Deletes the account, status = closed
+        """
         try:
             account = await self.get_by_id(user_id, account_id)
 
-            await self.db.delete(account)
+            if account.current_balance > 0:
+                raise AccountDeleteError("Account is not 0 balance to be deleted.")
+
+            for key, val in data.items():
+                setattr(account, key, val)
+
             await self.db.flush()
+            await self.db.refresh(account)
 
         except SQLAlchemyError:
             await self.db.rollback()

@@ -20,3 +20,7 @@ class ResourceNotFoundError(Exception):
     """Raised when a specific record is not found in the database"""
 
     pass
+
+
+class AccountDeleteError(Exception):
+    """Raised when account has funds when try to delete"""

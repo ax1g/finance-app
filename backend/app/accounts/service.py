@@ -1,10 +1,12 @@
 import uuid
+from datetime import datetime, timezone
 
 from fastapi import HTTPException
 
-from app.core.exceptions import RepositoryError
+from app.core.exceptions import RepositoryError, AccountDeleteError
 from app.accounts.repository import AccountRepo
 from app.accounts.schema import AccountCreate, AccountUpdate
+from app.core.enums import AccountStatus
 
 
 class AccountService:
@@ -63,16 +65,21 @@ class AccountService:
         except RepositoryError:
             raise HTTPException(
                 status_code=500,
-                detail="An error occurred while fetching the account.",
+                detail="An error occurred while updating the account.",
             )
 
     async def delete_account(self, user_id: uuid.UUID, account_id: uuid.UUID):
         try:
-            await self.repo.delete(user_id, account_id)
+            delete_payload = {
+                "status": AccountStatus.CLOSED,
+                "closed_at": datetime.now(timezone.utc),
+            }
+
+            await self.repo.delete(user_id, account_id, delete_payload)
             await self.repo.db.commit()
 
-        except RepositoryError:
+        except (RepositoryError, AccountDeleteError) as e:
             raise HTTPException(
                 status_code=500,
-                detail="An error occurred while fetching the account.",
+                detail=f"{str(e)}",
             )

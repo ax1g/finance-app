@@ -38,17 +38,24 @@ class TransactionService:
         try:
             transaction = await self.repo.create(user_id, data)
 
-            # TODO: Business logic: if accounts & categories exist
-
             # validating if enough balance
-            # if data.txn_type == TransactionType.EXPENSE:
-            #     current_balance = await self.repo.get_balance_by_account(
-            #         data.user_id, data.account_id
-            #     )
+            if data.txn_type == TransactionType.EXPENSE:
+                account = await self.accounts_service.get_account_by_id(
+                    user_id, data.account_id
+                )
 
-            #     if data.amount > current_balance:
-            #         raise ValueError("Insufficient funds in the accounts.")
+                if data.amount > account.current_balance:
+                    raise ValueError("Insufficient funds in the accounts.")
+                else:
+                    account.current_balance -= data.amount
 
+            if data.txn_type == TransactionType.INCOME:
+                account = await self.accounts_service.get_account_by_id(
+                    user_id, data.account_id
+                )
+                account.current_balance += data.amount
+
+            await self.accounts_service.repo.db.commit()  # update the current account
             await self.repo.db.commit()  # final commit
             return transaction
         except TransactionCreateError as e:
