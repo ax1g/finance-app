@@ -8,6 +8,7 @@ from app.core.enums import TransactionType
 from app.accounts.schema import AccountRead
 from app.categories.schema import CategoryRead
 
+
 # shared properties
 class TransactionBase(BaseModel):
     txn_date: datetime
@@ -23,8 +24,8 @@ class TransactionBase(BaseModel):
 class TransactionCreate(TransactionBase):
     account_id: uuid.UUID
     category_id: uuid.UUID
-    user_id: uuid.UUID
-    
+
+
 # Read Schema
 class TransactionRead(TransactionBase):
     id: uuid.UUID

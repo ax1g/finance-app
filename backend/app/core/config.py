@@ -11,6 +11,7 @@ class Settings(BaseSettings):
 
     PROJECT_NAME: str
     API_V1_STR: str = "/api/v1"
+    ENVIRONMENT: str 
 
     POSTGRES_SERVER: str
     POSTGRES_PORT: int = 5432
@@ -19,7 +20,7 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = ""
 
     # Security / Auth
-    SECRET_KEY: str = "4kc4F2YOf_EK-pafKgbQeZTOuVzzn8-aVI0yeDGEuR0"
+    SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 

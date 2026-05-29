@@ -1,9 +1,13 @@
 import uuid
+from collections.abc import Sequence
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy import select, asc
 
+from app.core.exceptions import ResourceNotFoundError, RepositoryError
 from app.accounts.model import Account
+from app.accounts.schema import AccountCreate, AccountUpdate
 
 
 class AccountRepo:
@@ -14,44 +18,94 @@ class AccountRepo:
     def __init__(self, db: AsyncSession):
         self.db = db
 
+    async def create(self, user_id: uuid.UUID, data: AccountCreate) -> Account:
 
-    async def create(self, account: Account):
-        self.db.add(account)
-        await self.db.commit()
-        await self.db.refresh(account)
-        return account
-    
+        # Schema to DB Model
+        db_obj = Account(
+            **data.model_dump(exclude={"opening_balance"}),
+            current_balance=data.opening_balance,
+            user_id=user_id,
+        )
 
-    async def get_accounts(self) -> list[Account]:
-        query = select(Account).order_by(asc(Account.name))
-        result = await self.db.execute(query)
-        return list(result.scalars().all())
-    
+        try:
+            self.db.add(db_obj)
+            await self.db.flush()
+            await self.db.refresh(db_obj)
+            return db_obj
 
-    async def get_by_id(self, account_id: uuid.UUID):
-        return await self.db.get(Account, account_id)
+        except IntegrityError:
+            await self.db.rollback()
+            raise
 
+        except SQLAlchemyError:
+            await self.db.rollback()
+            raise
 
-    async def update(self, account_id: uuid.UUID, data: dict):
-        db_account = await self.db.get(Account, account_id)
+    # TODO: filtering by account_type : cash,bank,investments etc.
+    async def get_all(self, user_id: uuid.UUID) -> Sequence[Account]:
+        try:
+            query = (
+                select(Account)
+                .where(Account.user_id == user_id)
+                .order_by(asc(Account.type), asc(Account.name))
+            )
 
-        if not db_account:
-            return None
+            result = await self.db.execute(query)
 
-        for key,value in data.items():
-            setattr(db_account, key, value)
+            return result.scalars().all()
 
-        await self.db.commit()
-        await self.db.refresh(db_account)
-        return db_account
-    
+        except SQLAlchemyError:
+            raise
 
-    async def delete(self, account_id: uuid.UUID):
-        account = await self.db.get(Account, account_id)
+    async def get_by_id(self, user_id: uuid.UUID, account_id: uuid.UUID) -> Account:
+        try:
+            query = (
+                select(Account)
+                .where(Account.user_id == user_id)
+                .where(Account.id == account_id)
+            )
 
-        if not account:
-            return None
+            result = await self.db.execute(query)
+            account = result.scalar_one_or_none()
 
-        await self.db.delete(account)
-        await self.db.commit()
-        return account
+            if not account:
+                raise ResourceNotFoundError(f"Account {account_id} not found")
+
+            return account
+
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}")
+
+    async def update(
+        self, user_id: uuid.UUID, account_id: uuid.UUID, data: AccountUpdate
+    ):
+        try:
+            account = await self.get_by_id(user_id, account_id)
+
+            update_data = data.model_dump(exclude_unset=True)
+
+            for key, val in update_data.items():
+                setattr(account, key, val)
+
+            await self.db.flush()
+            await self.db.refresh(account)
+            return account
+
+        except IntegrityError:
+            await self.db.rollback()
+            raise
+
+        except SQLAlchemyError:
+            await self.db.rollback()
+            raise
+
+    async def delete(self, user_id: uuid.UUID, account_id: uuid.UUID):
+        try:
+            account = await self.get_by_id(user_id, account_id)
+
+            await self.db.delete(account)
+            await self.db.flush()
+
+        except SQLAlchemyError:
+            await self.db.rollback()
+            raise

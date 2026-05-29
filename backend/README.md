@@ -66,13 +66,40 @@ uv run python -m app.seed
 
 ## API Endpoints
 
-Base path: `/api/v1/transactions`
+Base path: `/api/v1`
 
-- `GET /` — list transactions with optional pagination and date-range filters
-- `GET /{txn_id}` — retrieve a single transaction
-- `POST /` — create a new transaction
-- `PATCH /{txn_id}` — update an existing transaction
-- `DELETE /{txn_id}` — delete a transaction
+### Transactions
+
+- `GET /api/v1/transactions/` — list transactions; optional query params: `limit`, `offset`, `start`, `end`, `txn_type`
+- `GET /api/v1/transactions/{txn_id}` — retrieve a single transaction by UUID
+- `POST /api/v1/transactions/` — create a new transaction
+- `PATCH /api/v1/transactions/{txn_id}` — update an existing transaction
+- `DELETE /api/v1/transactions/{txn_id}` — delete a transaction
+
+### Accounts
+
+- `GET /api/v1/accounts/` — list accounts
+- `GET /api/v1/accounts/{account_id}` — retrieve an account by UUID
+- `POST /api/v1/accounts/` — create a new account
+- `PATCH /api/v1/accounts/{account_id}` — update an existing account
+- `DELETE /api/v1/accounts/{account_id}` — delete an account
+
+### Categories
+
+- `GET /api/v1/categories/` — list categories; optional query param: `category_type`
+- `POST /api/v1/categories/` — create a new category
+
+### Users
+
+- `GET /api/v1/user/` — list users
+- `GET /api/v1/user/{user_id}` — retrieve a user by UUID
+- `GET /api/v1/user/me` — retrieve the current authenticated user
+
+### Auth
+
+- `POST /api/v1/auth/login` — authenticate with OAuth2 password form and receive a bearer token
+- `POST /api/v1/auth/signup` — create a new user
+- `GET /api/v1/auth/me` — retrieve current user details from the token
 
 ## Notes
 

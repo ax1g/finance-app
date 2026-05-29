@@ -1,6 +1,5 @@
 import uuid
 from decimal import Decimal
-from datetime import date
 
 from pydantic import BaseModel, Field, ConfigDict
 
@@ -13,27 +12,23 @@ class AccountBase(BaseModel):
 
     type: AccountType
 
-    opening_balance: Decimal = Field(ge=0, max_digits=12, decimal_places=2)
-
-    opening_balance_date: date
-
 
 # create schema
 class AccountCreate(AccountBase):
-    user_id: uuid.UUID
+    opening_balance: Decimal = Field(ge=0, max_digits=12, decimal_places=2)
+
 
 # read schema
 class AccountRead(AccountBase):
     id: uuid.UUID
 
+    current_balance: Decimal = Field(ge=0, max_digits=12, decimal_places=2)
+
     model_config = ConfigDict(from_attributes=True)
+
 
 # update schema (partial updates)
 class AccountUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=3, max_length=64)
 
     type: AccountType | None = None
-
-    opening_balance: Decimal | None= Field(default=None, ge=0, max_digits=12, decimal_places=2)
-
-    opening_balance_date: date | None = None

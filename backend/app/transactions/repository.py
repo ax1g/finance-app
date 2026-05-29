@@ -1,13 +1,19 @@
 import uuid
 from datetime import datetime
-from decimal import Decimal
+from collections.abc import Sequence
 
-from sqlalchemy import select, desc, delete, func
+from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from app.transactions.model import Transaction
-from app.users.model import User
-from app.accounts.model import Account
+from app.transactions.schema import TransactionCreate, TransactionUpdate
+from app.transactions.exceptions import (
+    TransactionCreateError,
+    TransactionUpdateError,
+    RepositoryError,
+    ResourceNotFoundError,
+)
 from app.core.enums import TransactionType
 
 
@@ -19,71 +25,127 @@ class TransactionRepo:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
-    async def create(self, transaction: Transaction):
-        self.db.add(transaction)
-        await self.db.commit()
-        await self.db.refresh(transaction)
-        return transaction
+    async def create(self, user_id: uuid.UUID, data: TransactionCreate) -> Transaction:
+        """
+        Creates a new transaction bound to a specific user.
+        """
+
+        # Convert Schema to DB Model & inject user context
+        db_obj = Transaction(**data.model_dump(), user_id=user_id)
+
+        try:
+            self.db.add(db_obj)
+            # Flush to trigger database constraints/triggers without committing yet
+            await self.db.flush()
+            # Refresh to get DB-generated fields (like ID or created_at)
+            await self.db.refresh(db_obj)
+            return db_obj
+
+        except IntegrityError as e:
+            # Handles Foreign Key or Unique Constraint failures
+            await self.db.rollback()
+            raise TransactionCreateError(f"Integrity violation: {str(e.orig)}")
+
+        except SQLAlchemyError as e:
+            # Handles general DB connectivity or syntax issues
+            await self.db.rollback()
+            raise RepositoryError(f"Database error: {str(e)}")
 
     async def get_transactions(
-            self, 
-            limit: int, 
-            offset: int, 
-            txn_type: TransactionType | None = None,
-            start: datetime | None = None,
-            end: datetime | None = None
-    ):
-        query = select(Transaction)
+        self,
+        user_id: uuid.UUID,
+        limit: int,
+        offset: int,
+        txn_type: TransactionType | None = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
+    ) -> Sequence[Transaction]:
+        """
+        Get all the transactions of the user, apply filter if available
+        """
+        try:
+            query = select(Transaction).where(Transaction.user_id == user_id)
 
-        # Dynamically apply filters if they are passed
-        if txn_type:
-            query = query.where(Transaction.txn_type == txn_type)
-        if start:
-            query = query.where(Transaction.txn_date >= start)
-        if end:
-            query = query.where(Transaction.txn_date <= end)
+            # Dynamically apply filters if they are passed
+            if txn_type:
+                query = query.where(Transaction.txn_type == txn_type)
+            if start:
+                query = query.where(Transaction.txn_date >= start)
+            if end:
+                query = query.where(Transaction.txn_date <= end)
 
-        # Order by newest first, then paginate
-        query = query.order_by(desc(Transaction.txn_date)).offset(offset).limit(limit)
+            # Order by newest first, then paginate
+            query = (
+                query.order_by(desc(Transaction.txn_date)).offset(offset).limit(limit)
+            )
 
-        result = await self.db.execute(query)
-        return result.scalars().all()
+            result = await self.db.execute(query)
+            return result.scalars().all()
 
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}")
 
-    async def get_by_id(self, txn_id: uuid.UUID):
-        return await self.db.get(Transaction, txn_id)
+    async def get_by_id(self, user_id: uuid.UUID, txn_id: uuid.UUID) -> Transaction:
+        """
+        Fetches a transaction or raises ResourceNotFoundError.
+        """
+        try:
+            query = (
+                select(Transaction)
+                .where(Transaction.user_id == user_id)
+                .where(Transaction.id == txn_id)
+            )
+            result = await self.db.execute(query)
+            transaction = result.scalar_one_or_none()
 
-    async def update(self, txn_id: uuid.UUID, data: dict):
-        db_transaction = await self.db.get(Transaction, txn_id)
+            if not transaction:
+                raise ResourceNotFoundError(f"Transaction {txn_id} not found")
 
-        if not db_transaction:
-            return None
+            return transaction
 
-        for key, value in data.items():
-            setattr(db_transaction, key, value)
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}")
 
-        await self.db.commit()
-        await self.db.refresh(db_transaction)
-        return db_transaction
+    async def update(
+        self, user_id: uuid.UUID, txn_id: uuid.UUID, data: TransactionUpdate
+    ) -> Transaction:
+        """
+        Updates a specific transaction of the user
+        """
 
-    async def delete(self, txn_id: uuid.UUID) -> bool:
-        stmt = delete(Transaction).where(Transaction.id == txn_id)
-        result = await self.db.execute(stmt)
-        return result.rowcount > 0          # type: ignore
+        try:
+            transaction = await self.get_by_id(user_id, txn_id)
 
+            # exclude_unset=True prevents overwriting existing data with default None values
+            update_data = data.model_dump(exclude_unset=True)
+            for key, value in update_data.items():
+                setattr(transaction, key, value)
 
-    async def get_balance_by_account(self,user_id: uuid.UUID, account_id: uuid.UUID):
-        query = (
-            select(func.sum(Transaction.amount))
-            .where(User.id == user_id)
-            .where(Account.id == account_id)
-        )
+            await self.db.flush()
+            await self.db.refresh(transaction)
+            return transaction
 
-        result = await self.db.execute(query)
+        except IntegrityError as e:
+            # Handles Foreign Key or Unique Constraint failures
+            await self.db.rollback()
+            raise TransactionUpdateError(f"Integrity violation: {str(e.orig)}")
 
-        # Use 'or 0' to handle cases with no transactions
-        balance = result.scalar() or Decimal("0.00")
-        return balance
-        
+        except (SQLAlchemyError, ResourceNotFoundError):
+            await self.db.rollback()
+            raise
 
-        
+    async def delete(self, user_id: uuid.UUID, txn_id: uuid.UUID) -> None:
+        """
+        Removes a specific transaction of the user.
+        """
+        try:
+            transaction = await self.get_by_id(
+                user_id, txn_id
+            )  # get_by_id raises ResourceNotFoundError if not success
+
+            await self.db.delete(transaction)
+            await self.db.flush()
+
+        except SQLAlchemyError as e:
+            await self.db.rollback()
+            raise RepositoryError(f"Database error: {str(e)}")

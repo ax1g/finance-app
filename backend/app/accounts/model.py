@@ -21,9 +21,7 @@ class Account(Base, TimestampMixin):
         Enum(AccountType), nullable=False, index=True
     )
 
-    opening_balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-
-    opening_balance_date: Mapped[date] = mapped_column(Date, nullable=False)
+    current_balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
 
     status: Mapped[AccountStatus] = mapped_column(Enum(AccountStatus),nullable=False, default=AccountStatus.ACTIVE)
 
