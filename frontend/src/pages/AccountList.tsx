@@ -142,7 +142,7 @@ function TypeGroupBlock({
           <Link
             key={a.id}
             to={`/accounts/${a.id}`}
-            className="ml-9 flex items-center justify-between rounded-lg px-3 py-1.5 text-sm transition-colors hover:bg-muted/30"
+            className="ml-[74px] flex items-center justify-between rounded-lg px-3 py-1.5 text-sm transition-colors hover:bg-muted/30"
           >
             <span>{a.name}</span>
             <span className="font-mono text-sm tabular-nums text-foreground">
@@ -152,7 +152,7 @@ function TypeGroupBlock({
         ))}
 
       {open && accounts.length === 0 && (
-        <p className="ml-9 py-1.5 text-xs text-muted-foreground">
+        <p className="ml-[74px] py-1.5 text-xs text-muted-foreground">
           No {group.label.toLowerCase()} accounts yet.
         </p>
       )}
