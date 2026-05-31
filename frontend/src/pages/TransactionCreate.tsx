@@ -1,9 +1,27 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { createTransaction } from "../api/transactions"
-import { fetchAccounts } from "../api/accounts"
-import { fetchCategories } from "../api/categories"
-import type { AccountRead, CategoryRead, TransactionType } from "../types"
+import { createTransaction } from "@/api/transactions"
+import { fetchAccounts } from "@/api/accounts"
+import { fetchCategories } from "@/api/categories"
+import type { AccountRead, CategoryRead, TransactionType } from "@/types"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Loader2 } from "lucide-react"
 
 export default function TransactionCreate() {
   const navigate = useNavigate()
@@ -15,7 +33,7 @@ export default function TransactionCreate() {
 
   const [form, setForm] = useState({
     txn_date: new Date().toISOString().slice(0, 16),
-    txn_type: "expense" as TransactionType | "",
+    txn_type: "",
     amount: "",
     description: "",
     account_id: "",
@@ -27,8 +45,6 @@ export default function TransactionCreate() {
       .then(([accts, cats]) => {
         setAccounts(accts)
         setCategories(cats)
-        if (accts.length) setForm((f) => ({ ...f, account_id: accts[0].id }))
-        if (cats.length) setForm((f) => ({ ...f, category_id: cats[0].id }))
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
@@ -36,7 +52,12 @@ export default function TransactionCreate() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.txn_type || !form.account_id || !form.category_id || !form.amount) {
+    if (
+      !form.txn_type ||
+      !form.account_id ||
+      !form.category_id ||
+      !form.amount
+    ) {
       setError("Please fill in all required fields")
       return
     }
@@ -46,7 +67,7 @@ export default function TransactionCreate() {
     try {
       const created = await createTransaction({
         txn_date: new Date(form.txn_date).toISOString(),
-        txn_type: form.txn_type,
+        txn_type: form.txn_type as TransactionType,
         amount: form.amount,
         description: form.description || null,
         account_id: form.account_id,
@@ -54,143 +75,153 @@ export default function TransactionCreate() {
       })
       navigate(`/transactions/${created.id}`)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create transaction")
+      setError(
+        err instanceof Error ? err.message : "Failed to create transaction",
+      )
     } finally {
       setSubmitting(false)
     }
   }
 
-  if (loading) return <p>Loading form...</p>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16 text-muted-foreground">
+        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+        Loading...
+      </div>
+    )
+  }
 
   return (
-    <div style={{ maxWidth: 480 }}>
-      <h2>New Transaction</h2>
-      <form
-        onSubmit={handleSubmit}
-        style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 20 }}
-      >
-        <div style={{ display: "flex", gap: 12 }}>
-          <label style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4, fontSize: 13, color: "var(--text)" }}>
-            Type
-            <select
-              value={form.txn_type}
-              onChange={(e) => setForm({ ...form, txn_type: e.target.value as TransactionType })}
-              required
-              style={{ padding: "10px 12px", borderRadius: 6, border: "1px solid var(--border)", fontSize: 15 }}
-            >
-              <option value="">Select...</option>
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
-              <option value="adjustment">Adjustment</option>
-              <option value="transfer">Transfer</option>
-            </select>
-          </label>
-
-          <label style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4, fontSize: 13, color: "var(--text)" }}>
-            Amount
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="0.00"
-              value={form.amount}
-              onChange={(e) => setForm({ ...form, amount: e.target.value })}
-              required
-              style={{ padding: "10px 12px", borderRadius: 6, border: "1px solid var(--border)", fontSize: 15 }}
-            />
-          </label>
-        </div>
-
-        <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 13, color: "var(--text)" }}>
-          Date & Time
-          <input
-            type="datetime-local"
-            value={form.txn_date}
-            onChange={(e) => setForm({ ...form, txn_date: e.target.value })}
-            required
-            style={{ padding: "10px 12px", borderRadius: 6, border: "1px solid var(--border)", fontSize: 15 }}
-          />
-        </label>
-
-        <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 13, color: "var(--text)" }}>
-          Account
-          <select
-            value={form.account_id}
-            onChange={(e) => setForm({ ...form, account_id: e.target.value })}
-            required
-            style={{ padding: "10px 12px", borderRadius: 6, border: "1px solid var(--border)", fontSize: 15 }}
-          >
-            {accounts.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.name} (${parseFloat(a.current_balance).toFixed(2)})
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 13, color: "var(--text)" }}>
-          Category
-          <select
-            value={form.category_id}
-            onChange={(e) => setForm({ ...form, category_id: e.target.value })}
-            required
-            style={{ padding: "10px 12px", borderRadius: 6, border: "1px solid var(--border)", fontSize: 15 }}
-          >
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 13, color: "var(--text)" }}>
-          Description
-          <input
-            type="text"
-            placeholder="Optional note"
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            style={{ padding: "10px 12px", borderRadius: 6, border: "1px solid var(--border)", fontSize: 15 }}
-          />
-        </label>
-
-        {error && <p style={{ color: "#e53e3e", fontSize: 14, margin: 0 }}>{error}</p>}
-
-        <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-          <button
-            type="button"
-            onClick={() => navigate("/transactions")}
-            style={{
-              padding: "10px 20px",
-              borderRadius: 6,
-              border: "1px solid var(--border)",
-              background: "none",
-              cursor: "pointer",
-              fontSize: 15,
-              color: "var(--text-h)",
-            }}
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={submitting}
-            style={{
-              padding: "10px 20px",
-              borderRadius: 6,
-              border: "none",
-              background: "var(--accent)",
-              color: "#fff",
-              fontSize: 15,
-              cursor: "pointer",
-              opacity: submitting ? 0.7 : 1,
-            }}
-          >
-            {submitting ? "Saving..." : "Create Transaction"}
-          </button>
-        </div>
-      </form>
+    <div className="mx-auto max-w-lg">
+      <Card>
+        <CardHeader>
+          <CardTitle>New Transaction</CardTitle>
+          <CardDescription>Record a new income or expense</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="type">Type</Label>
+                <Select
+                  value={form.txn_type}
+                  onValueChange={(value) =>
+                    setForm({ ...form, txn_type: value })
+                  }
+                >
+                  <SelectTrigger id="type">
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="income">Income</SelectItem>
+                    <SelectItem value="expense">Expense</SelectItem>
+                    <SelectItem value="adjustment">Adjustment</SelectItem>
+                    <SelectItem value="transfer">Transfer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="amount">Amount</Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  value={form.amount}
+                  onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="date">Date & Time</Label>
+              <Input
+                id="date"
+                type="datetime-local"
+                value={form.txn_date}
+                onChange={(e) => setForm({ ...form, txn_date: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="account">Account</Label>
+              <Select
+                value={form.account_id}
+                onValueChange={(value) =>
+                  setForm({ ...form, account_id: value })
+                }
+              >
+                <SelectTrigger id="account">
+                  <SelectValue placeholder="Select account" />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.map((a) => (
+                    <SelectItem key={a.id} value={a.id}>
+                      {a.name} (${parseFloat(a.current_balance).toFixed(2)})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Select
+                value={form.category_id}
+                onValueChange={(value) =>
+                  setForm({ ...form, category_id: value })
+                }
+              >
+                <SelectTrigger id="category">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Input
+                id="description"
+                placeholder="Optional note"
+                value={form.description}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
+              />
+            </div>
+            {error && (
+              <p className="text-sm text-destructive">{error}</p>
+            )}
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={() => navigate("/transactions")}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" className="flex-1" disabled={submitting}>
+                {submitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Create Transaction"
+                )}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 }

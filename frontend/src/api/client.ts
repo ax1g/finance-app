@@ -3,9 +3,13 @@ import type { AuthTokens } from "../types"
 const API_BASE = "/api/v1"
 
 function getTokens(): AuthTokens | null {
-  const raw = localStorage.getItem("auth_tokens")
-  if (!raw) return null
-  return JSON.parse(raw) as AuthTokens
+  try {
+    const raw = localStorage.getItem("auth_tokens")
+    if (!raw) return null
+    return JSON.parse(raw) as AuthTokens
+  } catch {
+    return null
+  }
 }
 
 export function setTokens(tokens: AuthTokens): void {

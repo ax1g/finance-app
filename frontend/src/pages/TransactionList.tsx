@@ -1,9 +1,25 @@
 import { useEffect, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
-import { fetchTransactions, type TransactionFilters } from "../api/transactions"
-import type { TransactionRead } from "../types"
+import { fetchTransactions, type TransactionFilters } from "@/api/transactions"
+import type { TransactionRead } from "@/types"
+import { Badge } from "@/components/ui/badge"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ArrowUpRight, ArrowDownRight, Loader2 } from "lucide-react"
 
-const TXN_TYPES = ["", "income", "expense", "adjustment", "transfer"] as const
+const TXN_TYPES = [
+  { value: "all", label: "All Types" },
+  { value: "income", label: "Income" },
+  { value: "expense", label: "Expense" },
+  { value: "adjustment", label: "Adjustment" },
+  { value: "transfer", label: "Transfer" },
+]
 
 function fmtAmount(txn: TransactionRead): string {
   const sign = txn.txn_type === "expense" ? "-" : "+"
@@ -22,7 +38,7 @@ export default function TransactionList() {
     let cancelled = false
 
     const filters: TransactionFilters = { limit: 50 }
-    if (txnType) filters.txn_type = txnType
+    if (txnType && txnType !== "all") filters.txn_type = txnType
 
     fetchTransactions(filters)
       .then((data) => {
@@ -40,83 +56,91 @@ export default function TransactionList() {
     }
   }, [txnType])
 
-  const handleFilterChange = (value: string) => {
-    const next = new URLSearchParams(searchParams)
-    if (value) next.set("txn_type", value)
-    else next.delete("txn_type")
-    setSearchParams(next)
-  }
-
   return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 20,
-        }}
-      >
-        <h2 style={{ margin: 0 }}>Transactions</h2>
-        <select
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <CardTitle>Transactions</CardTitle>
+        <Select
           value={txnType}
-          onChange={(e) => handleFilterChange(e.target.value)}
-          style={{ padding: "8px 12px", borderRadius: 6, border: "1px solid var(--border)", fontSize: 14 }}
-        >
-          {TXN_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {t ? t.charAt(0).toUpperCase() + t.slice(1) : "All Types"}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: "#e53e3e" }}>{error}</p>}
-
-      {!loading && !error && transactions.length === 0 && (
-        <p>No transactions found.</p>
-      )}
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {transactions.map((txn) => (
-          <Link
-            key={txn.id}
-            to={`/transactions/${txn.id}`}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "14px 16px",
-              borderRadius: 8,
-              border: "1px solid var(--border)",
-              textDecoration: "none",
-              color: "var(--text-h)",
-              transition: "box-shadow 0.2s",
+            onValueChange={(value) => {
+              const next = new URLSearchParams(searchParams)
+              if (value && value !== "all") next.set("txn_type", value)
+              else next.delete("txn_type")
+              setSearchParams(next)
             }}
-            onMouseOver={(e) => (e.currentTarget.style.boxShadow = "var(--shadow)")}
-            onMouseOut={(e) => (e.currentTarget.style.boxShadow = "none")}
-          >
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <span style={{ fontWeight: 500 }}>
-                {txn.description || txn.category.name}
-              </span>
-              <span style={{ fontSize: 13, color: "var(--text)" }}>
-                {new Date(txn.txn_date).toLocaleDateString()} &middot;{" "}
-                {txn.account.name}
-              </span>
-            </div>
-            <span
-              style={{
-                fontWeight: 600,
-                color: txn.txn_type === "expense" ? "#e53e3e" : "#38a169",
-              }}
-            >
-              {fmtAmount(txn)}
-            </span>
-          </Link>
-        ))}
-      </div>
-    </div>
+        >
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="All Types" />
+          </SelectTrigger>
+          <SelectContent>
+            {TXN_TYPES.map((t) => (
+              <SelectItem key={t.value} value={t.value}>
+                {t.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </CardHeader>
+      <CardContent>
+        {loading && (
+          <div className="flex items-center justify-center py-12 text-muted-foreground">
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            Loading...
+          </div>
+        )}
+        {error && (
+          <p className="py-8 text-center text-sm text-destructive">{error}</p>
+        )}
+        {!loading && !error && transactions.length === 0 && (
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            No transactions found.
+          </p>
+        )}
+        {!loading && !error && transactions.length > 0 && (
+          <div className="space-y-1">
+            {transactions.map((txn) => (
+              <Link
+                key={txn.id}
+                to={`/transactions/${txn.id}`}
+                className="flex items-center justify-between rounded-lg border border-border px-4 py-3 transition-colors hover:bg-muted/50"
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`flex h-9 w-9 items-center justify-center rounded-full ${
+                      txn.txn_type === "expense"
+                        ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+                        : "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+                    }`}
+                  >
+                    {txn.txn_type === "expense" ? (
+                      <ArrowDownRight className="h-4 w-4" />
+                    ) : (
+                      <ArrowUpRight className="h-4 w-4" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium leading-none">
+                      {txn.description || txn.category.name}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {new Date(txn.txn_date).toLocaleDateString()} &middot;{" "}
+                      {txn.account.name}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant={txn.txn_type === "expense" ? "destructive" : "secondary"}
+                    className="font-mono text-xs"
+                  >
+                    {fmtAmount(txn)}
+                  </Badge>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }
