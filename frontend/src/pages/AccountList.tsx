@@ -51,12 +51,14 @@ const LIABILITY_GROUPS: TypeGroup[] = [
 
 function TypeSection({
   title,
+  titleColor,
   groups,
   accounts,
   collapsed,
   onToggle,
 }: {
   title: string
+  titleColor: string
   groups: TypeGroup[]
   accounts: AccountRead[]
   collapsed: boolean
@@ -75,7 +77,7 @@ function TypeSection({
     <div className="space-y-1">
       <button
         onClick={onToggle}
-        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:bg-muted/50"
+        className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider transition-colors hover:bg-muted/50 ${titleColor}`}
       >
         {collapsed ? (
           <ChevronRight className="h-4 w-4" />
@@ -206,16 +208,8 @@ export default function AccountList() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle>Accounts</CardTitle>
         <div className="flex items-center gap-3">
-          {!loading && !error && (
-            <p className="text-sm text-muted-foreground">
-              Net:{" "}
-              <span className="font-semibold text-foreground">
-                ${fmt(netAssets - netLiabilities)}
-              </span>
-            </p>
-          )}
+          <CardTitle>Accounts</CardTitle>
           <Button
             variant="outline"
             size="sm"
@@ -225,6 +219,20 @@ export default function AccountList() {
             New
           </Button>
         </div>
+        {!loading && !error && (
+          <p className="text-sm text-muted-foreground">
+            Net:{" "}
+            <span
+              className={`font-semibold ${
+                netAssets - netLiabilities >= 0
+                  ? "text-green-600"
+                  : "text-red-600"
+              }`}
+            >
+              ${fmt(netAssets - netLiabilities)}
+            </span>
+          </p>
+        )}
       </CardHeader>
       <CardContent>
         {loading && (
@@ -251,6 +259,7 @@ export default function AccountList() {
           <div className="space-y-4">
             <TypeSection
               title="ASSETS"
+              titleColor="text-green-600 dark:text-green-400"
               groups={ASSET_GROUPS}
               accounts={accounts}
               collapsed={!assetsOpen}
@@ -258,6 +267,7 @@ export default function AccountList() {
             />
             <TypeSection
               title="LIABILITIES"
+              titleColor="text-red-600 dark:text-red-400"
               groups={LIABILITY_GROUPS}
               accounts={accounts}
               collapsed={!liabilitiesOpen}
