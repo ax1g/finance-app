@@ -8,6 +8,7 @@ import {
   LayoutList,
   Landmark,
   Tag,
+  Plus,
   PanelLeftClose,
   PanelLeft,
 } from "lucide-react"
@@ -49,14 +50,24 @@ export default function Sidebar() {
         </Button>
       </div>
 
-      <div className="flex-1 space-y-1 p-3">
+      <div className="px-3 py-4">
+        <NavLink
+          to="/transactions/new"
+          className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-primary to-primary/80 px-4 py-3 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:from-primary/90 hover:to-primary/70 hover:shadow-lg hover:brightness-110 active:scale-[0.98]"
+        >
+          <Plus className="h-4 w-4" />
+          {!collapsed && <span>New Transaction</span>}
+        </NavLink>
+      </div>
+
+      <div className="flex-1 space-y-1 px-3">
         <NavLink to="/" end className={linkClass}>
           <LayoutDashboard className="h-5 w-5 shrink-0" />
           {!collapsed && <span>Dashboard</span>}
         </NavLink>
         <NavLink to="/transactions" end className={linkClass}>
           <LayoutList className="h-5 w-5 shrink-0" />
-          {!collapsed && <span>Transactions</span>}
+          {!collapsed && <span>Transaction History</span>}
         </NavLink>
         <NavLink to="/accounts" end className={linkClass}>
           <Landmark className="h-5 w-5 shrink-0" />
