@@ -14,6 +14,7 @@ import type {
   TransactionType,
 } from "@/types"
 import { Button } from "@/components/ui/button"
+import { fmt } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
@@ -44,7 +45,7 @@ import {
 
 function fmtAmount(txn: TransactionRead): string {
   const sign = txn.txn_type === "expense" ? "-" : "+"
-  return `${sign}$${parseFloat(txn.amount).toFixed(2)}`
+  return `${sign}$${fmt(txn.amount)}`
 }
 
 export default function TransactionDetail() {

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { fetchAccounts } from "@/api/accounts"
 import type { AccountRead, AccountType } from "@/types"
 import { Button } from "@/components/ui/button"
+import { fmt } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Landmark,
@@ -83,7 +84,7 @@ function TypeSection({
         )}
         {title}
         <span className="ml-auto font-mono text-xs font-normal normal-case">
-          ${sectionTotal.toFixed(2)}
+          ${fmt(sectionTotal)}
         </span>
       </button>
 
@@ -127,7 +128,7 @@ function TypeGroupBlock({
             {group.label}
         </span>
         <span className="ml-auto font-mono text-xs text-muted-foreground">
-          ${groupTotal.toFixed(2)}
+          ${fmt(groupTotal)}
         </span>
         {open ? (
           <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
@@ -145,7 +146,7 @@ function TypeGroupBlock({
           >
             <span>{a.name}</span>
             <span className="font-mono text-xs text-muted-foreground">
-              ${parseFloat(a.current_balance).toFixed(2)}
+              ${fmt(a.current_balance)}
             </span>
           </Link>
         ))}
@@ -213,7 +214,7 @@ export default function AccountList() {
             <p className="text-sm text-muted-foreground">
               Net:{" "}
               <span className="font-semibold text-foreground">
-                ${(netAssets - netLiabilities).toFixed(2)}
+                ${fmt(netAssets - netLiabilities)}
               </span>
             </p>
           )}

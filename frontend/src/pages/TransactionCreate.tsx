@@ -5,6 +5,7 @@ import { fetchAccounts } from "@/api/accounts"
 import { fetchCategories } from "@/api/categories"
 import type { AccountRead, CategoryRead, TransactionType } from "@/types"
 import { Button } from "@/components/ui/button"
+import { fmt } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -159,7 +160,7 @@ export default function TransactionCreate() {
                 <SelectContent>
                   {accounts.map((a) => (
                     <SelectItem key={a.id} value={a.id}>
-                      {a.name} (${parseFloat(a.current_balance).toFixed(2)})
+                      {a.name} (${fmt(a.current_balance)})
                     </SelectItem>
                   ))}
                 </SelectContent>

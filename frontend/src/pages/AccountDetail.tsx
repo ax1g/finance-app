@@ -7,6 +7,7 @@ import {
 } from "@/api/accounts"
 import type { AccountRead, AccountType } from "@/types"
 import { Button } from "@/components/ui/button"
+import { fmt } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
@@ -265,7 +266,7 @@ export default function AccountDetail() {
                 {account.type}
               </Badge>
               <p className="text-2xl font-semibold">
-                ${parseFloat(account.current_balance).toFixed(2)}
+                ${fmt(account.current_balance)}
               </p>
             </div>
           </div>

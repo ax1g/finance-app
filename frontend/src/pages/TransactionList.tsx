@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom"
 import { fetchTransactions, type TransactionFilters } from "@/api/transactions"
 import type { TransactionRead } from "@/types"
 import { Badge } from "@/components/ui/badge"
+import { fmt } from "@/lib/utils"
 import {
   Select,
   SelectContent,
@@ -23,7 +24,7 @@ const TXN_TYPES = [
 
 function fmtAmount(txn: TransactionRead): string {
   const sign = txn.txn_type === "expense" ? "-" : "+"
-  return `${sign}$${parseFloat(txn.amount).toFixed(2)}`
+  return `${sign}$${fmt(txn.amount)}`
 }
 
 export default function TransactionList() {
