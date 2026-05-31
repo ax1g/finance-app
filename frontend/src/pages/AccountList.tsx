@@ -33,20 +33,19 @@ const ACCOUNT_COLORS: Record<string, string> = {
 }
 
 interface TypeGroup {
-  numeral: string
   type: AccountType
   label: string
 }
 
 const ASSET_GROUPS: TypeGroup[] = [
-  { numeral: "I", type: "cash", label: "Cash" },
-  { numeral: "II", type: "bank", label: "Bank" },
-  { numeral: "III", type: "investment", label: "Investments" },
-  { numeral: "IV", type: "receivables", label: "Receivables" },
+  { type: "cash", label: "Cash" },
+  { type: "bank", label: "Bank" },
+  { type: "investment", label: "Investments" },
+  { type: "receivables", label: "Receivables" },
 ]
 
 const LIABILITY_GROUPS: TypeGroup[] = [
-  { numeral: "V", type: "payables", label: "Payables" },
+  { type: "payables", label: "Payables" },
 ]
 
 function TypeSection({
@@ -125,7 +124,7 @@ function TypeGroupBlock({
           {ACCOUNT_ICONS[group.type] || ACCOUNT_ICONS.bank}
         </div>
         <span>
-          {group.numeral}. {group.label}
+            {group.label}
         </span>
         <span className="ml-auto font-mono text-xs text-muted-foreground">
           ${groupTotal.toFixed(2)}
