@@ -9,6 +9,9 @@ import TransactionDetail from "./pages/TransactionDetail"
 import AccountList from "./pages/AccountList"
 import AccountCreate from "./pages/AccountCreate"
 import AccountDetail from "./pages/AccountDetail"
+import CategoryList from "./pages/CategoryList"
+import CategoryCreate from "./pages/CategoryCreate"
+import CategoryDetail from "./pages/CategoryDetail"
 
 const App = () => {
   return (
@@ -25,6 +28,9 @@ const App = () => {
               <Route path="accounts" element={<AccountList />} />
               <Route path="accounts/new" element={<AccountCreate />} />
               <Route path="accounts/:account_id" element={<AccountDetail />} />
+              <Route path="categories" element={<CategoryList />} />
+              <Route path="categories/new" element={<CategoryCreate />} />
+              <Route path="categories/:category_id" element={<CategoryDetail />} />
             </Route>
           </Routes>
         </AuthProvider>

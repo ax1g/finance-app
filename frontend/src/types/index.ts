@@ -26,6 +26,24 @@ export interface CategoryRead {
   sort_order: number
 }
 
+export interface CategoryCreate {
+  name: string
+  type: CategoryType
+  description?: string | null
+  icon?: string | null
+  is_active?: boolean
+  sort_order?: number
+}
+
+export interface CategoryUpdate {
+  name?: string
+  type?: CategoryType
+  description?: string | null
+  icon?: string | null
+  is_active?: boolean
+  sort_order?: number
+}
+
 export type TransactionType = "income" | "expense" | "adjustment" | "transfer"
 
 export type AccountType = "cash" | "bank" | "investment" | "receivables" | "payables"

@@ -6,6 +6,7 @@ import {
   Wallet,
   LayoutList,
   Landmark,
+  Tag,
   PanelLeftClose,
   PanelLeft,
 } from "lucide-react"
@@ -65,6 +66,10 @@ export default function Sidebar() {
         <NavLink to="/accounts" end className={linkClass}>
           <Landmark className="h-5 w-5 shrink-0" />
           {!collapsed && <span>Accounts</span>}
+        </NavLink>
+        <NavLink to="/categories" end className={linkClass}>
+          <Tag className="h-5 w-5 shrink-0" />
+          {!collapsed && <span>Categories</span>}
         </NavLink>
       </div>
 
