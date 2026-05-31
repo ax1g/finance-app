@@ -1,21 +1,20 @@
 import { NavLink } from "react-router-dom"
-import { useAuth } from "@/context/AuthContext"
 import { Button } from "@/components/ui/button"
 import {
-  LogOut,
   Wallet,
   LayoutDashboard,
-  LayoutList,
+  BarChart3,
   Landmark,
   Tag,
+  History,
   Plus,
+  Settings,
   PanelLeftClose,
   PanelLeft,
 } from "lucide-react"
 import { useState } from "react"
 
 export default function Sidebar() {
-  const { logout } = useAuth()
   const [collapsed, setCollapsed] = useState(false)
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
@@ -50,7 +49,7 @@ export default function Sidebar() {
         </Button>
       </div>
 
-      <div className="px-3 py-4">
+      <div className="px-3 pb-4 pt-5">
         <NavLink
           to="/transactions/new"
           className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-primary to-primary/80 px-4 py-3 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:from-primary/90 hover:to-primary/70 hover:shadow-lg hover:brightness-110 active:scale-[0.98]"
@@ -65,9 +64,9 @@ export default function Sidebar() {
           <LayoutDashboard className="h-5 w-5 shrink-0" />
           {!collapsed && <span>Dashboard</span>}
         </NavLink>
-        <NavLink to="/transactions" end className={linkClass}>
-          <LayoutList className="h-5 w-5 shrink-0" />
-          {!collapsed && <span>Transaction History</span>}
+        <NavLink to="/reports" end className={linkClass}>
+          <BarChart3 className="h-5 w-5 shrink-0" />
+          {!collapsed && <span>Reports</span>}
         </NavLink>
         <NavLink to="/accounts" end className={linkClass}>
           <Landmark className="h-5 w-5 shrink-0" />
@@ -77,16 +76,17 @@ export default function Sidebar() {
           <Tag className="h-5 w-5 shrink-0" />
           {!collapsed && <span>Categories</span>}
         </NavLink>
+        <NavLink to="/transactions" end className={linkClass}>
+          <History className="h-5 w-5 shrink-0" />
+          {!collapsed && <span>Transaction History</span>}
+        </NavLink>
       </div>
 
       <div className="border-t border-border p-3">
-        <button
-          onClick={logout}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-destructive"
-        >
-          <LogOut className="h-5 w-5 shrink-0" />
-          {!collapsed && <span>Log out</span>}
-        </button>
+        <NavLink to="/settings" className={linkClass}>
+          <Settings className="h-5 w-5 shrink-0" />
+          {!collapsed && <span>Settings</span>}
+        </NavLink>
       </div>
     </aside>
   )

@@ -13,6 +13,8 @@ import AccountDetail from "./pages/AccountDetail"
 import CategoryList from "./pages/CategoryList"
 import CategoryCreate from "./pages/CategoryCreate"
 import CategoryDetail from "./pages/CategoryDetail"
+import Reports from "./pages/Reports"
+import Settings from "./pages/Settings"
 
 const App = () => {
   return (
@@ -32,6 +34,8 @@ const App = () => {
               <Route path="categories" element={<CategoryList />} />
               <Route path="categories/new" element={<CategoryCreate />} />
               <Route path="categories/:category_id" element={<CategoryDetail />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="settings" element={<Settings />} />
             </Route>
           </Routes>
         </AuthProvider>
