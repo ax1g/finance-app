@@ -44,7 +44,7 @@ function DonutChart({
           cy="80"
           r={r}
           fill="none"
-          stroke="oklch(0.92 0.004 286.32)"
+          className="stroke-border"
           strokeWidth="24"
         />
         <circle
@@ -52,7 +52,7 @@ function DonutChart({
           cy="80"
           r={r}
           fill="none"
-          stroke="#22c55e"
+          className="stroke-green-500"
           strokeWidth="24"
           strokeDasharray={`${incomeLen} ${circ - incomeLen}`}
           strokeDashoffset={0}
@@ -64,7 +64,7 @@ function DonutChart({
           cy="80"
           r={r}
           fill="none"
-          stroke="#ef4444"
+          className="stroke-red-500"
           strokeWidth="24"
           strokeDasharray={`${expenseLen} ${circ - expenseLen}`}
           strokeDashoffset={-incomeLen}
@@ -109,34 +109,38 @@ export default function Dashboard() {
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
 
-      <div className="rounded-xl bg-gradient-to-br from-amber-200 via-yellow-300 to-amber-400 p-6 text-amber-950 shadow-sm dark:from-amber-700 dark:via-yellow-600 dark:to-amber-500 dark:text-amber-50">
-        <p className="text-sm font-medium opacity-80">Net Worth</p>
+      <Card className="p-6">
+        <p className="text-sm font-medium text-muted-foreground">Net Worth</p>
         <p className="mt-1 text-3xl font-bold">
           {loading
             ? "..."
             : `$${(data?.netWorth ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
         </p>
-        <div className="mt-4 flex gap-8">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
+        <div className="mt-4 grid grid-cols-2 gap-4">
+          <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+              <TrendingUp className="h-4 w-4" />
+            </div>
             <div>
-              <p className="text-xs opacity-80">Assets</p>
+              <p className="text-xs text-muted-foreground">Assets</p>
               <p className="text-sm font-semibold">
                 ${(data?.totalAssets ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <TrendingDown className="h-4 w-4" />
+          <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+              <TrendingDown className="h-4 w-4" />
+            </div>
             <div>
-              <p className="text-xs opacity-80">Liabilities</p>
+              <p className="text-xs text-muted-foreground">Liabilities</p>
               <p className="text-sm font-semibold">
                 ${(data?.totalLiabilities ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
               </p>
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
