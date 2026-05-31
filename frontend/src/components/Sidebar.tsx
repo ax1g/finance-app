@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import {
   LogOut,
   Wallet,
+  LayoutDashboard,
   LayoutList,
   Landmark,
   Tag,
@@ -30,10 +31,7 @@ export default function Sidebar() {
       }`}
     >
       <div className="flex h-14 items-center border-b border-border px-3">
-        <NavLink
-          to="/transactions"
-          className="flex items-center gap-3 overflow-hidden"
-        >
+        <NavLink to="/" className="flex items-center gap-3 overflow-hidden">
           <Wallet className="h-6 w-6 shrink-0" />
           {!collapsed && <span className="font-semibold">Finance</span>}
         </NavLink>
@@ -52,6 +50,11 @@ export default function Sidebar() {
       </div>
 
       <div className="flex-1 space-y-1 p-3">
+        <NavLink to="/" end className={linkClass}>
+          <LayoutDashboard className="h-5 w-5 shrink-0" />
+          {!collapsed && <span>Dashboard</span>}
+        </NavLink>
+        <div className="my-3" />
         <p className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {!collapsed && "Transactions"}
         </p>

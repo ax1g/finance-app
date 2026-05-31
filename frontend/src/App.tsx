@@ -1,8 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
+import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { AuthProvider } from "./context/AuthContext"
 import ErrorBoundary from "./components/ErrorBoundary"
 import Layout from "./components/Layout"
 import LoginPage from "./pages/LoginPage"
+import Dashboard from "./pages/Dashboard"
 import TransactionList from "./pages/TransactionList"
 import TransactionCreate from "./pages/TransactionCreate"
 import TransactionDetail from "./pages/TransactionDetail"
@@ -21,7 +22,7 @@ const App = () => {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route element={<Layout />}>
-              <Route index element={<Navigate to="/transactions" replace />} />
+              <Route index element={<Dashboard />} />
               <Route path="transactions" element={<TransactionList />} />
               <Route path="transactions/new" element={<TransactionCreate />} />
               <Route path="transactions/:txn_id" element={<TransactionDetail />} />
