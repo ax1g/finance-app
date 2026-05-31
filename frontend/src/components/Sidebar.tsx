@@ -54,18 +54,10 @@ export default function Sidebar() {
           <LayoutDashboard className="h-5 w-5 shrink-0" />
           {!collapsed && <span>Dashboard</span>}
         </NavLink>
-        <div className="my-3" />
-        <p className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {!collapsed && "Transactions"}
-        </p>
         <NavLink to="/transactions" end className={linkClass}>
           <LayoutList className="h-5 w-5 shrink-0" />
           {!collapsed && <span>Transactions</span>}
         </NavLink>
-        <div className="my-3" />
-        <p className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {!collapsed && "Accounts"}
-        </p>
         <NavLink to="/accounts" end className={linkClass}>
           <Landmark className="h-5 w-5 shrink-0" />
           {!collapsed && <span>Accounts</span>}
