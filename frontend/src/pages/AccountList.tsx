@@ -15,6 +15,7 @@ import {
   Plus,
   ChevronDown,
   ChevronRight,
+  Square,
 } from "lucide-react"
 
 const ACCOUNT_ICONS: Record<string, React.ReactNode> = {
@@ -144,6 +145,7 @@ function TypeGroupBlock({
             to={`/accounts/${a.id}`}
             className="ml-[74px] flex items-center justify-between rounded-lg px-3 py-1.5 text-sm transition-colors hover:bg-muted/30"
           >
+            <Square className="mr-2 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             <span>{a.name}</span>
             <span className="font-mono text-sm tabular-nums text-foreground">
               ${fmt(a.current_balance)}
