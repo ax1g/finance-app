@@ -124,17 +124,15 @@ function TypeGroupBlock({
         >
           {ACCOUNT_ICONS[group.type] || ACCOUNT_ICONS.bank}
         </div>
-        <span>
-            {group.label}
-        </span>
-        <span className="ml-auto font-mono text-xs text-muted-foreground">
-          ${fmt(groupTotal)}
-        </span>
         {open ? (
           <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
         ) : (
           <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
         )}
+        <span>{group.label}</span>
+        <span className="ml-auto font-mono text-sm tabular-nums text-foreground">
+          ${fmt(groupTotal)}
+        </span>
       </button>
 
       {open &&
@@ -145,7 +143,7 @@ function TypeGroupBlock({
             className="ml-9 flex items-center justify-between rounded-lg px-3 py-1.5 text-sm transition-colors hover:bg-muted/30"
           >
             <span>{a.name}</span>
-            <span className="font-mono text-xs text-muted-foreground">
+            <span className="font-mono text-sm tabular-nums text-foreground">
               ${fmt(a.current_balance)}
             </span>
           </Link>
