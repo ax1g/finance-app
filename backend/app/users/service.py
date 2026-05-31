@@ -22,7 +22,9 @@ class UserService:
         user_dict["hashed_password"] = get_password_hash(plain_password)
         new_user = User(**user_dict)
 
-        return await self.repo.create(new_user)
+        user = await self.repo.create(new_user)
+        await self.repo.db.commit()
+        return user
 
     async def authenticate_user(self, username: str, password: str) -> User | None:
         # try by username first, then by email
@@ -50,7 +52,11 @@ class UserService:
         return await self.repo.get_by_username(username)
 
     async def update_user(self, user_id: uuid.UUID, data: UserUpdate):
-        return await self.repo.update(user_id, data.model_dump(exclude_unset=True))
+        user = await self.repo.update(user_id, data.model_dump(exclude_unset=True))
+        await self.repo.db.commit()
+        return user
 
     async def delete_user(self, user_id):
-        return await self.repo.delete(user_id)
+        user = await self.repo.delete(user_id)
+        await self.repo.db.commit()
+        return user

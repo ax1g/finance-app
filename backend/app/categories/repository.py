@@ -1,11 +1,12 @@
 import uuid
+from datetime import datetime, timezone
 
 from sqlalchemy import select, asc
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from app.categories.model import Category
-from app.core.enums import CategoryType
+from app.core.enums import CategoryType, CategoryStatus
 from app.core.exceptions import RepositoryError, ConflictError
 
 
@@ -35,11 +36,15 @@ class CategoryRepo:
             await self.db.rollback()
             raise RepositoryError(f"Database error: {str(e)}") from e
 
-    # Fetch all categories from the database, filter if optional category_type is given
+    # Fetch all active categories from the database, filter if optional category_type is given
     async def get(
         self, user_id: uuid.UUID, category_type: CategoryType | None = None
     ) -> list[Category]:
-        query = select(Category).where(Category.user_id == user_id)
+        query = (
+            select(Category)
+            .where(Category.user_id == user_id)
+            .where(Category.status == CategoryStatus.ACTIVE)
+        )
 
         if category_type:
             query = query.where(Category.type == category_type)
@@ -73,14 +78,20 @@ class CategoryRepo:
             await self.db.rollback()
             raise RepositoryError(f"Database error: {str(e)}") from e
 
-    async def delete(self, user_id: uuid.UUID, category_id: uuid.UUID):
+    async def delete(self, user_id: uuid.UUID, category_id: uuid.UUID, payload: dict):
+        """
+        Soft deletes the category, status = closed
+        """
         try:
             category = await self.get_by_id(user_id, category_id)
             if not category:
                 return None
 
-            await self.db.delete(category)
+            for key, val in payload.items():
+                setattr(category, key, val)
+
             await self.db.flush()
+            await self.db.refresh(category)
             return category
 
         except SQLAlchemyError as e:

@@ -1,10 +1,11 @@
 import uuid
+from datetime import datetime, timezone
 
 from app.categories.repository import CategoryRepo
 from app.categories.schema import CategoryCreate
 from app.categories.model import Category
 from app.categories.schema import CategoryUpdate
-from app.core.enums import CategoryType
+from app.core.enums import CategoryType, CategoryStatus
 from app.core.exceptions import ResourceNotFoundError
 
 
@@ -47,7 +48,12 @@ class CategoryService:
         return category
 
     async def delete_category(self, user_id: uuid.UUID, category_id: uuid.UUID):
-        category = await self.repo.delete(user_id, category_id)
+        delete_payload = {
+            "status": CategoryStatus.CLOSED,
+            "closed_at": datetime.now(timezone.utc),
+        }
+
+        category = await self.repo.delete(user_id, category_id, delete_payload)
         if not category:
             raise ResourceNotFoundError(f"Category {category_id} not found")
 

@@ -1,10 +1,11 @@
 import uuid
+from datetime import datetime
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Enum, ForeignKey, Boolean, Integer
+from sqlalchemy import String, Enum, ForeignKey, Boolean, Integer, DateTime
 
 from app.core.base import Base, TimestampMixin
-from app.core.enums import CategoryType
+from app.core.enums import CategoryType, CategoryStatus
 
 
 class Category(Base, TimestampMixin):
@@ -23,6 +24,12 @@ class Category(Base, TimestampMixin):
     is_active: Mapped[bool] = mapped_column(
         Boolean, default=True, index=True, nullable=False
     )
+
+    status: Mapped[CategoryStatus] = mapped_column(
+        Enum(CategoryStatus), nullable=False, default=CategoryStatus.ACTIVE
+    )
+
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
 

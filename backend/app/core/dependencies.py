@@ -27,7 +27,7 @@ SessionDep = Annotated[AsyncSession, Depends(get_db)]
 def get_service(service_class: Type, repo_class: Type):
     """A factory to create service dependencies."""
 
-    def _get_service(db: AsyncSession):
+    def _get_service(db: SessionDep):
         return service_class(repo_class(db))
 
     return _get_service
@@ -45,7 +45,7 @@ UserServiceDep = Annotated[UserService, Depends(get_service(UserService, UserRep
 
 # custom service for transactions since its quite spaghetti
 async def get_txn_service(
-    db: AsyncSession,
+    db: SessionDep,
     account_service: AccountServiceDep,
     category_service: CategoryServiceDep,
 ):
