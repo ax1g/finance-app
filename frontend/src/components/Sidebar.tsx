@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button"
 import {
   LogOut,
   Wallet,
-  ListPlus,
   LayoutList,
+  Landmark,
   PanelLeftClose,
   PanelLeft,
 } from "lucide-react"
@@ -50,16 +50,23 @@ export default function Sidebar() {
         </Button>
       </div>
 
-      <nav className="flex-1 space-y-1 p-3">
+      <div className="flex-1 space-y-1 p-3">
+        <p className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {!collapsed && "Transactions"}
+        </p>
         <NavLink to="/transactions" end className={linkClass}>
           <LayoutList className="h-5 w-5 shrink-0" />
           {!collapsed && <span>Transactions</span>}
         </NavLink>
-        <NavLink to="/transactions/new" className={linkClass}>
-          <ListPlus className="h-5 w-5 shrink-0" />
-          {!collapsed && <span>New Transaction</span>}
+        <div className="my-3" />
+        <p className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {!collapsed && "Accounts"}
+        </p>
+        <NavLink to="/accounts" end className={linkClass}>
+          <Landmark className="h-5 w-5 shrink-0" />
+          {!collapsed && <span>Accounts</span>}
         </NavLink>
-      </nav>
+      </div>
 
       <div className="border-t border-border p-3">
         <button

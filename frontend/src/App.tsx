@@ -6,6 +6,9 @@ import LoginPage from "./pages/LoginPage"
 import TransactionList from "./pages/TransactionList"
 import TransactionCreate from "./pages/TransactionCreate"
 import TransactionDetail from "./pages/TransactionDetail"
+import AccountList from "./pages/AccountList"
+import AccountCreate from "./pages/AccountCreate"
+import AccountDetail from "./pages/AccountDetail"
 
 const App = () => {
   return (
@@ -19,6 +22,9 @@ const App = () => {
               <Route path="transactions" element={<TransactionList />} />
               <Route path="transactions/new" element={<TransactionCreate />} />
               <Route path="transactions/:txn_id" element={<TransactionDetail />} />
+              <Route path="accounts" element={<AccountList />} />
+              <Route path="accounts/new" element={<AccountCreate />} />
+              <Route path="accounts/:account_id" element={<AccountDetail />} />
             </Route>
           </Routes>
         </AuthProvider>

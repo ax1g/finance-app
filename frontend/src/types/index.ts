@@ -5,6 +5,17 @@ export interface AccountRead {
   current_balance: string
 }
 
+export interface AccountCreate {
+  name: string
+  type: AccountType
+  opening_balance: string
+}
+
+export interface AccountUpdate {
+  name?: string
+  type?: AccountType
+}
+
 export interface CategoryRead {
   id: string
   name: string

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
-import { Link, useSearchParams } from "react-router-dom"
+import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { fetchTransactions, type TransactionFilters } from "@/api/transactions"
 import type { TransactionRead } from "@/types"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Select,
   SelectContent,
@@ -11,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowUpRight, ArrowDownRight, Loader2 } from "lucide-react"
+import { ArrowUpRight, ArrowDownRight, Loader2, Plus } from "lucide-react"
 
 const TXN_TYPES = [
   { value: "all", label: "All Types" },
@@ -27,6 +28,7 @@ function fmtAmount(txn: TransactionRead): string {
 }
 
 export default function TransactionList() {
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [transactions, setTransactions] = useState<TransactionRead[]>([])
   const [loading, setLoading] = useState(true)
@@ -60,26 +62,32 @@ export default function TransactionList() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle>Transactions</CardTitle>
-        <Select
-          value={txnType}
+        <div className="flex items-center gap-3">
+          <Select
+            value={txnType}
             onValueChange={(value) => {
               const next = new URLSearchParams(searchParams)
               if (value && value !== "all") next.set("txn_type", value)
               else next.delete("txn_type")
               setSearchParams(next)
             }}
-        >
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="All Types" />
-          </SelectTrigger>
-          <SelectContent>
-            {TXN_TYPES.map((t) => (
-              <SelectItem key={t.value} value={t.value}>
-                {t.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          >
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              {TXN_TYPES.map((t) => (
+                <SelectItem key={t.value} value={t.value}>
+                  {t.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button variant="outline" size="sm" onClick={() => navigate("/transactions/new")}>
+            <Plus className="mr-1 h-4 w-4" />
+            New
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         {loading && (
