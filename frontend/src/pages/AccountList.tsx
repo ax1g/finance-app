@@ -1,11 +1,20 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { fetchAccounts } from "@/api/accounts"
-import type { AccountRead } from "@/types"
-import { Badge } from "@/components/ui/badge"
+import type { AccountRead, AccountType } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Landmark, Building2, PiggyBank, Handshake, Banknote, Loader2, Plus } from "lucide-react"
+import {
+  Landmark,
+  Building2,
+  PiggyBank,
+  Handshake,
+  Banknote,
+  Loader2,
+  Plus,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react"
 
 const ACCOUNT_ICONS: Record<string, React.ReactNode> = {
   cash: <Banknote className="h-5 w-5" />,
@@ -23,11 +32,141 @@ const ACCOUNT_COLORS: Record<string, string> = {
   payables: "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400",
 }
 
+interface TypeGroup {
+  numeral: string
+  type: AccountType
+  label: string
+}
+
+const ASSET_GROUPS: TypeGroup[] = [
+  { numeral: "I", type: "cash", label: "Cash" },
+  { numeral: "II", type: "bank", label: "Bank" },
+  { numeral: "III", type: "investment", label: "Investments" },
+  { numeral: "IV", type: "receivables", label: "Receivables" },
+]
+
+const LIABILITY_GROUPS: TypeGroup[] = [
+  { numeral: "V", type: "payables", label: "Payables" },
+]
+
+function TypeSection({
+  title,
+  groups,
+  accounts,
+  collapsed,
+  onToggle,
+}: {
+  title: string
+  groups: TypeGroup[]
+  accounts: AccountRead[]
+  collapsed: boolean
+  onToggle: () => void
+}) {
+  const sectionTotal = groups.reduce(
+    (sum, g) =>
+      sum +
+      accounts
+        .filter((a) => a.type === g.type)
+        .reduce((s, a) => s + parseFloat(a.current_balance), 0),
+    0,
+  )
+
+  return (
+    <div className="space-y-1">
+      <button
+        onClick={onToggle}
+        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:bg-muted/50"
+      >
+        {collapsed ? (
+          <ChevronRight className="h-4 w-4" />
+        ) : (
+          <ChevronDown className="h-4 w-4" />
+        )}
+        {title}
+        <span className="ml-auto font-mono text-xs font-normal normal-case">
+          ${sectionTotal.toFixed(2)}
+        </span>
+      </button>
+
+      {!collapsed &&
+        groups.map((g) => (
+          <TypeGroupBlock
+            key={g.type}
+            group={g}
+            accounts={accounts.filter((a) => a.type === g.type)}
+          />
+        ))}
+    </div>
+  )
+}
+
+function TypeGroupBlock({
+  group,
+  accounts,
+}: {
+  group: TypeGroup
+  accounts: AccountRead[]
+}) {
+  const [open, setOpen] = useState(true)
+  const groupTotal = accounts.reduce(
+    (s, a) => s + parseFloat(a.current_balance),
+    0,
+  )
+
+  return (
+    <div className="ml-2 space-y-0.5">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted/50"
+      >
+        <div
+          className={`flex h-6 w-6 items-center justify-center rounded-full ${ACCOUNT_COLORS[group.type] || ACCOUNT_COLORS.bank}`}
+        >
+          {ACCOUNT_ICONS[group.type] || ACCOUNT_ICONS.bank}
+        </div>
+        <span>
+          {group.numeral}. {group.label}
+        </span>
+        <span className="ml-auto font-mono text-xs text-muted-foreground">
+          ${groupTotal.toFixed(2)}
+        </span>
+        {open ? (
+          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+        ) : (
+          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+        )}
+      </button>
+
+      {open &&
+        accounts.map((a) => (
+          <Link
+            key={a.id}
+            to={`/accounts/${a.id}`}
+            className="ml-9 flex items-center justify-between rounded-lg px-3 py-1.5 text-sm transition-colors hover:bg-muted/30"
+          >
+            <span>{a.name}</span>
+            <span className="font-mono text-xs text-muted-foreground">
+              ${parseFloat(a.current_balance).toFixed(2)}
+            </span>
+          </Link>
+        ))}
+
+      {open && accounts.length === 0 && (
+        <p className="ml-9 py-1.5 text-xs text-muted-foreground">
+          No {group.label.toLowerCase()} accounts yet.
+        </p>
+      )}
+    </div>
+  )
+}
+
 export default function AccountList() {
   const navigate = useNavigate()
   const [accounts, setAccounts] = useState<AccountRead[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [assetsOpen, setAssetsOpen] = useState(true)
+  const [liabilitiesOpen, setLiabilitiesOpen] = useState(true)
 
   useEffect(() => {
     let cancelled = false
@@ -48,8 +187,21 @@ export default function AccountList() {
     }
   }, [])
 
-  const totalBalance = accounts.reduce(
-    (sum, a) => sum + parseFloat(a.current_balance),
+  const netAssets = ASSET_GROUPS.reduce(
+    (sum, g) =>
+      sum +
+      accounts
+        .filter((a) => a.type === g.type)
+        .reduce((s, a) => s + parseFloat(a.current_balance), 0),
+    0,
+  )
+
+  const netLiabilities = LIABILITY_GROUPS.reduce(
+    (sum, g) =>
+      sum +
+      accounts
+        .filter((a) => a.type === g.type)
+        .reduce((s, a) => s + parseFloat(a.current_balance), 0),
     0,
   )
 
@@ -60,13 +212,17 @@ export default function AccountList() {
         <div className="flex items-center gap-3">
           {!loading && !error && (
             <p className="text-sm text-muted-foreground">
-              Total:{" "}
+              Net:{" "}
               <span className="font-semibold text-foreground">
-                ${totalBalance.toFixed(2)}
+                ${(netAssets - netLiabilities).toFixed(2)}
               </span>
             </p>
           )}
-          <Button variant="outline" size="sm" onClick={() => navigate("/accounts/new")}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/accounts/new")}
+          >
             <Plus className="mr-1 h-4 w-4" />
             New
           </Button>
@@ -94,31 +250,21 @@ export default function AccountList() {
           </p>
         )}
         {!loading && !error && accounts.length > 0 && (
-          <div className="space-y-2">
-            {accounts.map((a) => (
-              <Link
-                key={a.id}
-                to={`/accounts/${a.id}`}
-                className="flex items-center justify-between rounded-lg border border-border px-4 py-3 transition-colors hover:bg-muted/50"
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-full ${ACCOUNT_COLORS[a.type] || ACCOUNT_COLORS.bank}`}
-                  >
-                    {ACCOUNT_ICONS[a.type] || ACCOUNT_ICONS.bank}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium leading-none">{a.name}</p>
-                    <p className="mt-1 text-xs capitalize text-muted-foreground">
-                      {a.type}
-                    </p>
-                  </div>
-                </div>
-                <Badge variant="secondary" className="font-mono text-sm">
-                  ${parseFloat(a.current_balance).toFixed(2)}
-                </Badge>
-              </Link>
-            ))}
+          <div className="space-y-4">
+            <TypeSection
+              title="ASSETS"
+              groups={ASSET_GROUPS}
+              accounts={accounts}
+              collapsed={!assetsOpen}
+              onToggle={() => setAssetsOpen((v) => !v)}
+            />
+            <TypeSection
+              title="LIABILITIES"
+              groups={LIABILITY_GROUPS}
+              accounts={accounts}
+              collapsed={!liabilitiesOpen}
+              onToggle={() => setLiabilitiesOpen((v) => !v)}
+            />
           </div>
         )}
       </CardContent>
