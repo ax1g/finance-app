@@ -24,7 +24,7 @@ const TXN_TYPES = [
 
 function fmtAmount(txn: TransactionRead): string {
   const sign = txn.txn_type === "expense" ? "-" : "+"
-  return `${sign}$${fmt(txn.amount)}`
+  return `${sign}${fmt(txn.amount)}`
 }
 
 export default function TransactionList() {

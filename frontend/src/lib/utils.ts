@@ -5,9 +5,19 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function fmt(n: number | string): string {
+export function fmt(n: number | string, currency?: string): string {
   const v = typeof n === "string" ? parseFloat(n) : n
-  return v.toLocaleString("en-US", { minimumFractionDigits: 2 })
+  const cur = currency || localStorage.getItem("currency") || "USD"
+  const formatted = new Intl.NumberFormat("en-US", { style: "currency", currency: cur }).format(v)
+  const customSymbol = localStorage.getItem("currency_custom_symbol")
+  if (customSymbol) {
+    const parts = new Intl.NumberFormat("en-US", { style: "currency", currency: cur }).formatToParts(v)
+    const stdSymbol = parts.find((p) => p.type === "currency")?.value
+    if (stdSymbol) {
+      return formatted.replace(stdSymbol, customSymbol)
+    }
+  }
+  return formatted
 }
 
 export function formatDate(iso: string): string {

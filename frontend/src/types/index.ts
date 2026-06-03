@@ -118,6 +118,15 @@ export interface UserRead {
   id: string
   username: string
   email: string
+  currency: string
+  currency_custom_symbol: string | null
+}
+
+export interface UserUpdate {
+  username?: string
+  email?: string
+  currency?: string
+  currency_custom_symbol?: string | null
 }
 
 export interface RecentTransaction {

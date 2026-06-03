@@ -160,7 +160,7 @@ export default function TransactionCreate() {
                 <SelectContent>
                   {accounts.map((a) => (
                     <SelectItem key={a.id} value={a.id}>
-                      {a.name} (${fmt(a.current_balance)})
+                      {a.name} ({fmt(a.current_balance)})
                     </SelectItem>
                   ))}
                 </SelectContent>

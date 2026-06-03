@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
 import { useAuth } from "@/context/AuthContext"
 import { useTheme } from "@/context/ThemeContext"
-import { fetchCurrentUser, changePassword } from "@/api/auth"
+import { fetchCurrentUser, changePassword, updateUser } from "@/api/auth"
 import type { UserRead } from "@/types"
+import { fmt } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,6 +15,13 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   User,
   Lock,
@@ -29,7 +37,24 @@ import {
   ArrowDownRight,
   Eye,
   EyeOff,
+  Globe,
 } from "lucide-react"
+
+const CURRENCIES = [
+  { code: "USD", label: "US Dollar", symbol: "$" },
+  { code: "PHP", label: "Philippine Peso", symbol: "₱" },
+  { code: "EUR", label: "Euro", symbol: "€" },
+  { code: "GBP", label: "British Pound", symbol: "£" },
+  { code: "JPY", label: "Japanese Yen", symbol: "¥" },
+  { code: "CAD", label: "Canadian Dollar", symbol: "CA$" },
+  { code: "AUD", label: "Australian Dollar", symbol: "A$" },
+  { code: "SGD", label: "Singapore Dollar", symbol: "S$" },
+  { code: "INR", label: "Indian Rupee", symbol: "₹" },
+  { code: "BRL", label: "Brazilian Real", symbol: "R$" },
+  { code: "KRW", label: "South Korean Won", symbol: "₩" },
+  { code: "MXN", label: "Mexican Peso", symbol: "MX$" },
+  { code: "NPR", label: "Nepali Rupee", symbol: "Rs." },
+]
 
 const THEME_OPTIONS = [
   { value: "light" as const, label: "Light", icon: Sun },
@@ -47,10 +72,18 @@ export default function Settings() {
   const [pwError, setPwError] = useState("")
   const [pwSuccess, setPwSuccess] = useState("")
   const [pwSubmitting, setPwSubmitting] = useState(false)
+  const [selectedCurrency, setSelectedCurrency] = useState("USD")
+  const [customSymbol, setCustomSymbol] = useState("")
+  const [currencySaving, setCurrencySaving] = useState(false)
+  const [currencyMsg, setCurrencyMsg] = useState("")
 
   useEffect(() => {
     fetchCurrentUser()
-      .then(setUser)
+      .then((u) => {
+        setUser(u)
+        setSelectedCurrency(u.currency)
+        setCustomSymbol(u.currency_custom_symbol ?? "")
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
@@ -302,17 +335,84 @@ export default function Settings() {
             </div>
             <span className="text-xs text-muted-foreground">Soon</span>
           </div>
-          <div className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
-            <div className="flex items-center gap-3">
-              <Settings2 className="h-4 w-4 text-muted-foreground" />
+          <div className="rounded-lg border border-border p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <Globe className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium">Currency & Locale</p>
+                <p className="text-sm font-medium">Currency</p>
                 <p className="text-xs text-muted-foreground">
-                  Set your preferred currency and date format
+                  Set your preferred currency
                 </p>
               </div>
             </div>
-            <span className="text-xs text-muted-foreground">Soon</span>
+            <div className="flex items-center gap-2">
+              <Select
+                value={selectedCurrency}
+                onValueChange={setSelectedCurrency}
+              >
+                <SelectTrigger className="flex-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CURRENCIES.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>
+                      {c.symbol} — {c.label} ({c.code})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                size="sm"
+                  disabled={currencySaving}
+                  onClick={async () => {
+                    setCurrencySaving(true)
+                    setCurrencyMsg("")
+                    try {
+                      const payload: { currency: string; currency_custom_symbol?: string | null } = { currency: selectedCurrency }
+                      const trimmedSymbol = customSymbol.trim()
+                      if (trimmedSymbol) {
+                        payload.currency_custom_symbol = trimmedSymbol
+                      } else {
+                        payload.currency_custom_symbol = null
+                      }
+                      const updated = await updateUser(payload)
+                      setUser(updated)
+                      localStorage.setItem("currency", updated.currency)
+                      if (updated.currency_custom_symbol) {
+                        localStorage.setItem("currency_custom_symbol", updated.currency_custom_symbol)
+                      } else {
+                        localStorage.removeItem("currency_custom_symbol")
+                      }
+                      setCurrencyMsg("Currency updated")
+                    } catch (err) {
+                      setCurrencyMsg(err instanceof Error ? err.message : "Failed to save")
+                    } finally {
+                      setCurrencySaving(false)
+                    }
+                  }}
+              >
+                {currencySaving ? "Saving..." : "Save"}
+              </Button>
+            </div>
+            <div className="mt-3 flex items-center gap-2">
+              <Input
+                placeholder="Custom symbol (optional)"
+                value={customSymbol}
+                onChange={(e) => setCustomSymbol(e.target.value)}
+                className="h-8 text-sm font-mono flex-1"
+                maxLength={10}
+              />
+              {customSymbol && (
+                <span className="text-xs text-muted-foreground shrink-0">
+                  Preview: {fmt(1234.56, selectedCurrency)}
+                </span>
+              )}
+            </div>
+            {currencyMsg && (
+              <p className={`mt-2 text-xs ${currencyMsg === "Currency updated" ? "text-green-600 dark:text-green-400" : "text-destructive"}`}>
+                {currencyMsg}
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>

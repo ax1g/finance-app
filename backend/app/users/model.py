@@ -30,6 +30,10 @@ class User(Base, TimestampMixin):
 
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
+    currency: Mapped[str] = mapped_column(String(3), default="USD", nullable=False)
+
+    currency_custom_symbol: Mapped[str | None] = mapped_column(String(10), nullable=True, default=None)
+
     # ---------------------------
     # RELATIONSHIPS
     # ---------------------------

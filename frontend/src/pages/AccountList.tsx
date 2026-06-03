@@ -88,7 +88,7 @@ function TypeSection({
         )}
         {title}
         <span className="ml-auto font-number text-xs font-normal normal-case">
-          ${fmt(sectionTotal)}
+          {fmt(sectionTotal)}
         </span>
       </button>
 
@@ -135,7 +135,7 @@ function TypeGroupBlock({
         )}
         <span>{group.label}</span>
         <span className="ml-auto font-number text-sm tabular-nums text-foreground">
-          ${fmt(groupTotal)}
+          {fmt(groupTotal)}
         </span>
       </button>
 
@@ -148,7 +148,7 @@ function TypeGroupBlock({
           >
             <span>{a.name}</span>
             <span className="font-number text-sm tabular-nums text-foreground">
-              ${fmt(a.current_balance)}
+              {fmt(a.current_balance)}
             </span>
           </Link>
         ))}
@@ -232,7 +232,7 @@ export default function AccountList() {
                   : "text-[var(--color-expense)]"
               }`}
             >
-              ${fmt(netAssets - netLiabilities)}
+              {fmt(netAssets - netLiabilities)}
             </span>
           </p>
         )}

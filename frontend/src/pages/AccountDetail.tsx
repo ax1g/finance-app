@@ -266,7 +266,7 @@ export default function AccountDetail() {
                 {account.type}
               </Badge>
               <p className="text-2xl font-semibold font-number">
-                ${fmt(account.current_balance)}
+                {fmt(account.current_balance)}
               </p>
             </div>
           </div>

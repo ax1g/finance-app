@@ -23,6 +23,8 @@ class UserRead(UserBase):
     is_verified: bool
     is_active: bool
     is_superuser: bool
+    currency: str
+    currency_custom_symbol: str | None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -32,6 +34,10 @@ class UserUpdate(BaseModel):
     username: str | None = None
 
     email: EmailStr | None = None
+
+    currency: str | None = None
+
+    currency_custom_symbol: str | None = None
 
 
 class Token(BaseModel):

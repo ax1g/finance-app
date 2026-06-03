@@ -115,7 +115,7 @@ export default function Dashboard() {
         <Card className="p-4">
           <p className="text-sm font-medium text-muted-foreground">Net Worth</p>
           <p className="mt-1 text-2xl font-bold font-number">
-            {loading ? "..." : `$${fmt(data?.total_balance ?? "0")}`}
+            {loading ? "..." : `${fmt(data?.total_balance ?? "0")}`}
           </p>
         </Card>
         <Card className="p-4">
@@ -123,7 +123,7 @@ export default function Dashboard() {
             <TrendingUp className="h-4 w-4" /> Income
           </div>
           <p className="mt-1 text-2xl font-bold font-number text-[var(--color-income)]">
-            {loading ? "..." : `$${fmt(data?.current_month_income ?? "0")}`}
+            {loading ? "..." : `${fmt(data?.current_month_income ?? "0")}`}
           </p>
         </Card>
         <Card className="p-4">
@@ -131,7 +131,7 @@ export default function Dashboard() {
             <TrendingDown className="h-4 w-4" /> Expenses
           </div>
           <p className="mt-1 text-2xl font-bold font-number text-[var(--color-expense)]">
-            {loading ? "..." : `$${fmt(data?.current_month_expenses ?? "0")}`}
+            {loading ? "..." : `${fmt(data?.current_month_expenses ?? "0")}`}
           </p>
         </Card>
         <Card className="p-4">
@@ -139,7 +139,7 @@ export default function Dashboard() {
             <Wallet className="h-4 w-4" /> Net
           </div>
           <p className={`mt-1 text-2xl font-bold font-number ${netNum >= 0 ? "text-[var(--color-income)]" : "text-[var(--color-expense)]"}`}>
-            {loading ? "..." : `${netNum >= 0 ? "+" : "-"}$${fmt(Math.abs(netNum))}`}
+            {loading ? "..." : `${netNum >= 0 ? "+" : "-"}${fmt(Math.abs(netNum))}`}
           </p>
         </Card>
       </div>
@@ -166,14 +166,14 @@ export default function Dashboard() {
                     <div className="h-3 w-3 rounded-full bg-[var(--color-income)]" />
                     <div>
                       <p className="text-xs text-muted-foreground">Income</p>
-                      <p className="font-semibold font-number">${fmt(data?.current_month_income ?? "0")}</p>
+                      <p className="font-semibold font-number">{fmt(data?.current_month_income ?? "0")}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="h-3 w-3 rounded-full bg-[var(--color-expense)]" />
                     <div>
                       <p className="text-xs text-muted-foreground">Expenses</p>
-                      <p className="font-semibold font-number">${fmt(data?.current_month_expenses ?? "0")}</p>
+                      <p className="font-semibold font-number">{fmt(data?.current_month_expenses ?? "0")}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 pt-1">
@@ -181,7 +181,7 @@ export default function Dashboard() {
                     <div>
                       <p className="text-xs text-muted-foreground">Net</p>
                       <p className={`font-semibold font-number ${netNum >= 0 ? "text-[var(--color-income)]" : "text-[var(--color-expense)]"}`}>
-                        {netNum >= 0 ? "+" : "-"}${fmt(Math.abs(netNum))}
+                        {netNum >= 0 ? "+" : "-"}{fmt(Math.abs(netNum))}
                       </p>
                     </div>
                   </div>
@@ -216,7 +216,7 @@ export default function Dashboard() {
                           <span className="font-medium">{cat.category_name}</span>
                           <Badge variant="outline" className="text-xs">{cat.transaction_count}</Badge>
                         </div>
-                        <span className="font-number font-medium">${fmt(cat.total)}</span>
+                        <span className="font-number font-medium">{fmt(cat.total)}</span>
                       </div>
                       <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                         <div
@@ -282,7 +282,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <p className={`ml-4 font-number font-semibold shrink-0 ${txn.txn_type === "income" ? "text-[var(--color-income)]" : "text-[var(--color-expense)]"}`}>
-                    {txn.txn_type === "income" ? "+" : "-"}${fmt(txn.amount)}
+                    {txn.txn_type === "income" ? "+" : "-"}{fmt(txn.amount)}
                   </p>
                 </Link>
               ))}

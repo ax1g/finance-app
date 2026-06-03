@@ -3,7 +3,7 @@ import uuid
 from fastapi.routing import APIRouter
 from fastapi import status
 
-from app.users.schema import UserRead, ChangePasswordRequest
+from app.users.schema import UserRead, UserUpdate, ChangePasswordRequest
 
 from app.core.dependencies import UserServiceDep, CurrentUserDep
 
@@ -33,3 +33,12 @@ async def change_password(
     data: ChangePasswordRequest,
 ):
     await service.change_password(current_user.id, data.current_password, data.new_password)
+
+
+@router.patch("/me", response_model=UserRead)
+async def update_user_me(
+    service: UserServiceDep,
+    current_user: CurrentUserDep,
+    data: UserUpdate,
+):
+    return await service.update_user(current_user.id, data)
