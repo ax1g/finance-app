@@ -1,73 +1,125 @@
-# React + TypeScript + Vite
+# FastAPI Finance App — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React SPA for personal finance tracking. Built with React 19, TypeScript 6, Vite 8, and Tailwind CSS v4.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Feature | Description |
+|---------|-------------|
+| **Dashboard** | Overview of financial health with key metrics |
+| **Transaction Management** | Create, view, edit, and delete transactions |
+| **Account Management** | Manage financial accounts (checking, savings, credit, etc.) |
+| **Category Management** | Organize transactions by customizable categories |
+| **Reports** | Aggregated financial summaries and visualizations |
+| **Calendar View** | Chronological transaction browsing |
+| **Authentication** | Login/signup with JWT-based session management |
+| **Dark/Light Mode** | Full theme support with persistent preference |
+| **Responsive Design** | Mobile-friendly layout with sidebar navigation |
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Technology | Purpose |
+|------------|---------|
+| React 19 | UI framework |
+| TypeScript 6 | Type safety |
+| Vite 8 | Build tool & dev server |
+| Tailwind CSS v4 | Utility-first styling |
+| shadcn/ui | Accessible component primitives |
+| React Router v7 | Client-side routing |
+| Lucide React | Icon library |
+| Radix UI | Headless UI primitives |
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Node.js 20+
+- Backend API running at `http://127.0.0.1:8000`
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Setup
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd frontend
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+Opens at `http://localhost:5173`. The Vite dev server proxies `/api/v1` requests to the backend at `http://127.0.0.1:8000`.
+
+### Build
+
+```bash
+npm run build
+```
+
+Produces an optimized build in `dist/`.
+
+### Preview
+
+```bash
+npm run preview
+```
+
+Serve the production build locally.
+
+### Lint
+
+```bash
+npm run lint
+```
+
+## Available Scripts
+
+| Script | Command | Description |
+|--------|---------|-------------|
+| `dev` | `vite` | Start development server with HMR |
+| `build` | `tsc -b && vite build` | Type-check and production build |
+| `preview` | `vite preview` | Preview production build locally |
+| `lint` | `eslint .` | Lint source files |
+
+## Project Structure
+
+```
+frontend/
+├── src/
+│   ├── api/              # API client modules (accounts, auth, categories, etc.)
+│   ├── components/       # Shared UI components
+│   │   └── ui/           # shadcn/ui primitives (button, card, input, etc.)
+│   ├── context/          # React context providers (Auth, Modal, Theme)
+│   ├── lib/              # Utility functions
+│   ├── pages/            # Route page components
+│   └── types/            # TypeScript type definitions
+├── public/               # Static assets
+├── index.html            # HTML entry point
+├── vite.config.ts        # Vite configuration
+├── tsconfig.json         # TypeScript configuration
+└── package.json          # Dependencies
+```
+
+## Routes
+
+| Path | Page | Access |
+|------|------|--------|
+| `/login` | Login | Public |
+| `/` | Dashboard | Protected |
+| `/transactions` | Transaction List | Protected |
+| `/transactions/new` | Create Transaction | Protected |
+| `/transactions/:txn_id` | Transaction Detail | Protected |
+| `/accounts` | Account List | Protected |
+| `/accounts/new` | Create Account | Protected |
+| `/accounts/:account_id` | Account Detail | Protected |
+| `/categories` | Category List | Protected |
+| `/categories/new` | Create Category | Protected |
+| `/categories/:category_id` | Category Detail | Protected |
+| `/reports` | Reports | Protected |
+| `/calendar` | Calendar View | Protected |
+| `/settings` | Settings | Protected |
+
+## Configuration
+
+The development server proxies `/api/v1/*` requests to `http://127.0.0.1:8000` (configured in `vite.config.ts`). Update this target to point to your backend's address in production.
