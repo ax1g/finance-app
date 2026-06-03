@@ -3,6 +3,8 @@ import uuid
 from app.users.repository import UserRepo
 from app.users.schema import UserCreate, UserUpdate
 from app.users.model import User
+from app.categories.model import Category
+from app.categories.defaults import DEFAULT_CATEGORIES
 from app.core.security import get_password_hash, verify_password
 from app.core.exceptions import AuthorizationError, ResourceNotFoundError
 
@@ -23,6 +25,19 @@ class UserService:
         new_user = User(**user_dict)
 
         user = await self.repo.create(new_user)
+
+        # seed default categories for the new user
+        for cat in DEFAULT_CATEGORIES:
+            category = Category(
+                name=cat["name"],
+                type=cat["type"],
+                icon=cat.get("icon"),
+                description=cat.get("description"),
+                sort_order=cat.get("sort_order", 0),
+                user_id=user.id,
+            )
+            self.repo.db.add(category)
+
         await self.repo.db.commit()
         return user
 
