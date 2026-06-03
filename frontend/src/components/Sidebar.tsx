@@ -56,7 +56,7 @@ export default function Sidebar() {
         <LogoIcon size={24} />
         <NavLabel collapsed={collapsed}>
           <span className="ml-4 font-display font-bold text-sm tracking-wide text-foreground whitespace-nowrap">
-            Maester of Coins
+            Neco
           </span>
         </NavLabel>
       </button>

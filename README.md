@@ -1,6 +1,6 @@
-# FastAPI Finance App
+# Neco
 
-A full-stack personal finance tracking application. Manage transactions, accounts, categories, and generate financial reports.
+A minimalist personal finance app to manage your Neo Coins.
 
 ## Tech Stack
 

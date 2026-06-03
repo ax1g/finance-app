@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useAuth } from "@/context/AuthContext"
 import { useTheme } from "@/context/ThemeContext"
-import { fetchCurrentUser } from "@/api/auth"
+import { fetchCurrentUser, changePassword } from "@/api/auth"
 import type { UserRead } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,6 +16,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import {
   User,
+  Lock,
   Settings2,
   LogOut,
   Bell,
@@ -26,6 +27,8 @@ import {
   Monitor,
   ArrowUpRight,
   ArrowDownRight,
+  Eye,
+  EyeOff,
 } from "lucide-react"
 
 const THEME_OPTIONS = [
@@ -39,6 +42,11 @@ export default function Settings() {
   const { mode, colors, setMode, setColors } = useTheme()
   const [user, setUser] = useState<UserRead | null>(null)
   const [loading, setLoading] = useState(true)
+  const [pwForm, setPwForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" })
+  const [showPw, setShowPw] = useState({ current: false, new: false, confirm: false })
+  const [pwError, setPwError] = useState("")
+  const [pwSuccess, setPwSuccess] = useState("")
+  const [pwSubmitting, setPwSubmitting] = useState(false)
 
   useEffect(() => {
     fetchCurrentUser()
@@ -72,6 +80,116 @@ export default function Settings() {
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : user?.email ?? "—"}
             </span>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Lock className="h-5 w-5" />
+            Change Password
+          </CardTitle>
+          <CardDescription>Update your account password</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault()
+              setPwError("")
+              setPwSuccess("")
+              if (pwForm.newPassword !== pwForm.confirmPassword) {
+                setPwError("New passwords do not match")
+                return
+              }
+              if (pwForm.newPassword.length < 6) {
+                setPwError("New password must be at least 6 characters")
+                return
+              }
+              setPwSubmitting(true)
+              try {
+                await changePassword({
+                  current_password: pwForm.currentPassword,
+                  new_password: pwForm.newPassword,
+                })
+                setPwSuccess("Password updated successfully")
+                setPwForm({ currentPassword: "", newPassword: "", confirmPassword: "" })
+              } catch (err) {
+                setPwError(err instanceof Error ? err.message : "Something went wrong")
+              } finally {
+                setPwSubmitting(false)
+              }
+            }}
+            className="space-y-4"
+          >
+            <div className="space-y-2">
+              <Label htmlFor="currentPassword">Current Password</Label>
+              <div className="relative">
+                <Input
+                  id="currentPassword"
+                  type={showPw.current ? "text" : "password"}
+                  value={pwForm.currentPassword}
+                  onChange={(e) => setPwForm({ ...pwForm, currentPassword: e.target.value })}
+                  required
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw({ ...showPw, current: !showPw.current })}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  tabIndex={-1}
+                >
+                  {showPw.current ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">New Password</Label>
+              <div className="relative">
+                <Input
+                  id="newPassword"
+                  type={showPw.new ? "text" : "password"}
+                  value={pwForm.newPassword}
+                  onChange={(e) => setPwForm({ ...pwForm, newPassword: e.target.value })}
+                  required
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw({ ...showPw, new: !showPw.new })}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  tabIndex={-1}
+                >
+                  {showPw.new ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showPw.confirm ? "text" : "password"}
+                  value={pwForm.confirmPassword}
+                  onChange={(e) => setPwForm({ ...pwForm, confirmPassword: e.target.value })}
+                  required
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw({ ...showPw, confirm: !showPw.confirm })}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  tabIndex={-1}
+                >
+                  {showPw.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+            {pwError && <p className="text-sm text-destructive">{pwError}</p>}
+            {pwSuccess && <p className="text-sm text-green-600 dark:text-green-400">{pwSuccess}</p>}
+            <Button type="submit" disabled={pwSubmitting}>
+              {pwSubmitting ? "Updating..." : "Update Password"}
+            </Button>
+          </form>
         </CardContent>
       </Card>
 

@@ -89,6 +89,20 @@ export interface AuthTokens {
   token_type: string
 }
 
+export interface ChangePasswordRequest {
+  current_password: string
+  new_password: string
+}
+
+export interface ForgotPasswordResponse {
+  reset_token: string
+}
+
+export interface ResetPasswordRequest {
+  token: string
+  new_password: string
+}
+
 export interface LoginRequest {
   username: string
   password: string

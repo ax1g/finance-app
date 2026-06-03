@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from app.core.security import create_access_token
 from app.core.exceptions import AuthenticationError
-from app.users.schema import Token, UserRead, UserCreate
+from app.users.schema import Token, UserRead, UserCreate, ForgotPasswordRequest, ResetPasswordRequest
 
 from app.core.dependencies import UserServiceDep
 
@@ -29,3 +29,14 @@ async def login(
 @router.post("/signup", response_model=UserRead, status_code=201)
 async def create_user(service: UserServiceDep, new_user: UserCreate):
     return await service.create_user(new_user)
+
+
+@router.post("/forgot-password")
+async def forgot_password(service: UserServiceDep, data: ForgotPasswordRequest):
+    token = await service.forgot_password(data.email)
+    return {"reset_token": token}
+
+
+@router.post("/reset-password", status_code=204)
+async def reset_password(service: UserServiceDep, data: ResetPasswordRequest):
+    await service.reset_password(data.token, data.new_password)

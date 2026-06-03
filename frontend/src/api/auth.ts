@@ -1,4 +1,4 @@
-import type { AuthTokens, LoginRequest, SignupRequest, UserRead } from "../types"
+import type { AuthTokens, ChangePasswordRequest, ForgotPasswordResponse, LoginRequest, ResetPasswordRequest, SignupRequest, UserRead } from "../types"
 import { apiFetch, setTokens } from "./client"
 
 export async function login(data: LoginRequest): Promise<AuthTokens> {
@@ -25,4 +25,25 @@ export async function signup(data: SignupRequest): Promise<UserRead> {
 
 export async function fetchCurrentUser(): Promise<UserRead> {
   return apiFetch<UserRead>("/user/me")
+}
+
+export async function changePassword(data: ChangePasswordRequest): Promise<void> {
+  return apiFetch<void>("/user/change-password", {
+    method: "POST",
+    body: JSON.stringify(data),
+  })
+}
+
+export async function forgotPassword(email: string): Promise<ForgotPasswordResponse> {
+  return apiFetch<ForgotPasswordResponse>("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  })
+}
+
+export async function resetPassword(data: ResetPasswordRequest): Promise<void> {
+  return apiFetch<void>("/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify(data),
+  })
 }

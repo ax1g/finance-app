@@ -1,12 +1,13 @@
 import uuid
+from datetime import timedelta
 
 from app.users.repository import UserRepo
 from app.users.schema import UserCreate, UserUpdate
 from app.users.model import User
 from app.categories.model import Category
 from app.categories.defaults import DEFAULT_CATEGORIES
-from app.core.security import get_password_hash, verify_password
-from app.core.exceptions import AuthorizationError, ResourceNotFoundError
+from app.core.security import get_password_hash, verify_password, create_access_token, decode_access_token
+from app.core.exceptions import AuthenticationError, AuthorizationError, ResourceNotFoundError
 
 
 class UserService:
@@ -70,6 +71,36 @@ class UserService:
         user = await self.repo.update(user_id, data.model_dump(exclude_unset=True))
         await self.repo.db.commit()
         return user
+
+    async def change_password(self, user_id: uuid.UUID, current_password: str, new_password: str):
+        user = await self.repo.get_by_id(user_id)
+        if not verify_password(current_password, user.hashed_password):
+            raise AuthenticationError("Current password is incorrect.")
+        hashed = get_password_hash(new_password)
+        await self.repo.update(user_id, {"hashed_password": hashed})
+        await self.repo.db.commit()
+
+    async def forgot_password(self, email: str) -> str:
+        user = await self.repo.get_by_email(email)
+        if not user:
+            return ""
+        token = create_access_token(subject=email, expires_delta=timedelta(minutes=15))
+        return token
+
+    async def reset_password(self, token: str, new_password: str):
+        try:
+            payload = decode_access_token(token)
+        except AuthenticationError:
+            raise AuthenticationError("Invalid or expired reset token.")
+        email = payload.get("sub")
+        if not email:
+            raise AuthenticationError("Invalid reset token.")
+        user = await self.repo.get_by_email(email)
+        if not user:
+            raise AuthenticationError("Invalid reset token.")
+        hashed = get_password_hash(new_password)
+        await self.repo.update(user.id, {"hashed_password": hashed})
+        await self.repo.db.commit()
 
     async def delete_user(self, user_id):
         user = await self.repo.delete(user_id)
