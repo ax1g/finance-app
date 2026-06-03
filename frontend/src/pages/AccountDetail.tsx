@@ -265,7 +265,7 @@ export default function AccountDetail() {
               <Badge variant="secondary" className="mb-1 capitalize">
                 {account.type}
               </Badge>
-              <p className="text-2xl font-semibold">
+              <p className="text-2xl font-semibold font-number">
                 ${fmt(account.current_balance)}
               </p>
             </div>

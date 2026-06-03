@@ -243,16 +243,19 @@ export default function CategoryDetail() {
             <div
               className={`flex h-14 w-14 items-center justify-center rounded-full ${
                 category.type === "expense"
-                  ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
-                  : "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                  ? "bg-[var(--color-expense)]/10 text-[var(--color-expense)]"
+                  : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
               }`}
             >
               <Tag className="h-6 w-6" />
             </div>
             <div>
               <Badge
-                variant={category.type === "expense" ? "destructive" : "secondary"}
-                className="mb-1 capitalize"
+                className={`mb-1 capitalize ${
+                  category.type === "expense"
+                    ? "bg-[var(--color-expense)]/10 text-[var(--color-expense)]"
+                    : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
+                }`}
               >
                 {category.type}
               </Badge>

@@ -46,6 +46,12 @@ export async function apiFetch<T>(
 
   const data = await res.json()
 
+  if (res.status === 401) {
+    clearTokens()
+    window.dispatchEvent(new CustomEvent("auth:unauthorized"))
+    throw new Error("Session expired. Please log in again.")
+  }
+
   if (!res.ok) {
     const detail =
       typeof data.detail === "string"

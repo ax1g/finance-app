@@ -14,7 +14,7 @@ import type {
   TransactionType,
 } from "@/types"
 import { Button } from "@/components/ui/button"
-import { fmt } from "@/lib/utils"
+import { fmt, formatDate } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
@@ -307,7 +307,7 @@ export default function TransactionDetail() {
             <div>
               <CardTitle className="capitalize">{txn.txn_type}</CardTitle>
               <CardDescription>
-                {new Date(txn.txn_date).toLocaleString()}
+                {formatDate(txn.txn_date)}
               </CardDescription>
             </div>
             <div className="flex gap-2">
@@ -341,8 +341,8 @@ export default function TransactionDetail() {
             <div
               className={`flex h-12 w-12 items-center justify-center rounded-full ${
                 txn.txn_type === "expense"
-                  ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
-                  : "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+                  ? "bg-[var(--color-expense)]/10 text-[var(--color-expense)]"
+                  : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
               }`}
             >
               {txn.txn_type === "expense" ? (
@@ -353,7 +353,7 @@ export default function TransactionDetail() {
             </div>
             <Badge
               variant={txn.txn_type === "expense" ? "destructive" : "secondary"}
-              className="font-mono text-base"
+              className="font-number text-base"
             >
               {fmtAmount(txn)}
             </Badge>

@@ -111,30 +111,30 @@ export default function Dashboard() {
 
       <Card className="p-6">
         <p className="text-sm font-medium text-muted-foreground">Net Worth</p>
-        <p className="mt-1 text-3xl font-bold">
+        <p className="mt-1 text-3xl font-bold font-number">
           {loading
             ? "..."
             : `$${(data?.netWorth ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
         </p>
         <div className="mt-4 grid grid-cols-2 gap-4">
           <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-income)]/10 text-[var(--color-income)]">
               <TrendingUp className="h-4 w-4" />
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Assets</p>
-              <p className="text-sm font-semibold">
+              <p className="text-sm font-semibold font-number">
                 ${(data?.totalAssets ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-expense)]/10 text-[var(--color-expense)]">
               <TrendingDown className="h-4 w-4" />
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Liabilities</p>
-              <p className="text-sm font-semibold">
+              <p className="text-sm font-semibold font-number">
                 ${(data?.totalLiabilities ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
               </p>
             </div>
@@ -175,19 +175,19 @@ export default function Dashboard() {
               />
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="h-3 w-3 rounded-full bg-green-500" />
+                  <div className="h-3 w-3 rounded-full bg-[var(--color-income)]" />
                   <div>
                     <p className="text-xs text-muted-foreground">Income</p>
-                    <p className="font-semibold">
+                    <p className="font-semibold font-number">
                       ${(data?.totalIncome ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="h-3 w-3 rounded-full bg-red-500" />
+                  <div className="h-3 w-3 rounded-full bg-[var(--color-expense)]" />
                   <div>
                     <p className="text-xs text-muted-foreground">Expenses</p>
-                    <p className="font-semibold">
+                    <p className="font-semibold font-number">
                       ${(data?.totalExpense ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                     </p>
                   </div>
@@ -197,10 +197,10 @@ export default function Dashboard() {
                   <div>
                     <p className="text-xs text-muted-foreground">Net</p>
                     <p
-                      className={`font-semibold ${
+                      className={`font-semibold font-number ${
                         (data?.totalIncome ?? 0) - (data?.totalExpense ?? 0) >= 0
-                          ? "text-green-600"
-                          : "text-red-600"
+                          ? "text-[var(--color-income)]"
+                          : "text-[var(--color-expense)]"
                       }`}
                     >
                       {((data?.totalIncome ?? 0) - (data?.totalExpense ?? 0) >= 0 ? "+" : "-")}$
