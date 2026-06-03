@@ -27,7 +27,7 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
 
   if (isAuth) {
-    navigate("/transactions", { replace: true });
+    navigate("/", { replace: true });
     return null;
   }
 
@@ -56,7 +56,7 @@ export default function LoginPage() {
         });
       } else {
         await login({ username: form.username, password: form.password });
-        navigate("/transactions", { replace: true });
+        navigate("/", { replace: true });
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");

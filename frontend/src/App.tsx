@@ -20,6 +20,7 @@ const CategoryList = lazy(() => import("./pages/CategoryList"))
 const CategoryCreate = lazy(() => import("./pages/CategoryCreate"))
 const CategoryDetail = lazy(() => import("./pages/CategoryDetail"))
 const Reports = lazy(() => import("./pages/Reports"))
+const CalendarView = lazy(() => import("./pages/CalendarView"))
 const Settings = lazy(() => import("./pages/Settings"))
 
 const LoadingFallback = () => (
@@ -50,6 +51,7 @@ const App = () => {
                   <Route path="categories/new" element={<CategoryCreate />} />
                   <Route path="categories/:category_id" element={<CategoryDetail />} />
                   <Route path="reports" element={<Reports />} />
+                  <Route path="calendar" element={<CalendarView />} />
                   <Route path="settings" element={<Settings />} />
                 </Route>
               </Routes>

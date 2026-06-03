@@ -1,17 +1,16 @@
 import { useEffect, useState } from "react"
-import { fetchDashboardData, type DashboardData } from "@/api/dashboard"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Loader2, TrendingUp, TrendingDown, Wallet, PieChart } from "lucide-react"
-
-type Period = "week" | "month" | "year" | "all"
-
-const PERIODS: { value: Period; label: string }[] = [
-  { value: "week", label: "Week" },
-  { value: "month", label: "Month" },
-  { value: "year", label: "Year" },
-  { value: "all", label: "All Time" },
-]
+import { fetchDashboard } from "@/api/reports"
+import type { DashboardResponse } from "@/types"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Loader2, TrendingUp, TrendingDown, Wallet, PieChart, ArrowRight } from "lucide-react"
+import { fmt, formatDate } from "@/lib/utils"
+import { Link } from "react-router-dom"
 
 function DonutChart({
   income,
@@ -77,14 +76,13 @@ function DonutChart({
 }
 
 export default function Dashboard() {
-  const [data, setData] = useState<DashboardData | null>(null)
+  const [data, setData] = useState<DashboardResponse | null>(null)
   const [error, setError] = useState("")
-  const [period, setPeriod] = useState<Period>("month")
 
   useEffect(() => {
     let cancelled = false
 
-    fetchDashboardData(period)
+    fetchDashboard()
       .then((d) => {
         if (!cancelled) setData(d)
       })
@@ -95,7 +93,7 @@ export default function Dashboard() {
     return () => {
       cancelled = true
     }
-  }, [period])
+  }, [])
 
   const loading = data === null && !error
 
@@ -105,113 +103,197 @@ export default function Dashboard() {
     )
   }
 
+  const incomeNum = data ? parseFloat(data.current_month_income) : 0
+  const expenseNum = data ? parseFloat(data.current_month_expenses) : 0
+  const netNum = data ? parseFloat(data.current_month_net) : 0
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
 
-      <Card className="p-6">
-        <p className="text-sm font-medium text-muted-foreground">Net Worth</p>
-        <p className="mt-1 text-3xl font-bold font-number">
-          {loading
-            ? "..."
-            : `$${(data?.netWorth ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
-        </p>
-        <div className="mt-4 grid grid-cols-2 gap-4">
-          <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-income)]/10 text-[var(--color-income)]">
-              <TrendingUp className="h-4 w-4" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Assets</p>
-              <p className="text-sm font-semibold font-number">
-                ${(data?.totalAssets ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
-              </p>
-            </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="p-4">
+          <p className="text-sm font-medium text-muted-foreground">Net Worth</p>
+          <p className="mt-1 text-2xl font-bold font-number">
+            {loading ? "..." : `$${fmt(data?.total_balance ?? "0")}`}
+          </p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-[var(--color-income)]">
+            <TrendingUp className="h-4 w-4" /> Income
           </div>
-          <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-expense)]/10 text-[var(--color-expense)]">
-              <TrendingDown className="h-4 w-4" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Liabilities</p>
-              <p className="text-sm font-semibold font-number">
-                ${(data?.totalLiabilities ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
-              </p>
-            </div>
+          <p className="mt-1 text-2xl font-bold font-number text-[var(--color-income)]">
+            {loading ? "..." : `$${fmt(data?.current_month_income ?? "0")}`}
+          </p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-[var(--color-expense)]">
+            <TrendingDown className="h-4 w-4" /> Expenses
           </div>
-        </div>
-      </Card>
+          <p className="mt-1 text-2xl font-bold font-number text-[var(--color-expense)]">
+            {loading ? "..." : `$${fmt(data?.current_month_expenses ?? "0")}`}
+          </p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <Wallet className="h-4 w-4" /> Net
+          </div>
+          <p className={`mt-1 text-2xl font-bold font-number ${netNum >= 0 ? "text-[var(--color-income)]" : "text-[var(--color-expense)]"}`}>
+            {loading ? "..." : `${netNum >= 0 ? "+" : "-"}$${fmt(Math.abs(netNum))}`}
+          </p>
+        </Card>
+      </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="flex items-center gap-2">
-            <PieChart className="h-5 w-5" />
-            Income vs Expenses
-          </CardTitle>
-          <div className="flex gap-1">
-            {PERIODS.map((p) => (
-              <Button
-                key={p.value}
-                variant={period === p.value ? "default" : "outline"}
-                size="sm"
-                onClick={() => setPeriod(p.value)}
-              >
-                {p.label}
-              </Button>
-            ))}
-          </div>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex items-center justify-center py-12 text-muted-foreground">
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Loading...
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-around">
-              <DonutChart
-                income={data?.totalIncome ?? 0}
-                expense={data?.totalExpense ?? 0}
-              />
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="h-3 w-3 rounded-full bg-[var(--color-income)]" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Income</p>
-                    <p className="font-semibold font-number">
-                      ${(data?.totalIncome ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                    </p>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <PieChart className="h-5 w-5" />
+              Income vs Expenses (This Month)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="flex items-center justify-center py-12 text-muted-foreground">
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Loading...
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-around">
+                <DonutChart income={incomeNum} expense={expenseNum} />
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-3 w-3 rounded-full bg-[var(--color-income)]" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Income</p>
+                      <p className="font-semibold font-number">${fmt(data?.current_month_income ?? "0")}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-3 w-3 rounded-full bg-[var(--color-expense)]" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Expenses</p>
-                    <p className="font-semibold font-number">
-                      ${(data?.totalExpense ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div className="h-3 w-3 rounded-full bg-[var(--color-expense)]" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Expenses</p>
+                      <p className="font-semibold font-number">${fmt(data?.current_month_expenses ?? "0")}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3 pt-1">
-                  <Wallet className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Net</p>
-                    <p
-                      className={`font-semibold font-number ${
-                        (data?.totalIncome ?? 0) - (data?.totalExpense ?? 0) >= 0
-                          ? "text-[var(--color-income)]"
-                          : "text-[var(--color-expense)]"
-                      }`}
-                    >
-                      {((data?.totalIncome ?? 0) - (data?.totalExpense ?? 0) >= 0 ? "+" : "-")}$
-                      {Math.abs(
-                        (data?.totalIncome ?? 0) - (data?.totalExpense ?? 0),
-                      ).toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                    </p>
+                  <div className="flex items-center gap-3 pt-1">
+                    <Wallet className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Net</p>
+                      <p className={`font-semibold font-number ${netNum >= 0 ? "text-[var(--color-income)]" : "text-[var(--color-expense)]"}`}>
+                        {netNum >= 0 ? "+" : "-"}${fmt(Math.abs(netNum))}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingDown className="h-5 w-5" />
+              Top Spending Categories
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="flex items-center justify-center py-8 text-muted-foreground">
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Loading...
+              </div>
+            ) : data && data.top_spending_categories.length > 0 ? (
+              <div className="space-y-3">
+                {data.top_spending_categories.map((cat) => {
+                  const pct = cat.percentage
+                  return (
+                    <div key={cat.category_id}>
+                      <div className="mb-1 flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <span>{cat.icon || "📦"}</span>
+                          <span className="font-medium">{cat.category_name}</span>
+                          <Badge variant="outline" className="text-xs">{cat.transaction_count}</Badge>
+                        </div>
+                        <span className="font-number font-medium">${fmt(cat.total)}</span>
+                      </div>
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full bg-[var(--color-expense)] transition-all duration-300"
+                          style={{ width: `${Math.min(pct * 5, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+                <div className="pt-2 text-center">
+                  <Link to="/reports" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+                    View all categories <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <p className="py-6 text-center text-sm text-muted-foreground">No expenses this month.</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <TrendingUp className="h-5 w-5" />
+            Recent Transactions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex items-center justify-center py-6 text-muted-foreground">
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Loading...
             </div>
+          ) : data && data.recent_transactions.length > 0 ? (
+            <div className="divide-y divide-border">
+              {data.recent_transactions.map((txn) => (
+                <Link
+                  key={txn.id}
+                  to={`/transactions/${txn.id}`}
+                  className="flex items-center justify-between py-2.5 hover:bg-muted/50 -mx-2 px-2 rounded transition-colors"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Badge
+                      variant="outline"
+                      className={
+                        txn.txn_type === "income"
+                          ? "border-[var(--color-income)] text-[var(--color-income)]"
+                          : txn.txn_type === "expense"
+                            ? "border-[var(--color-expense)] text-[var(--color-expense)]"
+                            : ""
+                      }
+                    >
+                      {txn.txn_type}
+                    </Badge>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{txn.description || txn.category_name}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {txn.account_name} · {formatDate(txn.txn_date)}
+                      </p>
+                    </div>
+                  </div>
+                  <p className={`ml-4 font-number font-semibold shrink-0 ${txn.txn_type === "income" ? "text-[var(--color-income)]" : "text-[var(--color-expense)]"}`}>
+                    {txn.txn_type === "income" ? "+" : "-"}${fmt(txn.amount)}
+                  </p>
+                </Link>
+              ))}
+              <div className="pt-2 text-center">
+                <Link to="/transactions" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+                  View all transactions <ArrowRight className="h-3 w-3" />
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <p className="py-6 text-center text-sm text-muted-foreground">No transactions yet.</p>
           )}
         </CardContent>
       </Card>
