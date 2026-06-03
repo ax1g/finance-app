@@ -105,3 +105,75 @@ export interface UserRead {
   username: string
   email: string
 }
+
+export interface RecentTransaction {
+  id: string
+  txn_date: string
+  txn_type: TransactionType
+  amount: string
+  description: string | null
+  category_name: string
+  account_name: string
+}
+
+export interface CategorySpending {
+  category_id: string
+  category_name: string
+  icon: string | null
+  total: string
+  percentage: number
+  transaction_count: number
+}
+
+export interface DashboardResponse {
+  total_balance: string
+  current_month_income: string
+  current_month_expenses: string
+  current_month_net: string
+  top_spending_categories: CategorySpending[]
+  recent_transactions: RecentTransaction[]
+}
+
+export interface SpendingByCategoryItem {
+  category_id: string
+  category_name: string
+  icon: string | null
+  total: string
+  percentage: number
+  transaction_count: number
+}
+
+export interface MonthlySummaryItem {
+  year_month: string
+  income: string
+  expense: string
+  net: string
+}
+
+export interface AccountSummaryItem {
+  account_id: string
+  account_name: string
+  account_type: AccountType
+  balance: string
+  income_this_month: string
+  expenses_this_month: string
+}
+
+export interface IncomeStatementItem {
+  txn_date: string
+  txn_type: TransactionType
+  description: string | null
+  amount: string
+  category_name: string
+  account_name: string
+}
+
+export interface IncomeStatementResponse {
+  opening_balance: string
+  closing_balance: string
+  total_income: string
+  total_expenses: string
+  net: string
+  income_transactions: IncomeStatementItem[]
+  expense_transactions: IncomeStatementItem[]
+}

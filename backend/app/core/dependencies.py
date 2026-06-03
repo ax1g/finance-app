@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import decode_access_token
-from app.core.exceptions import AuthenticationError, AuthorizationError
+from app.core.exceptions import AuthenticationError
 from app.users.schema import UserRead
 
 # Repos and Services
@@ -18,6 +18,8 @@ from app.users.repository import UserRepo
 from app.users.service import UserService
 from app.transactions.repository import TransactionRepo
 from app.transactions.service import TransactionService
+from app.reports.repository import ReportRepo
+from app.reports.service import ReportService
 
 
 # Session Dependency
@@ -54,6 +56,10 @@ async def get_txn_service(
 
 
 TransactionServiceDep = Annotated[TransactionService, Depends(get_txn_service)]
+
+ReportServiceDep = Annotated[
+    ReportService, Depends(get_service(ReportService, ReportRepo))
+]
 
 
 # OAuth Dependecy for Current User
