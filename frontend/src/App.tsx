@@ -3,8 +3,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { AuthProvider } from "./context/AuthContext"
 import { ThemeProvider } from "./context/ThemeContext"
 import { ModalProvider } from "./context/ModalContext"
+import { ToastProvider } from "./context/ToastContext"
 import ErrorBoundary from "./components/ErrorBoundary"
 import ModalRenderer from "./components/ModalRenderer"
+import Toaster from "./components/ui/toaster"
 import Layout from "./components/Layout"
 import { Loader2 } from "lucide-react"
 
@@ -36,27 +38,30 @@ const App = () => {
         <ThemeProvider>
         <AuthProvider>
           <ModalProvider>
-            <Suspense fallback={<LoadingFallback />}>
-              <Routes>
-                <Route path="/login" element={<LoginPage />} />
-                <Route element={<Layout />}>
-                  <Route index element={<Dashboard />} />
-                  <Route path="transactions" element={<TransactionList />} />
-                  <Route path="transactions/new" element={<TransactionCreate />} />
-                  <Route path="transactions/:txn_id" element={<TransactionDetail />} />
-                  <Route path="accounts" element={<AccountList />} />
-                  <Route path="accounts/new" element={<AccountCreate />} />
-                  <Route path="accounts/:account_id" element={<AccountDetail />} />
-                  <Route path="categories" element={<CategoryList />} />
-                  <Route path="categories/new" element={<CategoryCreate />} />
-                  <Route path="categories/:category_id" element={<CategoryDetail />} />
-                  <Route path="reports" element={<Reports />} />
-                  <Route path="calendar" element={<CalendarView />} />
-                  <Route path="settings" element={<Settings />} />
-                </Route>
-              </Routes>
-            </Suspense>
-            <ModalRenderer />
+            <ToastProvider>
+              <Suspense fallback={<LoadingFallback />}>
+                <Routes>
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route element={<Layout />}>
+                    <Route index element={<Dashboard />} />
+                    <Route path="transactions" element={<TransactionList />} />
+                    <Route path="transactions/new" element={<TransactionCreate />} />
+                    <Route path="transactions/:txn_id" element={<TransactionDetail />} />
+                    <Route path="accounts" element={<AccountList />} />
+                    <Route path="accounts/new" element={<AccountCreate />} />
+                    <Route path="accounts/:account_id" element={<AccountDetail />} />
+                    <Route path="categories" element={<CategoryList />} />
+                    <Route path="categories/new" element={<CategoryCreate />} />
+                    <Route path="categories/:category_id" element={<CategoryDetail />} />
+                    <Route path="reports" element={<Reports />} />
+                    <Route path="calendar" element={<CalendarView />} />
+                    <Route path="settings" element={<Settings />} />
+                  </Route>
+                </Routes>
+              </Suspense>
+              <ModalRenderer />
+              <Toaster />
+            </ToastProvider>
           </ModalProvider>
         </AuthProvider>
         </ThemeProvider>

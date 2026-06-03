@@ -5,6 +5,7 @@ import {
   updateAccount,
   deleteAccount,
 } from "@/api/accounts"
+import { useToast } from "@/context/ToastContext"
 import type { AccountRead, AccountType } from "@/types"
 import { Button } from "@/components/ui/button"
 import { fmt } from "@/lib/utils"
@@ -64,6 +65,7 @@ const ACCOUNT_TYPE_OPTIONS: { value: AccountType; label: string }[] = [
 export default function AccountDetail() {
   const { account_id } = useParams<{ account_id: string }>()
   const navigate = useNavigate()
+  const { toast } = useToast()
 
   const [account, setAccount] = useState<AccountRead | null>(null)
   const [loading, setLoading] = useState(true)
@@ -104,9 +106,12 @@ export default function AccountDetail() {
     setDeleting(true)
     try {
       await deleteAccount(account_id)
+      toast({ title: "Account deleted", variant: "success" })
       navigate("/accounts", { replace: true })
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Delete failed")
+      const msg = err instanceof Error ? err.message : "Delete failed"
+      setError(msg)
+      toast({ title: "Error", description: msg, variant: "destructive" })
       setDeleting(false)
     }
   }
@@ -122,8 +127,11 @@ export default function AccountDetail() {
       })
       setAccount(updated)
       setEditing(false)
+      toast({ title: "Account updated", variant: "success" })
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Update failed")
+      const msg = err instanceof Error ? err.message : "Update failed"
+      setError(msg)
+      toast({ title: "Error", description: msg, variant: "destructive" })
     } finally {
       setSaving(false)
     }
@@ -266,7 +274,7 @@ export default function AccountDetail() {
                 {account.type}
               </Badge>
               <p className="text-2xl font-semibold font-number">
-                ${fmt(account.current_balance)}
+                {fmt(account.current_balance)}
               </p>
             </div>
           </div>

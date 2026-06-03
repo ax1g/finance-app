@@ -5,6 +5,7 @@ import {
   updateCategory,
   deleteCategory,
 } from "@/api/categories"
+import { useToast } from "@/context/ToastContext"
 import type { CategoryRead, CategoryType } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -35,6 +36,7 @@ import {
 export default function CategoryDetail() {
   const { category_id } = useParams<{ category_id: string }>()
   const navigate = useNavigate()
+  const { toast } = useToast()
 
   const [category, setCategory] = useState<CategoryRead | null>(null)
   const [loading, setLoading] = useState(true)
@@ -80,9 +82,12 @@ export default function CategoryDetail() {
     setDeleting(true)
     try {
       await deleteCategory(category_id)
+      toast({ title: "Category deleted", variant: "success" })
       navigate("/categories", { replace: true })
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Delete failed")
+      const msg = err instanceof Error ? err.message : "Delete failed"
+      setError(msg)
+      toast({ title: "Error", description: msg, variant: "destructive" })
       setDeleting(false)
     }
   }
@@ -99,8 +104,11 @@ export default function CategoryDetail() {
       })
       setCategory(updated)
       setEditing(false)
+      toast({ title: "Category updated", variant: "success" })
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Update failed")
+      const msg = err instanceof Error ? err.message : "Update failed"
+      setError(msg)
+      toast({ title: "Error", description: msg, variant: "destructive" })
     } finally {
       setSaving(false)
     }

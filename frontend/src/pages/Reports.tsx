@@ -46,7 +46,7 @@ function BalancesCard({ data }: { data: DashboardResponse | null }) {
                 {item.label}
               </div>
               <p className={`mt-1 text-lg font-bold font-number ${item.color}`}>
-                ${fmt(item.value)}
+                {fmt(item.value)}
               </p>
             </div>
           ))}
@@ -115,13 +115,13 @@ function MonthlyTrends() {
                   <tr key={row.year_month} className="border-b border-border/50">
                     <td className="py-2.5">{row.year_month}</td>
                     <td className="py-2.5 text-right font-number text-[var(--color-income)]">
-                      ${fmt(row.income)}
+                      {fmt(row.income)}
                     </td>
                     <td className="py-2.5 text-right font-number text-[var(--color-expense)]">
-                      ${fmt(row.expense)}
+                      {fmt(row.expense)}
                     </td>
                     <td className={`py-2.5 text-right font-number ${net >= 0 ? "text-[var(--color-income)]" : "text-[var(--color-expense)]"}`}>
-                      {net >= 0 ? "+" : "-"}${fmt(Math.abs(net))}
+                      {net >= 0 ? "+" : "-"}{fmt(Math.abs(net))}
                     </td>
                   </tr>
                 )
@@ -197,7 +197,7 @@ function CategoryBreakdown() {
                       <span className="font-medium">{item.category_name}</span>
                       <Badge variant="outline" className="text-xs">{item.transaction_count}</Badge>
                     </div>
-                    <span className="font-number font-medium">${fmt(item.total)} ({item.percentage.toFixed(1)}%)</span>
+                    <span className="font-number font-medium">{fmt(item.total)} ({item.percentage.toFixed(1)}%)</span>
                   </div>
                   <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
                     <div
@@ -262,10 +262,10 @@ function AccountSummaryCard() {
                 <p className="text-xs text-muted-foreground capitalize">{acc.account_type}</p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-bold font-number">${fmt(acc.balance)}</p>
+                <p className="text-sm font-bold font-number">{fmt(acc.balance)}</p>
                 <div className="flex gap-3 text-xs">
-                  <span className="text-[var(--color-income)]">+${fmt(acc.income_this_month)}</span>
-                  <span className="text-[var(--color-expense)]">-${fmt(acc.expenses_this_month)}</span>
+                  <span className="text-[var(--color-income)]">+{fmt(acc.income_this_month)}</span>
+                  <span className="text-[var(--color-expense)]">-{fmt(acc.expenses_this_month)}</span>
                 </div>
               </div>
             </div>
@@ -390,16 +390,16 @@ function IncomeStatement() {
                 <div className="space-y-1.5 text-sm">
                   <div className="flex justify-between">
                     <span>Opening Balance</span>
-                    <span className="font-number font-medium">${fmt(data.opening_balance)}</span>
+                    <span className="font-number font-medium">{fmt(data.opening_balance)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Total Income</span>
-                    <span className="font-number font-medium text-[var(--color-income)]">${fmt(data.total_income)}</span>
+                    <span className="font-number font-medium text-[var(--color-income)]">{fmt(data.total_income)}</span>
                   </div>
                   <hr className="my-2 border-border" />
                   <div className="flex justify-between font-semibold">
                     <span>Total</span>
-                    <span className="font-number">${fmt(parseFloat(data.opening_balance) + parseFloat(data.total_income))}</span>
+                    <span className="font-number">{fmt(parseFloat(data.opening_balance) + parseFloat(data.total_income))}</span>
                   </div>
                 </div>
               </div>
@@ -408,17 +408,17 @@ function IncomeStatement() {
                 <div className="space-y-1.5 text-sm">
                   <div className="flex justify-between">
                     <span>Closing Balance</span>
-                    <span className="font-number font-medium">${fmt(data.closing_balance)}</span>
+                    <span className="font-number font-medium">{fmt(data.closing_balance)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Total Expenses</span>
-                    <span className="font-number font-medium text-[var(--color-expense)]">-${fmt(data.total_expenses)}</span>
+                    <span className="font-number font-medium text-[var(--color-expense)]">-{fmt(data.total_expenses)}</span>
                   </div>
                   <hr className="my-2 border-border" />
                   <div className="flex justify-between font-semibold">
                     <span>Net</span>
                     <span className={`font-number ${parseFloat(data.net) >= 0 ? "text-[var(--color-income)]" : "text-[var(--color-expense)]"}`}>
-                      {parseFloat(data.net) >= 0 ? "+" : "-"}${fmt(Math.abs(parseFloat(data.net)))}
+                      {parseFloat(data.net) >= 0 ? "+" : "-"}{fmt(Math.abs(parseFloat(data.net)))}
                     </span>
                   </div>
                 </div>
@@ -450,7 +450,7 @@ function IncomeStatement() {
                             <td className="py-1.5 pr-2">{t.description ?? "—"}</td>
                             <td className="py-1.5 pr-2">{t.category_name}</td>
                             <td className="py-1.5 pr-2">{t.account_name}</td>
-                            <td className="py-1.5 text-right font-number text-[var(--color-income)]">${fmt(t.amount)}</td>
+                            <td className="py-1.5 text-right font-number text-[var(--color-income)]">{fmt(t.amount)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -481,7 +481,7 @@ function IncomeStatement() {
                             <td className="py-1.5 pr-2">{t.description ?? "—"}</td>
                             <td className="py-1.5 pr-2">{t.category_name}</td>
                             <td className="py-1.5 pr-2">{t.account_name}</td>
-                            <td className="py-1.5 text-right font-number text-[var(--color-expense)]">-${fmt(t.amount)}</td>
+                            <td className="py-1.5 text-right font-number text-[var(--color-expense)]">-{fmt(t.amount)}</td>
                           </tr>
                         ))}
                       </tbody>

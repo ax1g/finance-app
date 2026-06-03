@@ -212,7 +212,7 @@ export default function CalendarView() {
                       </div>
                     </div>
                     <p className={`ml-4 font-number font-semibold shrink-0 ${txn.txn_type === "income" ? "text-[var(--color-income)]" : "text-[var(--color-expense)]"}`}>
-                      {txn.txn_type === "income" ? "+" : "-"}${fmt(txn.amount)}
+                      {txn.txn_type === "income" ? "+" : "-"}{fmt(txn.amount)}
                     </p>
                   </Link>
                 ))}

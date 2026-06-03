@@ -71,13 +71,13 @@ export default function ModalRenderer() {
         return (
           <div key={modal.id}>
             <div
-              className="fixed inset-0 bg-black/50 z-40"
+              className="fixed inset-0 bg-black/70 z-40"
               style={{ animation: "fm-backdrop-in 0.15s ease-out" }}
               onClick={() => closeModal(modal.id)}
             />
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
               <div
-                className="bg-background rounded-xl border border-border shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto pointer-events-auto"
+                className="bg-background rounded-xl border-2 border-border/80 shadow-2xl shadow-black/40 ring-1 ring-ring/30 w-full max-w-lg max-h-[90vh] overflow-y-auto pointer-events-auto"
                 style={{
                   zIndex: 50 + index,
                   transform: `translate(${offset.x}px, ${offset.y}px)`,

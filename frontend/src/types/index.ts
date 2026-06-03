@@ -89,6 +89,20 @@ export interface AuthTokens {
   token_type: string
 }
 
+export interface ChangePasswordRequest {
+  current_password: string
+  new_password: string
+}
+
+export interface ForgotPasswordResponse {
+  reset_token: string
+}
+
+export interface ResetPasswordRequest {
+  token: string
+  new_password: string
+}
+
 export interface LoginRequest {
   username: string
   password: string
@@ -104,6 +118,15 @@ export interface UserRead {
   id: string
   username: string
   email: string
+  currency: string
+  currency_custom_symbol: string | null
+}
+
+export interface UserUpdate {
+  username?: string
+  email?: string
+  currency?: string
+  currency_custom_symbol?: string | null
 }
 
 export interface RecentTransaction {
