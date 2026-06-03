@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 import { forgotPassword, resetPassword } from "@/api/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,7 @@ import {
 export default function LoginPage() {
   const { login, signup, isAuth } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [forgotStep, setForgotStep] = useState<"email" | "reset">("email");
   const [resetToken, setResetToken] = useState("");
@@ -56,6 +58,7 @@ export default function LoginPage() {
           email: form.email,
           password: form.password,
         });
+        toast({ title: "Account created", description: "You can now log in", variant: "success" });
         setMode("login");
         setForm({
           username: form.username,
@@ -104,6 +107,7 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await resetPassword({ token: resetForm.token, new_password: resetForm.password });
+      toast({ title: "Password reset", description: "You can now log in with your new password", variant: "success" });
       setMode("login");
       setForgotStep("email");
       setResetToken("");

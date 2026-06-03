@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { useAuth } from "@/context/AuthContext"
 import { useTheme } from "@/context/ThemeContext"
+import { useToast } from "@/context/ToastContext"
 import { fetchCurrentUser, changePassword, updateUser } from "@/api/auth"
 import type { UserRead } from "@/types"
 import { fmt } from "@/lib/utils"
@@ -65,6 +66,7 @@ const THEME_OPTIONS = [
 export default function Settings() {
   const { logout } = useAuth()
   const { mode, colors, setMode, setColors } = useTheme()
+  const { toast } = useToast()
   const [user, setUser] = useState<UserRead | null>(null)
   const [loading, setLoading] = useState(true)
   const [pwForm, setPwForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" })
@@ -145,12 +147,15 @@ export default function Settings() {
                   new_password: pwForm.newPassword,
                 })
                 setPwSuccess("Password updated successfully")
+                toast({ title: "Password updated", variant: "success" })
                 setPwForm({ currentPassword: "", newPassword: "", confirmPassword: "" })
-              } catch (err) {
-                setPwError(err instanceof Error ? err.message : "Something went wrong")
-              } finally {
-                setPwSubmitting(false)
-              }
+                } catch (err) {
+                  const msg = err instanceof Error ? err.message : "Something went wrong"
+                  setPwError(msg)
+                  toast({ title: "Error", description: msg, variant: "destructive" })
+                } finally {
+                  setPwSubmitting(false)
+                }
             }}
             className="space-y-4"
           >
@@ -383,9 +388,12 @@ export default function Settings() {
                       } else {
                         localStorage.removeItem("currency_custom_symbol")
                       }
+                      toast({ title: "Currency updated", variant: "success" })
                       setCurrencyMsg("Currency updated")
                     } catch (err) {
-                      setCurrencyMsg(err instanceof Error ? err.message : "Failed to save")
+                      const msg = err instanceof Error ? err.message : "Failed to save"
+                      setCurrencyMsg(msg)
+                      toast({ title: "Error", description: msg, variant: "destructive" })
                     } finally {
                       setCurrencySaving(false)
                     }

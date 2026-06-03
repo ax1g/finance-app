@@ -7,6 +7,7 @@ import {
 } from "@/api/transactions"
 import { fetchAccounts } from "@/api/accounts"
 import { fetchCategories } from "@/api/categories"
+import { useToast } from "@/context/ToastContext"
 import type {
   AccountRead,
   CategoryRead,
@@ -51,6 +52,7 @@ function fmtAmount(txn: TransactionRead): string {
 export default function TransactionDetail() {
   const { txn_id } = useParams<{ txn_id: string }>()
   const navigate = useNavigate()
+  const { toast } = useToast()
 
   const [txn, setTxn] = useState<TransactionRead | null>(null)
   const [accounts, setAccounts] = useState<AccountRead[]>([])
@@ -110,9 +112,12 @@ export default function TransactionDetail() {
     setDeleting(true)
     try {
       await deleteTransaction(txn_id)
+      toast({ title: "Transaction deleted", variant: "success" })
       navigate("/transactions", { replace: true })
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Delete failed")
+      const msg = err instanceof Error ? err.message : "Delete failed"
+      setError(msg)
+      toast({ title: "Error", description: msg, variant: "destructive" })
       setDeleting(false)
     }
   }
@@ -138,8 +143,11 @@ export default function TransactionDetail() {
       })
       setTxn(updated)
       setEditing(false)
+      toast({ title: "Transaction updated", variant: "success" })
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Update failed")
+      const msg = err instanceof Error ? err.message : "Update failed"
+      setError(msg)
+      toast({ title: "Error", description: msg, variant: "destructive" })
     } finally {
       setSaving(false)
     }

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { createTransaction } from "@/api/transactions"
 import { fetchAccounts } from "@/api/accounts"
 import { fetchCategories } from "@/api/categories"
+import { useToast } from "@/context/ToastContext"
 import type { AccountRead, CategoryRead, TransactionType } from "@/types"
 import { Button } from "@/components/ui/button"
 import { fmt } from "@/lib/utils"
@@ -26,6 +27,7 @@ import { Loader2 } from "lucide-react"
 
 export default function TransactionCreate() {
   const navigate = useNavigate()
+  const { toast } = useToast()
   const [accounts, setAccounts] = useState<AccountRead[]>([])
   const [categories, setCategories] = useState<CategoryRead[]>([])
   const [loading, setLoading] = useState(true)
@@ -74,11 +76,12 @@ export default function TransactionCreate() {
         account_id: form.account_id,
         category_id: form.category_id,
       })
+      toast({ title: "Transaction created", variant: "success" })
       navigate(`/transactions/${created.id}`)
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to create transaction",
-      )
+      const msg = err instanceof Error ? err.message : "Failed to create transaction"
+      setError(msg)
+      toast({ title: "Error", description: msg, variant: "destructive" })
     } finally {
       setSubmitting(false)
     }

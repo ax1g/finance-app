@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { createCategory } from "@/api/categories"
+import { useToast } from "@/context/ToastContext"
 import type { CategoryType } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,6 +24,7 @@ import { Loader2 } from "lucide-react"
 
 export default function CategoryCreate() {
   const navigate = useNavigate()
+  const { toast } = useToast()
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
 
@@ -47,11 +49,12 @@ export default function CategoryCreate() {
         type: form.type as CategoryType,
         description: form.description || null,
       })
+      toast({ title: "Category created", variant: "success" })
       navigate(`/categories/${created.id}`)
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to create category",
-      )
+      const msg = err instanceof Error ? err.message : "Failed to create category"
+      setError(msg)
+      toast({ title: "Error", description: msg, variant: "destructive" })
     } finally {
       setSubmitting(false)
     }
