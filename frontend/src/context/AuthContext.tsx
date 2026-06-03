@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react"
 import { isAuthenticated, clearTokens } from "../api/client"
 import type { LoginRequest } from "../types"
 import * as authApi from "../api/auth"
@@ -15,6 +15,15 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuth, setIsAuth] = useState(isAuthenticated)
+
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      clearTokens()
+      setIsAuth(false)
+    }
+    window.addEventListener("auth:unauthorized", handleUnauthorized)
+    return () => window.removeEventListener("auth:unauthorized", handleUnauthorized)
+  }, [])
 
   const login = useCallback(async (data: LoginRequest) => {
     await authApi.login(data)

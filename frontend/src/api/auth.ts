@@ -22,3 +22,7 @@ export async function signup(data: SignupRequest): Promise<UserRead> {
     body: JSON.stringify(data),
   })
 }
+
+export async function fetchCurrentUser(): Promise<UserRead> {
+  return apiFetch<UserRead>("/user/me")
+}

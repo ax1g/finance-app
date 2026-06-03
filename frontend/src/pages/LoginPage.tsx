@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import LogoIcon from "@/components/LogoIcon";
 import {
   Card,
   CardContent,
@@ -65,11 +66,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+      <div className="flex flex-col items-center justify-center gap-3 mb-6">
+        <LogoIcon size={64} />
+        <span className="text-2xl font-display font-bold tracking-wide text-foreground">
+          Maester of Coins
+        </span>
+      </div>
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <CardTitle>
-            {mode === "login" ? "Sign In" : "Create Account"}
+            {mode === "login" ? "Login" : "Register"}
           </CardTitle>
           <CardDescription>
             {mode === "login"
@@ -133,8 +140,8 @@ export default function LoginPage() {
               {submitting
                 ? "Please wait..."
                 : mode === "login"
-                  ? "Sign In"
-                  : "Create Account"}
+                  ? "Login"
+                  : "Register"}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm text-muted-foreground">
@@ -148,7 +155,7 @@ export default function LoginPage() {
                   }}
                   className="text-primary underline underline-offset-4 hover:text-primary/80"
                 >
-                  Sign up
+                  Register
                 </button>
               </>
             ) : (
@@ -161,7 +168,7 @@ export default function LoginPage() {
                   }}
                   className="text-primary underline underline-offset-4 hover:text-primary/80"
                 >
-                  Sign in
+                  Login
                 </button>
               </>
             )}

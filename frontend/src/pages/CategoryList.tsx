@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { useEffect, useState, useCallback } from "react"
+import { Link } from "react-router-dom"
 import { fetchCategories } from "@/api/categories"
 import type { CategoryRead } from "@/types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { useModal } from "@/context/ModalContext"
+import QuickCategoryModal from "@/components/QuickCategoryModal"
 import {
   Select,
   SelectContent,
@@ -21,30 +23,35 @@ const CATEGORY_FILTERS = [
 ]
 
 export default function CategoryList() {
-  const navigate = useNavigate()
+  const { openModal } = useModal()
   const [categories, setCategories] = useState<CategoryRead[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [typeFilter, setTypeFilter] = useState("all")
 
-  useEffect(() => {
-    let cancelled = false
-
+  const loadCategories = useCallback(() => {
+    setLoading(true)
+    setError("")
     fetchCategories(typeFilter !== "all" ? typeFilter : undefined)
-      .then((data) => {
-        if (!cancelled) setCategories(data)
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err.message)
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-
-    return () => {
-      cancelled = true
-    }
+      .then((data) => setCategories(data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
   }, [typeFilter])
+
+  useEffect(() => {
+    loadCategories()
+  }, [loadCategories])
+
+  const openCreateModal = () => {
+    openModal(
+      "new-category-list",
+      <QuickCategoryModal
+        onCreated={() => {
+          loadCategories()
+        }}
+      />,
+    )
+  }
 
   return (
     <Card>
@@ -66,7 +73,7 @@ export default function CategoryList() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate("/categories/new")}
+            onClick={openCreateModal}
           >
             <Plus className="mr-1 h-4 w-4" />
             New
@@ -86,12 +93,12 @@ export default function CategoryList() {
         {!loading && !error && categories.length === 0 && (
           <p className="py-8 text-center text-sm text-muted-foreground">
             No categories yet.{" "}
-            <Link
-              to="/categories/new"
+            <button
+              onClick={openCreateModal}
               className="font-medium text-primary underline-offset-4 hover:underline"
             >
               Create one
-            </Link>
+            </button>
           </p>
         )}
         {!loading && !error && categories.length > 0 && (
@@ -106,8 +113,8 @@ export default function CategoryList() {
                   <div
                     className={`flex h-10 w-10 items-center justify-center rounded-full ${
                       c.type === "expense"
-                        ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
-                        : "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                        ? "bg-[var(--color-expense)]/10 text-[var(--color-expense)]"
+                        : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
                     }`}
                   >
                     <Tag className="h-5 w-5" />
@@ -121,7 +128,13 @@ export default function CategoryList() {
                     )}
                   </div>
                 </div>
-                <Badge variant={c.type === "expense" ? "destructive" : "secondary"}>
+                <Badge
+                  className={
+                    c.type === "expense"
+                      ? "bg-[var(--color-expense)]/10 text-[var(--color-expense)]"
+                      : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
+                  }
+                >
                   {c.type}
                 </Badge>
               </Link>

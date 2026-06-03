@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router-dom"
 import { fetchTransactions, type TransactionFilters } from "@/api/transactions"
 import type { TransactionRead } from "@/types"
 import { Badge } from "@/components/ui/badge"
-import { fmt } from "@/lib/utils"
+import { fmt, formatDate } from "@/lib/utils"
 import {
   Select,
   SelectContent,
@@ -111,8 +111,8 @@ export default function TransactionList() {
                   <div
                     className={`flex h-9 w-9 items-center justify-center rounded-full ${
                       txn.txn_type === "expense"
-                        ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
-                        : "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+                        ? "bg-[var(--color-expense)]/10 text-[var(--color-expense)]"
+                        : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
                     }`}
                   >
                     {txn.txn_type === "expense" ? (
@@ -126,15 +126,18 @@ export default function TransactionList() {
                       {txn.description || txn.category.name}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {new Date(txn.txn_date).toLocaleDateString()} &middot;{" "}
+                      {formatDate(txn.txn_date)} &middot;{" "}
                       {txn.account.name}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge
-                    variant={txn.txn_type === "expense" ? "destructive" : "secondary"}
-                    className="font-mono text-xs"
+                    className={`font-number text-xs ${
+                      txn.txn_type === "expense"
+                        ? "bg-[var(--color-expense)]/10 text-[var(--color-expense)]"
+                        : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
+                    }`}
                   >
                     {fmtAmount(txn)}
                   </Badge>
