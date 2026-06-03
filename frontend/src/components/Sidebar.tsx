@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import {
   LayoutGrid,
   BarChart3,
+  Calendar,
   Landmark,
   Tag,
   History,
@@ -80,6 +81,12 @@ export default function Sidebar() {
           <BarChart3 className="h-6 w-6 shrink-0" />
           <NavLabel collapsed={collapsed}>
             <span className="ml-4 whitespace-nowrap">Reports</span>
+          </NavLabel>
+        </NavLink>
+        <NavLink to="/calendar" end className={linkClass}>
+          <Calendar className="h-6 w-6 shrink-0" />
+          <NavLabel collapsed={collapsed}>
+            <span className="ml-4 whitespace-nowrap">Calendar</span>
           </NavLabel>
         </NavLink>
         <NavLink to="/accounts" end className={linkClass}>

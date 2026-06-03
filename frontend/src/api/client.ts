@@ -44,20 +44,28 @@ export async function apiFetch<T>(
     return undefined as T
   }
 
-  const data = await res.json()
-
   if (res.status === 401) {
     clearTokens()
     window.dispatchEvent(new CustomEvent("auth:unauthorized"))
     throw new Error("Session expired. Please log in again.")
   }
 
+  const text = await res.text()
+  let data: unknown
+  try {
+    data = JSON.parse(text)
+  } catch {
+    throw new Error(text || `Request failed: ${res.status}`)
+  }
+
   if (!res.ok) {
     const detail =
-      typeof data.detail === "string"
-        ? data.detail
-        : JSON.stringify(data.detail)
-    throw new Error(detail || `Request failed: ${res.status}`)
+      typeof data === "object" && data !== null && "detail" in data
+        ? typeof (data as Record<string, unknown>).detail === "string"
+          ? (data as Record<string, unknown>).detail as string
+          : JSON.stringify((data as Record<string, unknown>).detail)
+        : `Request failed: ${res.status}`
+    throw new Error(detail)
   }
 
   return data as T
