@@ -10,7 +10,6 @@ import {
   Settings,
 } from "lucide-react";
 import { useState } from "react";
-import LogoIcon from "@/components/LogoIcon";
 import { useModal } from "@/context/ModalContext";
 import TransactionFormModal from "@/components/TransactionFormModal";
 
@@ -53,9 +52,8 @@ export default function Sidebar() {
         onClick={() => setCollapsed((c) => !c)}
         className="flex h-14 w-full items-center border-b border-border pl-3 pr-3 text-left transition-colors hover:bg-accent/50"
       >
-        <LogoIcon size={24} />
         <NavLabel collapsed={collapsed}>
-          <span className="ml-4 font-display font-bold text-sm tracking-wide text-foreground whitespace-nowrap">
+          <span className="ml-2 font-display font-bold text-base tracking-wider text-foreground whitespace-nowrap">
             Neco
           </span>
         </NavLabel>
