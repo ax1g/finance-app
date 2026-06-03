@@ -120,6 +120,23 @@ frontend/
 | `/calendar` | Calendar View | Protected |
 | `/settings` | Settings | Protected |
 
+## Docker
+
+A `Dockerfile` is provided for production deployment. It uses a multi-stage build:
+
+1. **Build stage** — installs dependencies and compiles the app with Vite
+2. **Nginx stage** — serves the built assets and proxies `/api/v1` to the backend
+
+```bash
+# Build the image
+docker build -t finance-app-frontend ./frontend
+
+# Run (ensure the backend is accessible at the proxied address)
+docker run -p 8080:80 finance-app-frontend
+```
+
+The Nginx configuration automatically proxies `/api/v1` requests to `http://backend:8000`, so the frontend works out of the box with `docker-compose`.
+
 ## Configuration
 
 The development server proxies `/api/v1/*` requests to `http://127.0.0.1:8000` (configured in `vite.config.ts`). Update this target to point to your backend's address in production.

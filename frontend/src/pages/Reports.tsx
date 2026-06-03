@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Loader2, BarChart3, Wallet, TrendingUp, TrendingDown, Table2, PieChart, Download, FileText, FileSpreadsheet, ChevronLeft, ChevronRight } from "lucide-react"
-import { fmt, formatDate } from "@/lib/utils"
+import { fmt } from "@/lib/utils"
 import {
   fetchDashboard,
   fetchMonthlySummary,
@@ -17,7 +17,6 @@ import type {
   SpendingByCategoryItem,
   AccountSummaryItem,
   IncomeStatementResponse,
-  IncomeStatementItem,
 } from "@/types"
 
 function BalancesCard({ data }: { data: DashboardResponse | null }) {

@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+.ruff_cache/
+.git/
+.gitignore
+tests/
+*.md
+AGENTS.md
+node_modules/
+frontend/
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store

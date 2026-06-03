@@ -1,74 +1,83 @@
 # FastAPI Finance App
 
-A finance tracking application with a FastAPI backend and a React frontend.
+A full-stack personal finance tracking application. Manage transactions, accounts, categories, and generate financial reports.
 
-## Repository structure
+## Tech Stack
 
-- `backend/` — FastAPI service, SQLAlchemy models, Alembic migrations, and backend business logic
-- `frontend/` — React application for the user interface
+| Layer | Technology | Purpose |
+|-------|------------|---------|
+| **Frontend** | React 19, TypeScript 6, Vite 8 | SPA with component-based UI |
+| **Styling** | Tailwind CSS v4, shadcn/ui | Utility-first styling + accessible primitives |
+| **Backend** | Python 3.14, FastAPI ^0.136 | Async REST API |
+| **Database** | PostgreSQL, SQLAlchemy 2.0 async | Data persistence & ORM |
+| **Auth** | PyJWT, Argon2 (pwdlib) | JWT tokens & password hashing |
+| **Migrations** | Alembic | Schema versioning |
+| **Infrastructure** | Docker, Docker Compose | Containerization & orchestration |
 
-## Backend
+## Project Structure
 
-The backend is implemented using:
+```
+├── backend/          # FastAPI REST API
+│   ├── app/          # Domain modules (accounts, categories, transactions, users, reports)
+│   ├── alembic/      # Database migrations
+│   └── tests/        # Test suite
+├── frontend/         # React SPA
+│   └── src/          # Pages, components, API client, context providers
+├── docker-compose.yml
+└── .env.example
+```
 
-- FastAPI for API routing
-- SQLAlchemy async ORM for database access
-- PostgreSQL as the primary datastore
-- Pydantic for request/response validation
-- Alembic for database migrations
+## Quick Start
 
-## Quick start
+### Prerequisites
 
-1. Create or activate a Python virtual environment.
-2. Install backend dependencies from the `backend/` folder.
-3. Create a `.env` file one level above `backend/` with database and app settings.
-4. Run Alembic migrations to create the schema.
-5. Start the backend with Uvicorn.
+- Python 3.14+, PostgreSQL, [uv](https://docs.astral.sh/uv/) (local dev)
+- or Docker & Docker Compose
 
-## Documentation
+### Local Development
 
-The backend exposes OpenAPI documentation once started. Visit the URL shown by Uvicorn or use:
+```bash
+# Backend
+cd backend
+uv install
+alembic upgrade head
+uv run uvicorn app.main:app --reload     # → http://localhost:8000
 
-- `http://127.0.0.1:8000/api/v1/openapi.json`
+# Frontend (separate terminal)
+cd frontend
+npm install
+npm run dev                               # → http://localhost:5173
+```
 
-## API Endpoints
+### Docker
+
+```bash
+docker compose up --build
+```
+
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:8080 |
+| Backend API | http://localhost:8000 |
+| OpenAPI Docs | http://localhost:8000/api/v1/openapi.json |
+
+Migrations run automatically on backend startup. The frontend Nginx proxies `/api/v1` to the backend container.
+
+## API Overview
 
 Base path: `/api/v1`
 
-### Transactions
+| Resource | Key Endpoints |
+|----------|--------------|
+| Auth | `POST /auth/signup`, `POST /auth/login`, `GET /auth/me` |
+| Transactions | `GET/POST /transactions/`, `GET/PATCH/DELETE /transactions/{id}` |
+| Accounts | `GET/POST /accounts/`, `GET/PATCH/DELETE /accounts/{id}` |
+| Categories | `GET/POST /categories/` |
+| Reports | `GET /reports/` |
+| Users | `GET /user/`, `GET /user/me`, `GET /user/{id}` |
 
-- `GET /api/v1/transactions/` — list transactions; optional query params: `limit`, `offset`, `start`, `end`, `txn_type`
-- `GET /api/v1/transactions/{txn_id}` — retrieve a single transaction by UUID
-- `POST /api/v1/transactions/` — create a new transaction
-- `PATCH /api/v1/transactions/{txn_id}` — update an existing transaction
-- `DELETE /api/v1/transactions/{txn_id}` — delete a transaction
+## Documentation
 
-### Accounts
-
-- `GET /api/v1/accounts/` — list accounts
-- `GET /api/v1/accounts/{account_id}` — retrieve an account by UUID
-- `POST /api/v1/accounts/` — create a new account
-- `PATCH /api/v1/accounts/{account_id}` — update an existing account
-- `DELETE /api/v1/accounts/{account_id}` — delete an account
-
-### Categories
-
-- `GET /api/v1/categories/` — list categories; optional query param: `category_type`
-- `POST /api/v1/categories/` — create a new category
-
-### Users
-
-- `GET /api/v1/user/` — list users
-- `GET /api/v1/user/{user_id}` — retrieve a user by UUID
-- `GET /api/v1/user/me` — retrieve the currently authenticated user
-
-### Security / Auth
-
-- `POST /api/v1/auth/login` — authenticate with OAuth2 password form and receive a bearer token
-- `POST /api/v1/auth/signup` — create a new user
-- `GET /api/v1/auth/me` — retrieve current user details from the token
-
-## Notes
-
-- Backend-specific setup and usage details are available in `backend/README.md`.
-- The repository currently focuses on backend wiring and API implementation.
+- **Backend**: `backend/README.md` — setup, API endpoints, configuration
+- **Frontend**: `frontend/README.md` — setup, routes, scripts
+- **Agents**: `backend/AGENTS.md` — development conventions for AI coding agents

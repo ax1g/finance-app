@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Loader2, ChevronLeft, ChevronRight, Calendar } from "lucide-react"
 import { fetchTransactions } from "@/api/transactions"
 import type { TransactionRead } from "@/types"
-import { fmt, formatDate } from "@/lib/utils"
+import { fmt } from "@/lib/utils"
 
 const WEEKDAY_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 

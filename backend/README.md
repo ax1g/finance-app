@@ -144,6 +144,20 @@ Base path: `/api/v1`
 | GET | `/user/me` | Get current authenticated user |
 | GET | `/user/{user_id}` | Get user by UUID |
 
+## Docker
+
+A `Dockerfile` is provided for containerized deployment. It uses a multi-stage build with `uv` for dependency management.
+
+```bash
+# Build the image
+docker build -t finance-app-backend ./backend
+
+# Run with PostgreSQL (or use docker-compose from the project root)
+docker run -p 8000:8000 --env-file .env finance-app-backend
+```
+
+The full stack (PostgreSQL + backend + frontend) can be started via `docker-compose` from the project root. See the root `docker-compose.yml` for details.
+
 ## Production Notes
 
 - Set `echo=False` in `app/core/database.py` to disable SQL logging
