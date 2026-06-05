@@ -1,4 +1,7 @@
 import logging
+from contextlib import asynccontextmanager
+
+from collections.abc import AsyncGenerator
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,6 +10,7 @@ from fastapi.responses import JSONResponse
 
 from app.api.v1.api import api_router
 from app.core.config import settings
+from app.core.database import create_database_if_not_exists
 from app.core.exceptions import (
     AppError,
     AuthenticationError,
@@ -19,6 +23,14 @@ from app.core.exceptions import (
 logger = logging.getLogger(__name__)
 
 
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
+    logger.info("Starting up...")
+    await create_database_if_not_exists()
+    yield
+    logger.info("Shutting down...")
+
+
 def custom_generate_unique_id(route: APIRoute) -> str:
     return route.name
 
@@ -27,6 +39,7 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     generate_unique_id_function=custom_generate_unique_id,
+    lifespan=lifespan,
 )
 
 app.add_middleware(
