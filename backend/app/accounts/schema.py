@@ -22,7 +22,7 @@ class AccountCreate(AccountBase):
 class AccountRead(AccountBase):
     id: uuid.UUID
 
-    current_balance: Decimal = Field(ge=0, max_digits=12, decimal_places=2)
+    current_balance: Decimal = Field(max_digits=12, decimal_places=2)
 
     model_config = ConfigDict(from_attributes=True)
 
