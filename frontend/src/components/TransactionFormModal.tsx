@@ -6,7 +6,7 @@ import { useModal } from "@/context/ModalContext"
 import { useDataRefresh } from "@/context/DataRefreshContext"
 import type { AccountRead, CategoryRead, TransactionType } from "@/types"
 import { Button } from "@/components/ui/button"
-import { cn, toLocalDatetime } from "@/lib/utils"
+import { cn, toLocalDatetime, getCurrencySymbol } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -167,22 +167,30 @@ export default function TransactionFormModal() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="modal-amount">Amount</Label>
-            <Input
-              id="modal-amount"
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="0.00"
-              value={form.amount}
-              onChange={(e) => setForm({ ...form, amount: e.target.value })}
-              required
-              className={cn(
-                "font-number h-14 px-3",
-                form.txn_type === "income" && "text-[var(--color-income)]",
-                form.txn_type === "expense" && "text-[var(--color-expense)]"
-              )}
-              style={{ fontSize: 36, paddingTop: 8, paddingBottom: 8 }}
-            />
+            <div className="relative">
+              <span
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground select-none pointer-events-none"
+                style={{ fontSize: 24, lineHeight: 1 }}
+              >
+                {getCurrencySymbol()}
+              </span>
+              <Input
+                id="modal-amount"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                value={form.amount}
+                onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                required
+                className={cn(
+                  "font-number h-14 pl-12 pr-3 text-right appearance-none",
+                  form.txn_type === "income" && "text-[var(--color-income)]",
+                  form.txn_type === "expense" && "text-[var(--color-expense)]"
+                )}
+                style={{ fontSize: 36, paddingTop: 8, paddingBottom: 8 }}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">

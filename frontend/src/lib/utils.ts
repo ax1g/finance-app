@@ -5,6 +5,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function getCurrencySymbol(): string {
+  const customSymbol = localStorage.getItem("currency_custom_symbol")
+  if (customSymbol) return customSymbol
+  const currency = localStorage.getItem("currency") || "USD"
+  const parts = new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).formatToParts(0)
+  return parts.find((p) => p.type === "currency")?.value || currency
+}
+
 export function fmt(n: number | string, currency?: string): string {
   const v = typeof n === "string" ? parseFloat(n) : n
   const cur = currency || localStorage.getItem("currency") || "USD"
