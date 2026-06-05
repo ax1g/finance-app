@@ -27,9 +27,11 @@ export function formatDate(iso: string): string {
   const mon = MONTHS[d.getMonth()]
   const day = String(d.getDate()).padStart(2, "0")
   const y = d.getFullYear()
-  const h = String(d.getHours()).padStart(2, "0")
+  const h = d.getHours()
   const min = String(d.getMinutes()).padStart(2, "0")
-  return `${mon} ${day}, ${y} ${h}:${min}`
+  const ampm = h >= 12 ? "PM" : "AM"
+  const h12 = String(h % 12 || 12).padStart(2, "0")
+  return `${mon} ${day}, ${y} ${h12}:${min} ${ampm}`
 }
 
 export function toLocalDatetime(date: Date): string {
