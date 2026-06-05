@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { forgotPassword, resetPassword } from "@/api/auth";
@@ -37,8 +37,7 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
 
   if (isAuth) {
-    navigate("/", { replace: true });
-    return null;
+    return <Navigate to="/" replace />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

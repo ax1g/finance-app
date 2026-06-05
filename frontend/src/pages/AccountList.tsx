@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchAccounts } from "@/api/accounts";
 import { useDataRefresh } from "@/context/DataRefreshContext";
@@ -231,26 +231,32 @@ export default function AccountList() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [expanded, setExpanded] = useState<Set<string>>(new Set(["cash", "bank"]));
 
-  const loadAccounts = useCallback(() => {
+  useEffect(() => {
+    let cancelled = false;
+
     setLoading(true);
     setError("");
     fetchAccounts()
-      .then((data) => setAccounts(data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [version.accounts]);
+      .then((data) => {
+        if (!cancelled) setAccounts(data);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
-  useEffect(() => {
-    loadAccounts();
-  }, [loadAccounts]);
+    return () => {
+      cancelled = true;
+    };
+  }, [version.accounts]);
 
   const openCreateModal = () => {
     openModal(
       "new-account-list",
       <QuickAccountModal
-        onCreated={() => {
-          loadAccounts();
-        }}
+        onCreated={(_account) => {}}
       />,
     );
   };

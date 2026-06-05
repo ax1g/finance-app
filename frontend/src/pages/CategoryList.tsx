@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { fetchCategories } from "@/api/categories"
 import { useDataRefresh } from "@/context/DataRefreshContext"
@@ -105,26 +105,32 @@ export default function CategoryList() {
   const [error, setError] = useState("")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
 
-  const loadCategories = useCallback(() => {
+  useEffect(() => {
+    let cancelled = false
+
     setLoading(true)
     setError("")
     fetchCategories()
-      .then((data) => setCategories(data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false))
-  }, [version.categories])
+      .then((data) => {
+        if (!cancelled) setCategories(data)
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
 
-  useEffect(() => {
-    loadCategories()
-  }, [loadCategories])
+    return () => {
+      cancelled = true
+    }
+  }, [version.categories])
 
   const openCreateModal = () => {
     openModal(
       "new-category-list",
       <QuickCategoryModal
-        onCreated={() => {
-          loadCategories()
-        }}
+        onCreated={(_category) => {}}
       />,
     )
   }
