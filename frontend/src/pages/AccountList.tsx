@@ -52,8 +52,7 @@ const TYPE_META: Record<string, { label: string; icon: React.ReactNode; color: s
 const ASSET_TYPES = ["cash", "bank", "investment", "receivables"];
 const LIABILITY_TYPES = ["payables"];
 
-function AccountsModal({ type, accounts }: { type: string; accounts: AccountRead[] }) {
-  const meta = TYPE_META[type];
+function AccountsModal({ accounts }: { accounts: AccountRead[] }) {
   return (
     <div className="space-y-1">
       {accounts.length === 0 ? (
@@ -271,7 +270,7 @@ export default function AccountList() {
             <p className="text-xs text-muted-foreground">{typeAccounts.length} accounts</p>
           </div>
         </div>
-        <AccountsModal type={type} accounts={typeAccounts} />
+        <AccountsModal accounts={typeAccounts} />
       </div>,
     );
   };

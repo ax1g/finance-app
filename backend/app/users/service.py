@@ -7,7 +7,7 @@ from app.users.model import User
 from app.categories.model import Category
 from app.categories.defaults import DEFAULT_CATEGORIES
 from app.core.security import get_password_hash, verify_password, create_access_token, decode_access_token
-from app.core.exceptions import AuthenticationError, AuthorizationError, ResourceNotFoundError
+from app.core.exceptions import AuthenticationError, AuthorizationError
 
 
 class UserService:
@@ -43,10 +43,10 @@ class UserService:
         return user
 
     async def authenticate_user(self, username: str, password: str) -> User | None:
-        # try by username first, then by email
-        user = await self.repo.get_by_username(username)
+        lookup = username.lower()
+        user = await self.repo.get_by_username(lookup)
         if not user:
-            user = await self.repo.get_by_email(username)
+            user = await self.repo.get_by_email(lookup)
 
         if not user:
             return None

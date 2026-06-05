@@ -21,7 +21,7 @@ export default function LoginPage() {
   const { toast } = useToast();
   const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [forgotStep, setForgotStep] = useState<"email" | "reset">("email");
-  const [resetToken, setResetToken] = useState("");
+  const [, setResetToken] = useState("");
   const [form, setForm] = useState({
     username: "",
     email: "",
