@@ -49,18 +49,19 @@ export default function Sidebar() {
         collapsed ? "w-16" : "w-60"
       }`}
     >
-      <button
-        onClick={() => setCollapsed((c) => !c)}
-        className="flex h-16 w-full items-center gap-3 border-b border-border px-3 text-left transition-colors hover:bg-accent/50"
-      >
-        <Snowflake className="h-6 w-6 shrink-0 text-sky-500" />
-        <NavLabel collapsed={collapsed}>
-          <span className="font-display font-bold text-2xl tracking-wider text-foreground whitespace-nowrap">
-            Neco
-          </span>
-        </NavLabel>
-      </button>
-
+      <div className=" space-y-1 px-3">
+        <button
+          onClick={() => setCollapsed((c) => !c)}
+          className="flex h-16 w-full items-center gap-3 border-b border-border px-3 py-2 text-left transition-colors hover:bg-accent/50"
+        >
+          <Snowflake className="h-6 w-6 shrink-0 text-sky-500" />
+          <NavLabel collapsed={collapsed}>
+            <span className="font-display font-bold text-2xl tracking-wider text-foreground whitespace-nowrap">
+              Neco
+            </span>
+          </NavLabel>
+        </button>
+      </div>
       <div className="flex-1 space-y-1 px-3 pt-5">
         <button
           onClick={() => openModal("new-transaction", <TransactionFormModal />)}
