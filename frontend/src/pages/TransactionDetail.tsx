@@ -8,6 +8,7 @@ import {
 import { fetchAccounts } from "@/api/accounts"
 import { fetchCategories } from "@/api/categories"
 import { useToast } from "@/context/ToastContext"
+import { useDataRefresh } from "@/context/DataRefreshContext"
 import type {
   AccountRead,
   CategoryRead,
@@ -61,6 +62,7 @@ export default function TransactionDetail() {
   const { txn_id } = useParams<{ txn_id: string }>()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { signal } = useDataRefresh()
 
   const [txn, setTxn] = useState<TransactionRead | null>(null)
   const [accounts, setAccounts] = useState<AccountRead[]>([])
@@ -124,6 +126,7 @@ export default function TransactionDetail() {
     setDeleting(true)
     try {
       await deleteTransaction(txn_id)
+      signal("transactions")
       toast({ title: "Transaction deleted", variant: "success" })
       navigate("/transactions", { replace: true })
     } catch (err) {
@@ -155,6 +158,7 @@ export default function TransactionDetail() {
       })
       setTxn(updated)
       setEditing(false)
+      signal("transactions")
       toast({ title: "Transaction updated", variant: "success" })
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Update failed"

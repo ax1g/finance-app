@@ -3,6 +3,7 @@ import { createTransaction } from "@/api/transactions"
 import { fetchAccounts } from "@/api/accounts"
 import { fetchCategories } from "@/api/categories"
 import { useModal } from "@/context/ModalContext"
+import { useDataRefresh } from "@/context/DataRefreshContext"
 import type { AccountRead, CategoryRead, TransactionType } from "@/types"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -28,6 +29,7 @@ const CATEGORY_TYPE_MAP: Record<string, string[]> = {
 
 export default function TransactionFormModal() {
   const { closeTopModal, openModal } = useModal()
+  const { signal } = useDataRefresh()
   const [accounts, setAccounts] = useState<AccountRead[]>([])
   const [categories, setCategories] = useState<CategoryRead[]>([])
   const [loading, setLoading] = useState(true)
@@ -80,6 +82,7 @@ export default function TransactionFormModal() {
         account_id: form.account_id,
         category_id: form.category_id,
       })
+      signal("transactions")
       closeTopModal()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create transaction")

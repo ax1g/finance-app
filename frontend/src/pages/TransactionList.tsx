@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import { fetchTransactions, type TransactionFilters } from "@/api/transactions"
+import { useDataRefresh } from "@/context/DataRefreshContext"
 import type { TransactionRead } from "@/types"
 import { Badge } from "@/components/ui/badge"
 import { fmt, formatDate } from "@/lib/utils"
@@ -33,6 +34,7 @@ export default function TransactionList() {
   const [transactions, setTransactions] = useState<TransactionRead[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const { version } = useDataRefresh()
 
   const txnType = searchParams.get("txn_type") || ""
 
@@ -56,7 +58,7 @@ export default function TransactionList() {
     return () => {
       cancelled = true
     }
-  }, [txnType])
+  }, [txnType, version.transactions])
 
   return (
     <Card>

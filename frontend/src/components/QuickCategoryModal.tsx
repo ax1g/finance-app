@@ -2,6 +2,7 @@ import { useState } from "react"
 import { createCategory } from "@/api/categories"
 import { useModal } from "@/context/ModalContext"
 import { useToast } from "@/context/ToastContext"
+import { useDataRefresh } from "@/context/DataRefreshContext"
 import type { CategoryRead, CategoryType } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -22,6 +23,7 @@ interface Props {
 export default function QuickCategoryModal({ onCreated }: Props) {
   const { closeTopModal } = useModal()
   const { toast } = useToast()
+  const { signal } = useDataRefresh()
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
   const [form, setForm] = useState({
@@ -45,6 +47,7 @@ export default function QuickCategoryModal({ onCreated }: Props) {
         type: form.type as CategoryType,
         description: form.description || null,
       })
+      signal("categories")
       toast({ title: "Category created", variant: "success" })
       onCreated(created)
       closeTopModal()

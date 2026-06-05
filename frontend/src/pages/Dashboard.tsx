@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { fetchDashboard } from "@/api/reports"
 import type { DashboardResponse } from "@/types"
+import { useDataRefresh } from "@/context/DataRefreshContext"
 import {
   Card,
   CardContent,
@@ -78,6 +79,7 @@ function DonutChart({
 export default function Dashboard() {
   const [data, setData] = useState<DashboardResponse | null>(null)
   const [error, setError] = useState("")
+  const { version } = useDataRefresh()
 
   useEffect(() => {
     let cancelled = false
@@ -93,7 +95,7 @@ export default function Dashboard() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [version.transactions, version.accounts])
 
   const loading = data === null && !error
 

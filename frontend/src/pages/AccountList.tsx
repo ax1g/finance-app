@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { fetchAccounts } from "@/api/accounts";
+import { useDataRefresh } from "@/context/DataRefreshContext";
 import type { AccountRead } from "@/types";
 import { Button } from "@/components/ui/button";
 import { useModal } from "@/context/ModalContext";
@@ -224,6 +225,7 @@ function SectionList({
 
 export default function AccountList() {
   const { openModal } = useModal();
+  const { version } = useDataRefresh();
   const [accounts, setAccounts] = useState<AccountRead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -237,7 +239,7 @@ export default function AccountList() {
       .then((data) => setAccounts(data))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [version.accounts]);
 
   useEffect(() => {
     loadAccounts();

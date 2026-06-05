@@ -6,6 +6,7 @@ import {
   deleteAccount,
 } from "@/api/accounts"
 import { useToast } from "@/context/ToastContext"
+import { useDataRefresh } from "@/context/DataRefreshContext"
 import type { AccountRead, AccountType } from "@/types"
 import { Button } from "@/components/ui/button"
 import { fmt } from "@/lib/utils"
@@ -66,6 +67,7 @@ export default function AccountDetail() {
   const { account_id } = useParams<{ account_id: string }>()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { signal } = useDataRefresh()
 
   const [account, setAccount] = useState<AccountRead | null>(null)
   const [loading, setLoading] = useState(true)
@@ -106,6 +108,7 @@ export default function AccountDetail() {
     setDeleting(true)
     try {
       await deleteAccount(account_id)
+      signal("accounts")
       toast({ title: "Account deleted", variant: "success" })
       navigate("/accounts", { replace: true })
     } catch (err) {
@@ -127,6 +130,7 @@ export default function AccountDetail() {
       })
       setAccount(updated)
       setEditing(false)
+      signal("accounts")
       toast({ title: "Account updated", variant: "success" })
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Update failed"
