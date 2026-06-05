@@ -16,7 +16,7 @@ import type {
   TransactionType,
 } from "@/types"
 import { Button } from "@/components/ui/button"
-import { fmt, formatDate } from "@/lib/utils"
+import { fmt, formatDate, toLocalDatetime } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
@@ -101,7 +101,7 @@ export default function TransactionDetail() {
         setAccounts(accts)
         setCategories(cats)
         setEditForm({
-          txn_date: new Date(txnData.txn_date).toISOString().slice(0, 16),
+          txn_date: toLocalDatetime(new Date(txnData.txn_date)),
           txn_type: txnData.txn_type,
           amount: txnData.amount,
           description: txnData.description || "",
@@ -149,7 +149,7 @@ export default function TransactionDetail() {
     setError("")
     try {
       const updated = await updateTransaction(txn_id, {
-        txn_date: new Date(editForm.txn_date).toISOString(),
+        txn_date: new Date(editForm.txn_date.replace(" ", "T")).toISOString(),
         txn_type: editForm.txn_type as TransactionType,
         amount: editForm.amount,
         description: editForm.description || null,
@@ -238,16 +238,29 @@ export default function TransactionDetail() {
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-date">Date & Time</Label>
-                <Input
-                  id="edit-date"
-                  type="datetime-local"
-                  value={editForm.txn_date}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, txn_date: e.target.value })
-                  }
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-date">Date</Label>
+                  <Input
+                    id="edit-date"
+                    type="date"
+                    value={editForm.txn_date.slice(0, 10)}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, txn_date: `${e.target.value} ${editForm.txn_date.slice(11)}` })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-time">Time</Label>
+                  <Input
+                    id="edit-time"
+                    type="time"
+                    value={editForm.txn_date.slice(11)}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, txn_date: `${editForm.txn_date.slice(0, 10)} ${e.target.value}` })
+                    }
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-account">Account</Label>
