@@ -203,8 +203,8 @@ export default function TransactionFormModal() {
                 value={form.account_id}
                 onValueChange={(value) => setForm({ ...form, account_id: value })}
               >
-                <SelectTrigger id="modal-account" className="w-full">
-                  <SelectValue placeholder="Select account" />
+                <SelectTrigger id="modal-account" className="w-full min-w-0">
+                  <SelectValue placeholder="Select account" className="min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap" />
                 </SelectTrigger>
                 <SelectContent position="popper" align="start" style={{ maxHeight: '15rem' }}>
                   {accounts.map((a) => (
@@ -229,8 +229,8 @@ export default function TransactionFormModal() {
                 value={form.category_id}
                 onValueChange={(value) => setForm({ ...form, category_id: value })}
               >
-                <SelectTrigger id="modal-category" className="w-full">
-                  <SelectValue placeholder="Select category" />
+                <SelectTrigger id="modal-category" className="w-full min-w-0">
+                  <SelectValue placeholder="Select category" className="min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap" />
                 </SelectTrigger>
                   <SelectContent position="popper" align="start" className="min-w-[220px]" style={{ maxHeight: '15rem' }}>
                     {filteredCategories.map((c) => (
