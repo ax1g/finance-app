@@ -1,5 +1,7 @@
 import logging
+import subprocess
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from collections.abc import AsyncGenerator
 
@@ -27,6 +29,19 @@ logger = logging.getLogger(__name__)
 async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Starting up...")
     await create_database_if_not_exists()
+
+    alembic_ini = Path(__file__).parent.parent / "alembic.ini"
+    logger.info("Running migrations...")
+    try:
+        subprocess.run(
+            ["python", "-m", "alembic", "upgrade", "head"],
+            cwd=alembic_ini.parent,
+            check=True,
+        )
+        logger.info("Migrations complete.")
+    except subprocess.CalledProcessError:
+        logger.exception("Migration failed")
+
     yield
     logger.info("Shutting down...")
 
