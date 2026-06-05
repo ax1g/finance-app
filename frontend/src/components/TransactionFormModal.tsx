@@ -127,7 +127,7 @@ export default function TransactionFormModal() {
           Loading...
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-0.5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <Label>Type</Label>
             <div className="flex gap-2">
