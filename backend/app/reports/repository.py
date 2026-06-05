@@ -18,12 +18,16 @@ class ReportRepo:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_total_balance(self, user_id: uuid.UUID) -> Decimal:
+    async def get_total_balance(
+        self, user_id: uuid.UUID, as_of: datetime | None = None
+    ) -> Decimal:
         try:
             query = select(func.coalesce(func.sum(Account.current_balance), 0)).where(
                 Account.user_id == user_id,
                 Account.status == AccountStatus.ACTIVE,
             )
+            if as_of is not None:
+                query = query.where(Account.created_at <= as_of)
             result = await self.db.execute(query)
             return result.scalar()
         except SQLAlchemyError as e:

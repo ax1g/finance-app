@@ -36,6 +36,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import {
+  ArrowLeft,
   ArrowUpRight,
   ArrowDownRight,
   Loader2,
@@ -192,6 +193,15 @@ export default function TransactionDetail() {
   if (editing) {
     return (
       <div className="mx-auto max-w-lg">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mb-2"
+          onClick={() => navigate("/transactions")}
+        >
+          <ArrowLeft className="mr-1 h-4 w-4" />
+          Back
+        </Button>
         <Card>
           <CardHeader>
             <CardTitle>Edit Transaction</CardTitle>
@@ -332,6 +342,15 @@ export default function TransactionDetail() {
 
   return (
     <div className="mx-auto max-w-lg">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="mb-2"
+        onClick={() => navigate("/transactions")}
+      >
+        <ArrowLeft className="mr-1 h-4 w-4" />
+        Back
+      </Button>
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">

@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime, timezone
+from decimal import Decimal
 from sqlalchemy import select
 
 from app.accounts.repository import AccountRepo
@@ -16,6 +17,21 @@ class AccountService:
 
     def __init__(self, repo: AccountRepo):
         self.repo = repo
+
+    async def increase_balance(
+        self, user_id: uuid.UUID, account_id: uuid.UUID, amount: Decimal
+    ) -> None:
+        await self.repo.increase_balance(user_id, account_id, amount)
+
+    async def decrease_balance(
+        self, user_id: uuid.UUID, account_id: uuid.UUID, amount: Decimal
+    ) -> None:
+        await self.repo.decrease_balance(user_id, account_id, amount)
+
+    async def adjust_balance(
+        self, user_id: uuid.UUID, account_id: uuid.UUID, delta: Decimal
+    ) -> None:
+        await self.repo.adjust_balance(user_id, account_id, delta)
 
     async def create_account(self, user_id: uuid.UUID, data: AccountCreate):
         account = await self.repo.create(user_id, data)

@@ -1,5 +1,4 @@
 import uuid
-from datetime import datetime, timezone
 
 from sqlalchemy import select, asc
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,7 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from app.categories.model import Category
 from app.core.enums import CategoryType, CategoryStatus
-from app.core.exceptions import RepositoryError, ConflictError
+from app.core.exceptions import RepositoryError, ConflictError, ResourceNotFoundError
 
 
 class CategoryRepo:
@@ -60,8 +59,6 @@ class CategoryRepo:
     async def update(self, user_id: uuid.UUID, category_id: uuid.UUID, data: dict):
         try:
             category = await self.get_by_id(user_id, category_id)
-            if not category:
-                return None
 
             for key, val in data.items():
                 setattr(category, key, val)
@@ -84,8 +81,6 @@ class CategoryRepo:
         """
         try:
             category = await self.get_by_id(user_id, category_id)
-            if not category:
-                return None
 
             for key, val in payload.items():
                 setattr(category, key, val)
@@ -106,6 +101,9 @@ class CategoryRepo:
         )
         try:
             result = await self.db.execute(query)
-            return result.scalar_one_or_none()
+            category = result.scalar_one_or_none()
+            if not category:
+                raise ResourceNotFoundError(f"Category {category_id} not found")
+            return category
         except SQLAlchemyError as e:
             raise RepositoryError(f"Database error: {str(e)}") from e

@@ -1,9 +1,10 @@
 import uuid
 from collections.abc import Sequence
+from decimal import Decimal
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from sqlalchemy import select, asc
+from sqlalchemy import select, asc, update as sa_update
 
 from app.core.exceptions import (
     ResourceNotFoundError,
@@ -105,6 +106,59 @@ class AccountRepo:
         except SQLAlchemyError as e:
             await self.db.rollback()
             raise RepositoryError(f"Database error: {str(e)}") from e
+
+    async def increase_balance(
+        self, user_id: uuid.UUID, account_id: uuid.UUID, amount: Decimal
+    ) -> None:
+        stmt = (
+            sa_update(Account)
+            .where(Account.id == account_id)
+            .where(Account.user_id == user_id)
+            .values(current_balance=Account.current_balance + amount)
+        )
+        try:
+            await self.db.execute(stmt)
+        except SQLAlchemyError as e:
+            await self.db.rollback()
+            raise RepositoryError(f"Database error: {str(e)}") from e
+
+    async def decrease_balance(
+        self, user_id: uuid.UUID, account_id: uuid.UUID, amount: Decimal
+    ) -> None:
+        stmt = (
+            sa_update(Account)
+            .where(Account.id == account_id)
+            .where(Account.user_id == user_id)
+            .where(Account.current_balance >= amount)
+            .values(current_balance=Account.current_balance - amount)
+        )
+        try:
+            result = await self.db.execute(stmt)
+            if result.rowcount == 0:
+                raise ConflictError("Insufficient funds in the account.")
+        except SQLAlchemyError as e:
+            await self.db.rollback()
+            raise RepositoryError(f"Database error: {str(e)}") from e
+
+    async def adjust_balance(
+        self, user_id: uuid.UUID, account_id: uuid.UUID, delta: Decimal
+    ) -> None:
+        if delta == 0:
+            return
+        if delta > 0:
+            await self.increase_balance(user_id, account_id, delta)
+        else:
+            stmt = (
+                sa_update(Account)
+                .where(Account.id == account_id)
+                .where(Account.user_id == user_id)
+                .values(current_balance=Account.current_balance + delta)
+            )
+            try:
+                await self.db.execute(stmt)
+            except SQLAlchemyError as e:
+                await self.db.rollback()
+                raise RepositoryError(f"Database error: {str(e)}") from e
 
     async def delete(self, user_id: uuid.UUID, account_id: uuid.UUID, payload: dict):
         """

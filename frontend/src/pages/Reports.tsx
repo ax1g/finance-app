@@ -470,34 +470,21 @@ function IncomeStatement() {
               <FileText className="h-5 w-5" />
               Income Statement
             </CardTitle>
-            <p className="text-xs text-muted-foreground mt-1">
-              for the month of{" "}
+          </div>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" onClick={prevMonth}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm font-medium min-w-[180px] text-center">
               {new Date(year, month - 1).toLocaleString("en-US", {
                 month: "long",
                 year: "numeric",
               })}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex gap-1">
-              <Button variant="outline" size="icon" onClick={prevMonth}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setYear(now.getFullYear());
-                  setMonth(now.getMonth() + 1);
-                }}
-              >
-                Today
-              </Button>
-              <Button variant="outline" size="icon" onClick={nextMonth}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="flex gap-1">
+            </span>
+            <Button variant="outline" size="sm" onClick={nextMonth}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <div className="flex gap-0.5">
               <Button
                 variant="outline"
                 size="sm"

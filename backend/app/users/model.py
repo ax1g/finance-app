@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -39,14 +41,18 @@ class User(Base, TimestampMixin):
     # ---------------------------
 
     # One-to-many: One user can have Many transactions, accounts & categories
-    transactions: Mapped[list["Transaction"]] = relationship(
+    transactions: Mapped[list["Transaction"]] = relationship(  # noqa: F821
         "Transaction", back_populates="user", cascade="all, delete-orphan"
-    )  # type: ignore # noqa
+    )
 
-    accounts: Mapped[list["Account"]] = relationship(
+    accounts: Mapped[list["Account"]] = relationship(  # noqa: F821
         "Account", back_populates="user", cascade="all, delete-orphan"
-    )  # type: ignore # noqa
+    )
 
-    categories: Mapped[list["Category"]] = relationship(
+    categories: Mapped[list["Category"]] = relationship(  # noqa: F821
         "Category", back_populates="user", cascade="all, delete-orphan"
-    )  # type: ignore # noqa
+    )
+
+    tokens: Mapped[list["UserToken"]] = relationship(  # noqa: F821
+        "UserToken", back_populates="user", cascade="all, delete-orphan"
+    )

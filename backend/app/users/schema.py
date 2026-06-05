@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr, ConfigDict, field_validator
+from pydantic import BaseModel, EmailStr, ConfigDict, Field, field_validator
 
 
 # share properties
@@ -13,7 +13,7 @@ class UserBase(BaseModel):
 
 # create schema
 class UserCreate(UserBase):
-    password: str
+    password: str = Field(min_length=8)
 
     @field_validator("username")
     @classmethod
@@ -71,13 +71,9 @@ class Token(BaseModel):
     token_type: str
 
 
-class TokenData(BaseModel):
-    username: str | None = None
-
-
 class ChangePasswordRequest(BaseModel):
     current_password: str
-    new_password: str
+    new_password: str = Field(min_length=8)
 
 
 class ForgotPasswordRequest(BaseModel):
@@ -91,4 +87,9 @@ class ForgotPasswordRequest(BaseModel):
 
 class ResetPasswordRequest(BaseModel):
     token: str
-    new_password: str
+    new_password: str = Field(min_length=8)
+
+
+class MessageResponse(BaseModel):
+    message: str
+

@@ -268,10 +268,10 @@ export default function Dashboard() {
                       variant="outline"
                       className={
                         txn.txn_type === "income"
-                          ? "border-[var(--color-income)] text-[var(--color-income)]"
+                          ? "w-24 text-center border-[var(--color-income)] text-[var(--color-income)]"
                           : txn.txn_type === "expense"
-                            ? "border-[var(--color-expense)] text-[var(--color-expense)]"
-                            : "border-border text-muted-foreground"
+                            ? "w-24 text-center border-[var(--color-expense)] text-[var(--color-expense)]"
+                            : "w-24 text-center border-border text-muted-foreground"
                       }
                     >
                       {txn.txn_type}
@@ -279,7 +279,7 @@ export default function Dashboard() {
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{txn.description || txn.category_name}</p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {txn.account_name} · {formatDate(txn.txn_date)}
+                        {formatDate(txn.txn_date)} · {txn.account_name}
                       </p>
                     </div>
                   </div>

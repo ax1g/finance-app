@@ -15,6 +15,7 @@ from app.accounts.service import AccountService
 from app.categories.repository import CategoryRepo
 from app.categories.service import CategoryService
 from app.users.repository import UserRepo
+from app.users.token_repo import UserTokenRepo
 from app.users.service import UserService
 from app.transactions.repository import TransactionRepo
 from app.transactions.service import TransactionService
@@ -42,7 +43,15 @@ AccountServiceDep = Annotated[
 CategoryServiceDep = Annotated[
     CategoryService, Depends(get_service(CategoryService, CategoryRepo))
 ]
-UserServiceDep = Annotated[UserService, Depends(get_service(UserService, UserRepo))]
+
+
+async def get_user_service(db: SessionDep):
+    user_repo = UserRepo(db)
+    token_repo = UserTokenRepo(db)
+    return UserService(user_repo, token_repo)
+
+
+UserServiceDep = Annotated[UserService, Depends(get_user_service)]
 
 
 # custom service for transactions since its quite spaghetti
@@ -71,6 +80,9 @@ async def get_current_user(
     service: UserServiceDep, token: Annotated[str, Depends(oauth2_scheme)]
 ):
     payload = decode_access_token(token)
+    if payload.get("purpose", "auth") != "auth":
+        raise AuthenticationError("Invalid token purpose.")
+
     username: str | None = payload.get("sub")
     if username is None:
         raise AuthenticationError("Could not validate credentials.")

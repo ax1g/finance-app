@@ -3,7 +3,6 @@ from datetime import datetime
 
 from app.core.enums import TransactionType
 from app.transactions.schema import TransactionCreate, TransactionUpdate
-from app.core.exceptions import ConflictError
 from app.transactions.repository import TransactionRepo
 from app.accounts.service import AccountService
 from app.categories.service import CategoryService
@@ -27,22 +26,15 @@ class TransactionService:
     async def create_transaction(self, user_id: uuid.UUID, data: TransactionCreate):
         transaction = await self.repo.create(user_id, data)
 
-        # validating if enough balance
         if data.txn_type == TransactionType.EXPENSE:
-            account = await self.accounts_service.get_account_by_id(
-                user_id, data.account_id
+            await self.accounts_service.decrease_balance(
+                user_id, data.account_id, data.amount
             )
-
-            if data.amount > account.current_balance:
-                raise ConflictError("Insufficient funds in the account.")
-
-            account.current_balance -= data.amount
 
         if data.txn_type == TransactionType.INCOME:
-            account = await self.accounts_service.get_account_by_id(
-                user_id, data.account_id
+            await self.accounts_service.increase_balance(
+                user_id, data.account_id, data.amount
             )
-            account.current_balance += data.amount
 
         await self.repo.db.commit()
         return transaction
@@ -74,10 +66,9 @@ class TransactionService:
         if was_adjustment and data.amount is not None:
             delta = data.amount - old.amount
             if delta != 0:
-                account = await self.accounts_service.get_account_by_id(
-                    user_id, old.account_id
+                await self.accounts_service.adjust_balance(
+                    user_id, old.account_id, delta
                 )
-                account.current_balance += delta
 
         await self.repo.db.commit()
         return transaction
@@ -88,9 +79,8 @@ class TransactionService:
         await self.repo.delete(user_id, txn_id)
 
         if transaction.txn_type == TransactionType.ADJUSTMENT:
-            account = await self.accounts_service.get_account_by_id(
-                user_id, transaction.account_id
+            await self.accounts_service.adjust_balance(
+                user_id, transaction.account_id, -transaction.amount
             )
-            account.current_balance -= transaction.amount
 
         await self.repo.db.commit()
