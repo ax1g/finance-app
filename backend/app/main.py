@@ -1,5 +1,5 @@
+import asyncio
 import logging
-import subprocess
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -33,13 +33,15 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     alembic_ini = Path(__file__).parent.parent / "alembic.ini"
     logger.info("Running migrations...")
     try:
-        subprocess.run(
-            ["python", "-m", "alembic", "upgrade", "head"],
+        proc = await asyncio.create_subprocess_exec(
+            "python", "-m", "alembic", "upgrade", "head",
             cwd=alembic_ini.parent,
-            check=True,
         )
+        rc = await proc.wait()
+        if rc != 0:
+            raise RuntimeError(f"Alembic exited with code {rc}")
         logger.info("Migrations complete.")
-    except subprocess.CalledProcessError:
+    except Exception:
         logger.exception("Migration failed")
 
     yield
