@@ -130,7 +130,7 @@ export default function CategoryList() {
   }
 
   const incomeCategories = categories.filter((c) => c.type === "income")
-  const expenseCategories = categories.filter((c) => c.type === "expense")
+  const expenseCategories = categories.filter((c) => c.type === "expense" && c.name !== "Opening Balance")
 
   return (
     <div className="space-y-6">

@@ -45,9 +45,10 @@ export default function TransactionFormModal() {
     category_id: "",
   })
 
-  const filteredCategories = form.txn_type
+  const filteredCategories = (form.txn_type
     ? categories.filter((c) => CATEGORY_TYPE_MAP[form.txn_type]?.includes(c.type))
     : categories
+  ).filter((c) => c.name !== "Opening Balance")
 
   const loadData = () => {
     setLoading(true)

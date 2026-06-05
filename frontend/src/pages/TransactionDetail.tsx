@@ -82,9 +82,10 @@ export default function TransactionDetail() {
     category_id: "",
   })
 
-  const filteredCategories = editForm.txn_type
+  const filteredCategories = (editForm.txn_type
     ? categories.filter((c) => CATEGORY_TYPE_MAP[editForm.txn_type]?.includes(c.type))
     : categories
+  ).filter((c) => c.name !== "Opening Balance")
 
   useEffect(() => {
     if (!txn_id) return
