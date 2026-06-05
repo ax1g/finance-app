@@ -177,7 +177,7 @@ export default function TransactionFormModal() {
               onChange={(e) => setForm({ ...form, amount: e.target.value })}
               required
               className={cn(
-                "font-number text-[24px]",
+                "font-number text-[36px] h-14",
                 form.txn_type === "income" && "text-[var(--color-income)]",
                 form.txn_type === "expense" && "text-[var(--color-expense)]"
               )}
