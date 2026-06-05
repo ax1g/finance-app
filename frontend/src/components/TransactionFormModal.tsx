@@ -36,9 +36,8 @@ export default function TransactionFormModal() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
 
-  const now = new Date()
   const [form, setForm] = useState({
-    txn_date: toLocalDatetime(now),
+    txn_date: toLocalDatetime(new Date()).replace(" ", "T"),
     txn_type: "",
     amount: "",
     description: "",
@@ -76,7 +75,7 @@ export default function TransactionFormModal() {
 
     try {
       await createTransaction({
-        txn_date: new Date(form.txn_date.replace(" ", "T")).toISOString(),
+        txn_date: new Date(form.txn_date).toISOString(),
         txn_type: form.txn_type as TransactionType,
         amount: form.amount,
         description: form.description || null,
@@ -184,27 +183,15 @@ export default function TransactionFormModal() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="modal-date">Date</Label>
-              <Input
-                id="modal-date"
-                type="date"
-                value={form.txn_date.slice(0, 10)}
-                onChange={(e) => setForm({ ...form, txn_date: `${e.target.value} ${form.txn_date.slice(11)}` })}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="modal-time">Time</Label>
-              <Input
-                id="modal-time"
-                type="time"
-                value={form.txn_date.slice(11)}
-                onChange={(e) => setForm({ ...form, txn_date: `${form.txn_date.slice(0, 10)} ${e.target.value}` })}
-                required
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="modal-date">Date & Time</Label>
+            <Input
+              id="modal-date"
+              type="datetime-local"
+              value={form.txn_date}
+              onChange={(e) => setForm({ ...form, txn_date: e.target.value })}
+              required
+            />
           </div>
 
           <div className="space-y-2">
