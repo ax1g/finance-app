@@ -22,6 +22,11 @@ async def create_transaction(
     current_user: CurrentUserDep,
     data: TransactionCreate,
 ):
+    if data.txn_type == TransactionType.ADJUSTMENT:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Adjustments are system-generated and cannot be created manually.",
+        )
     return await service.create_transaction(current_user.id, data)
 
 

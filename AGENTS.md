@@ -58,7 +58,8 @@ types/     — TypeScript interfaces matching backend Pydantic schemas
 
 - **Transaction types**: `income`, `expense`, `adjustment`, `transfer`
 - **Account types**: `cash`, `bank`, `investment`, `receivables`, `payables`
-- **Signup seeds 35 default categories** (8 income + 27 expense)
+- **Signup seeds 36 default categories** (8 income + 27 expense + 1 "Opening Balance")
+- **Adjustments are system-only**: Users cannot create them via the API. When an account is created with an `opening_balance > 0`, the system auto-creates an `adjustment` transaction linked to the "Opening Balance" category. Editing an adjustment recalculates the account balance (delta applied). Deleting an adjustment subtracts its amount from the account balance.
 - **Dashboard reports are mocked** in `frontend/src/api/dashboard.ts` — real data at `/reports/dashboard`
 - **Modals use a stack** — `ModalContext` supports nested modals (e.g. quick-create inside transaction form)
 

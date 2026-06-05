@@ -127,7 +127,7 @@ export default function TransactionFormModal() {
           <div className="space-y-2">
             <Label>Type</Label>
             <div className="flex gap-2">
-              {(["income", "expense", "adjustment", "transfer"] as const).map((type) => {
+              {(["income", "expense", "transfer"] as const).map((type) => {
                 const selected = form.txn_type === type
                 const isIncome = type === "income"
                 const isExpense = type === "expense"

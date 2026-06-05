@@ -1,5 +1,5 @@
 [project]
-name = "fastapi-finance-app"
+name = "neco-app"
 version = "0.1.0"
 description = "A fullstack personal finance app for simple people like us and (Forrest Gump ofc!)."
 readme = "README.md"

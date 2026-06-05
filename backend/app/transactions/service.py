@@ -66,10 +66,31 @@ class TransactionService:
     async def update_transaction(
         self, user_id: uuid.UUID, txn_id: uuid.UUID, data: TransactionUpdate
     ):
+        old = await self.repo.get_by_id(user_id, txn_id)
+        was_adjustment = old.txn_type == TransactionType.ADJUSTMENT
+
         transaction = await self.repo.update(user_id, txn_id, data)
+
+        if was_adjustment and data.amount is not None:
+            delta = data.amount - old.amount
+            if delta != 0:
+                account = await self.accounts_service.get_account_by_id(
+                    user_id, old.account_id
+                )
+                account.current_balance += delta
+
         await self.repo.db.commit()
         return transaction
 
     async def delete_transaction(self, user_id: uuid.UUID, txn_id: uuid.UUID):
+        transaction = await self.repo.get_by_id(user_id, txn_id)
+
         await self.repo.delete(user_id, txn_id)
+
+        if transaction.txn_type == TransactionType.ADJUSTMENT:
+            account = await self.accounts_service.get_account_by_id(
+                user_id, transaction.account_id
+            )
+            account.current_balance -= transaction.amount
+
         await self.repo.db.commit()

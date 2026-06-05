@@ -52,6 +52,7 @@ const CATEGORY_TYPE_MAP: Record<string, string[]> = {
 }
 
 function fmtAmount(txn: TransactionRead): string {
+  if (txn.txn_type === "adjustment") return fmt(txn.amount)
   const sign = txn.txn_type === "expense" ? "-" : "+"
   return `${sign}${fmt(txn.amount)}`
 }
@@ -367,17 +368,21 @@ export default function TransactionDetail() {
               className={`flex h-12 w-12 items-center justify-center rounded-full ${
                 txn.txn_type === "expense"
                   ? "bg-[var(--color-expense)]/10 text-[var(--color-expense)]"
-                  : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
+                  : txn.txn_type === "adjustment"
+                    ? "bg-muted text-muted-foreground"
+                    : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
               }`}
             >
               {txn.txn_type === "expense" ? (
                 <ArrowDownRight className="h-6 w-6" />
+              ) : txn.txn_type === "adjustment" ? (
+                <span className="text-lg font-bold">~</span>
               ) : (
                 <ArrowUpRight className="h-6 w-6" />
               )}
             </div>
             <Badge
-              variant={txn.txn_type === "expense" ? "destructive" : "secondary"}
+              variant={txn.txn_type === "adjustment" ? "outline" : txn.txn_type === "expense" ? "destructive" : "secondary"}
               className="font-number text-base"
             >
               {fmtAmount(txn)}
