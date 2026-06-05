@@ -196,62 +196,59 @@ export default function TransactionFormModal() {
             />
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="modal-account">Account</Label>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Account</Label>
+              <Select
+                value={form.account_id}
+                onValueChange={(value) => setForm({ ...form, account_id: value })}
+              >
+                <SelectTrigger id="modal-account">
+                  <SelectValue placeholder="Select account" />
+                </SelectTrigger>
+                <SelectContent position="popper" style={{ maxHeight: '15rem' }}>
+                  {accounts.map((a) => (
+                    <SelectItem key={a.id} value={a.id}>
+                      {a.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <button
                 type="button"
                 onClick={openQuickAccount}
-                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
+                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors mt-1"
               >
                 <Plus className="h-3 w-3" />
                 New Account
               </button>
             </div>
-            <Select
-              value={form.account_id}
-              onValueChange={(value) => setForm({ ...form, account_id: value })}
-            >
-              <SelectTrigger id="modal-account">
-                <SelectValue placeholder="Select account" />
-              </SelectTrigger>
-              <SelectContent position="popper" style={{ maxHeight: '15rem' }}>
-                {accounts.map((a) => (
-                  <SelectItem key={a.id} value={a.id}>
-                    {a.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="modal-category">Category</Label>
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <Select
+                value={form.category_id}
+                onValueChange={(value) => setForm({ ...form, category_id: value })}
+              >
+                <SelectTrigger id="modal-category">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                  <SelectContent position="popper" className="min-w-[220px]" style={{ maxHeight: '15rem' }}>
+                    {filteredCategories.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.icon ? `${c.icon} ${c.name}` : c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+              </Select>
               <button
                 type="button"
                 onClick={openQuickCategory}
-                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
+                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors mt-1"
               >
                 <Plus className="h-3 w-3" />
                 New Category
               </button>
             </div>
-            <Select
-              value={form.category_id}
-              onValueChange={(value) => setForm({ ...form, category_id: value })}
-            >
-              <SelectTrigger id="modal-category">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-                <SelectContent position="popper" className="min-w-[220px]" style={{ maxHeight: '15rem' }}>
-                  {filteredCategories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.icon ? `${c.icon} ${c.name}` : c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-            </Select>
           </div>
 
           <div className="space-y-2">
