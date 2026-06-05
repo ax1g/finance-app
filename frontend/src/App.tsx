@@ -23,6 +23,7 @@ const CategoryDetail = lazy(() => import("./pages/CategoryDetail"))
 const Reports = lazy(() => import("./pages/Reports"))
 const CalendarView = lazy(() => import("./pages/CalendarView"))
 const Settings = lazy(() => import("./pages/Settings"))
+const NotFound = lazy(() => import("./pages/NotFound"))
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-[60vh]">
@@ -54,6 +55,7 @@ const App = () => {
                     <Route path="reports" element={<Reports />} />
                     <Route path="calendar" element={<CalendarView />} />
                     <Route path="settings" element={<Settings />} />
+                    <Route path="*" element={<NotFound />} />
                   </Route>
                 </Routes>
               </Suspense>
