@@ -45,9 +45,22 @@ export async function apiFetch<T>(
   }
 
   if (res.status === 401) {
-    clearTokens()
-    window.dispatchEvent(new CustomEvent("auth:unauthorized"))
-    throw new Error("Session expired. Please log in again.")
+    try {
+      const body = await res.json()
+      const detail =
+        typeof body?.detail === "string"
+          ? body.detail
+          : "Session expired. Please log in again."
+      throw new Error(detail)
+    } catch (e) {
+      if (e instanceof SyntaxError) {
+        throw new Error("Session expired. Please log in again.")
+      }
+      throw e
+    } finally {
+      clearTokens()
+      window.dispatchEvent(new CustomEvent("auth:unauthorized"))
+    }
   }
 
   const text = await res.text()
