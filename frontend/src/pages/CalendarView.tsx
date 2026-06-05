@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react"
 import { Link } from "react-router-dom"
+import { useDataRefresh } from "@/context/DataRefreshContext"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -32,6 +33,7 @@ export default function CalendarView() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
+  const { version } = useDataRefresh()
 
   const startDate = `${year}-${String(month + 1).padStart(2, "0")}-01`
   const endDate = new Date(year, month + 1, 0).toISOString().slice(0, 10)
@@ -54,7 +56,7 @@ export default function CalendarView() {
       })
 
     return () => { cancelled = true }
-  }, [startDate, endDate])
+  }, [startDate, endDate, version.transactions])
 
   const txnByDay = useMemo(() => {
     const map = new Map<string, TransactionRead[]>()

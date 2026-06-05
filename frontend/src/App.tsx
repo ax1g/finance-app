@@ -4,6 +4,7 @@ import { AuthProvider } from "./context/AuthContext"
 import { ThemeProvider } from "./context/ThemeContext"
 import { ModalProvider } from "./context/ModalContext"
 import { ToastProvider } from "./context/ToastContext"
+import { DataRefreshProvider } from "./context/DataRefreshContext"
 import ErrorBoundary from "./components/ErrorBoundary"
 import ModalRenderer from "./components/ModalRenderer"
 import Toaster from "./components/ui/toaster"
@@ -38,7 +39,8 @@ const App = () => {
         <ThemeProvider>
         <AuthProvider>
           <ModalProvider>
-            <ToastProvider>
+            <DataRefreshProvider>
+              <ToastProvider>
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>
                   <Route path="/login" element={<LoginPage />} />
@@ -62,6 +64,7 @@ const App = () => {
               <ModalRenderer />
               <Toaster />
             </ToastProvider>
+            </DataRefreshProvider>
           </ModalProvider>
         </AuthProvider>
         </ThemeProvider>

@@ -74,9 +74,9 @@ class TransactionRepo:
             if end:
                 query = query.where(Transaction.txn_date <= end)
 
-            # Order by newest first, then paginate
+            # Order by newest first (break ties by creation time), then paginate
             query = (
-                query.order_by(desc(Transaction.txn_date)).offset(offset).limit(limit)
+                query.order_by(desc(Transaction.txn_date), desc(Transaction.created_at)).offset(offset).limit(limit)
             )
 
             result = await self.db.execute(query)

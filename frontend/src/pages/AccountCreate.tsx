@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { createAccount } from "@/api/accounts"
 import { useToast } from "@/context/ToastContext"
+import { useDataRefresh } from "@/context/DataRefreshContext"
 import type { AccountType } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -33,6 +34,7 @@ const ACCOUNT_TYPE_OPTIONS: { value: AccountType; label: string }[] = [
 export default function AccountCreate() {
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { signal } = useDataRefresh()
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
 
@@ -57,6 +59,7 @@ export default function AccountCreate() {
         type: form.type as AccountType,
         opening_balance: form.opening_balance || "0",
       })
+      signal("accounts")
       toast({ title: "Account created", variant: "success" })
       navigate(`/accounts/${created.id}`)
     } catch (err) {

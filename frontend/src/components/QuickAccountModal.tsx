@@ -2,6 +2,7 @@ import { useState } from "react"
 import { createAccount } from "@/api/accounts"
 import { useModal } from "@/context/ModalContext"
 import { useToast } from "@/context/ToastContext"
+import { useDataRefresh } from "@/context/DataRefreshContext"
 import type { AccountRead, AccountType } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -30,6 +31,7 @@ interface Props {
 export default function QuickAccountModal({ onCreated }: Props) {
   const { closeTopModal } = useModal()
   const { toast } = useToast()
+  const { signal } = useDataRefresh()
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
   const [form, setForm] = useState({
@@ -53,6 +55,7 @@ export default function QuickAccountModal({ onCreated }: Props) {
         type: form.type as AccountType,
         opening_balance: form.opening_balance || "0",
       })
+      signal("accounts")
       toast({ title: "Account created", variant: "success" })
       onCreated(created)
       closeTopModal()

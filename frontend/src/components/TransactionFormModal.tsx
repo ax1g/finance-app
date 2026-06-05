@@ -3,9 +3,10 @@ import { createTransaction } from "@/api/transactions"
 import { fetchAccounts } from "@/api/accounts"
 import { fetchCategories } from "@/api/categories"
 import { useModal } from "@/context/ModalContext"
+import { useDataRefresh } from "@/context/DataRefreshContext"
 import type { AccountRead, CategoryRead, TransactionType } from "@/types"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { cn, toLocalDatetime, getCurrencySymbol } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -28,6 +29,7 @@ const CATEGORY_TYPE_MAP: Record<string, string[]> = {
 
 export default function TransactionFormModal() {
   const { closeTopModal, openModal } = useModal()
+  const { signal } = useDataRefresh()
   const [accounts, setAccounts] = useState<AccountRead[]>([])
   const [categories, setCategories] = useState<CategoryRead[]>([])
   const [loading, setLoading] = useState(true)
@@ -35,7 +37,7 @@ export default function TransactionFormModal() {
   const [error, setError] = useState("")
 
   const [form, setForm] = useState({
-    txn_date: new Date().toISOString().slice(0, 16),
+    txn_date: toLocalDatetime(new Date()).replace(" ", "T"),
     txn_type: "",
     amount: "",
     description: "",
@@ -43,9 +45,10 @@ export default function TransactionFormModal() {
     category_id: "",
   })
 
-  const filteredCategories = form.txn_type
+  const filteredCategories = (form.txn_type
     ? categories.filter((c) => CATEGORY_TYPE_MAP[form.txn_type]?.includes(c.type))
     : categories
+  ).filter((c) => c.name !== "Opening Balance")
 
   const loadData = () => {
     setLoading(true)
@@ -80,6 +83,7 @@ export default function TransactionFormModal() {
         account_id: form.account_id,
         category_id: form.category_id,
       })
+      signal("transactions")
       closeTopModal()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create transaction")
@@ -123,7 +127,7 @@ export default function TransactionFormModal() {
           Loading...
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label>Type</Label>
             <div className="flex gap-2">
@@ -163,21 +167,30 @@ export default function TransactionFormModal() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="modal-amount">Amount</Label>
-            <Input
-              id="modal-amount"
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="0.00"
-              value={form.amount}
-              onChange={(e) => setForm({ ...form, amount: e.target.value })}
-              required
-              className={cn(
-                "font-number text-lg",
-                form.txn_type === "income" && "text-[var(--color-income)]",
-                form.txn_type === "expense" && "text-[var(--color-expense)]"
-              )}
-            />
+            <div className="relative">
+              <span
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground select-none pointer-events-none"
+                style={{ fontSize: 24, lineHeight: 1 }}
+              >
+                {getCurrencySymbol()}
+              </span>
+              <Input
+                id="modal-amount"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                value={form.amount}
+                onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                required
+                className={cn(
+                  "font-number h-14 pl-12 pr-3 text-right appearance-none",
+                  form.txn_type === "income" && "text-[var(--color-income)]",
+                  form.txn_type === "expense" && "text-[var(--color-expense)]"
+                )}
+                style={{ fontSize: 36, paddingTop: 8, paddingBottom: 8 }}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -191,62 +204,63 @@ export default function TransactionFormModal() {
             />
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="modal-account">Account</Label>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Account</Label>
+              <Select
+                value={form.account_id}
+                onValueChange={(value) => setForm({ ...form, account_id: value })}
+              >
+                <SelectTrigger id="modal-account" className="w-full max-w-full">
+                  <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                    <SelectValue placeholder="Select account" />
+                  </span>
+                </SelectTrigger>
+                <SelectContent position="popper" align="start" style={{ maxHeight: '15rem' }}>
+                  {accounts.map((a) => (
+                    <SelectItem key={a.id} value={a.id}>
+                      {a.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <button
                 type="button"
                 onClick={openQuickAccount}
-                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
+                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors mt-1"
               >
                 <Plus className="h-3 w-3" />
                 New Account
               </button>
             </div>
-            <Select
-              value={form.account_id}
-              onValueChange={(value) => setForm({ ...form, account_id: value })}
-            >
-              <SelectTrigger id="modal-account">
-                <SelectValue placeholder="Select account" />
-              </SelectTrigger>
-              <SelectContent position="popper" style={{ maxHeight: '15rem' }}>
-                {accounts.map((a) => (
-                  <SelectItem key={a.id} value={a.id}>
-                    {a.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="modal-category">Category</Label>
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <Select
+                value={form.category_id}
+                onValueChange={(value) => setForm({ ...form, category_id: value })}
+              >
+                <SelectTrigger id="modal-category" className="w-full max-w-full">
+                  <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                    <SelectValue placeholder="Select category" />
+                  </span>
+                </SelectTrigger>
+                  <SelectContent position="popper" align="start" className="min-w-[220px]" style={{ maxHeight: '15rem' }}>
+                    {filteredCategories.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.icon ? `${c.icon} ${c.name}` : c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+              </Select>
               <button
                 type="button"
                 onClick={openQuickCategory}
-                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
+                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors mt-1"
               >
                 <Plus className="h-3 w-3" />
                 New Category
               </button>
             </div>
-            <Select
-              value={form.category_id}
-              onValueChange={(value) => setForm({ ...form, category_id: value })}
-            >
-              <SelectTrigger id="modal-category">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-                <SelectContent position="popper" className="min-w-[220px]" style={{ maxHeight: '15rem' }}>
-                  {filteredCategories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.icon ? `${c.icon} ${c.name}` : c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-            </Select>
           </div>
 
           <div className="space-y-2">

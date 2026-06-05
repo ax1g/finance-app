@@ -8,6 +8,7 @@ import {
 import { fetchAccounts } from "@/api/accounts"
 import { fetchCategories } from "@/api/categories"
 import { useToast } from "@/context/ToastContext"
+import { useDataRefresh } from "@/context/DataRefreshContext"
 import type {
   AccountRead,
   CategoryRead,
@@ -15,7 +16,7 @@ import type {
   TransactionType,
 } from "@/types"
 import { Button } from "@/components/ui/button"
-import { fmt, formatDate } from "@/lib/utils"
+import { fmt, formatDate, toLocalDatetime } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
@@ -61,6 +62,7 @@ export default function TransactionDetail() {
   const { txn_id } = useParams<{ txn_id: string }>()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { signal } = useDataRefresh()
 
   const [txn, setTxn] = useState<TransactionRead | null>(null)
   const [accounts, setAccounts] = useState<AccountRead[]>([])
@@ -80,9 +82,10 @@ export default function TransactionDetail() {
     category_id: "",
   })
 
-  const filteredCategories = editForm.txn_type
+  const filteredCategories = (editForm.txn_type
     ? categories.filter((c) => CATEGORY_TYPE_MAP[editForm.txn_type]?.includes(c.type))
     : categories
+  ).filter((c) => c.name !== "Opening Balance")
 
   useEffect(() => {
     if (!txn_id) return
@@ -99,7 +102,7 @@ export default function TransactionDetail() {
         setAccounts(accts)
         setCategories(cats)
         setEditForm({
-          txn_date: new Date(txnData.txn_date).toISOString().slice(0, 16),
+          txn_date: toLocalDatetime(new Date(txnData.txn_date)).replace(" ", "T"),
           txn_type: txnData.txn_type,
           amount: txnData.amount,
           description: txnData.description || "",
@@ -124,6 +127,7 @@ export default function TransactionDetail() {
     setDeleting(true)
     try {
       await deleteTransaction(txn_id)
+      signal("transactions")
       toast({ title: "Transaction deleted", variant: "success" })
       navigate("/transactions", { replace: true })
     } catch (err) {
@@ -155,6 +159,7 @@ export default function TransactionDetail() {
       })
       setTxn(updated)
       setEditing(false)
+      signal("transactions")
       toast({ title: "Transaction updated", variant: "success" })
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Update failed"

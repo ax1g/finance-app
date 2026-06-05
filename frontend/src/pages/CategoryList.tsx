@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react"
 import { Link } from "react-router-dom"
 import { fetchCategories } from "@/api/categories"
+import { useDataRefresh } from "@/context/DataRefreshContext"
 import type { CategoryRead } from "@/types"
 import { Button } from "@/components/ui/button"
 import { useModal } from "@/context/ModalContext"
@@ -98,6 +99,7 @@ function SectionGrid({
 
 export default function CategoryList() {
   const { openModal } = useModal()
+  const { version } = useDataRefresh()
   const [categories, setCategories] = useState<CategoryRead[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
@@ -110,7 +112,7 @@ export default function CategoryList() {
       .then((data) => setCategories(data))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
-  }, [])
+  }, [version.categories])
 
   useEffect(() => {
     loadCategories()
@@ -128,7 +130,7 @@ export default function CategoryList() {
   }
 
   const incomeCategories = categories.filter((c) => c.type === "income")
-  const expenseCategories = categories.filter((c) => c.type === "expense")
+  const expenseCategories = categories.filter((c) => c.type === "expense" && c.name !== "Opening Balance")
 
   return (
     <div className="space-y-6">
