@@ -13,7 +13,6 @@ import { Loader2 } from "lucide-react"
 const LoginPage = lazy(() => import("./pages/LoginPage"))
 const Dashboard = lazy(() => import("./pages/Dashboard"))
 const TransactionList = lazy(() => import("./pages/TransactionList"))
-const TransactionCreate = lazy(() => import("./pages/TransactionCreate"))
 const TransactionDetail = lazy(() => import("./pages/TransactionDetail"))
 const AccountList = lazy(() => import("./pages/AccountList"))
 const AccountCreate = lazy(() => import("./pages/AccountCreate"))
@@ -45,7 +44,6 @@ const App = () => {
                   <Route element={<Layout />}>
                     <Route index element={<Dashboard />} />
                     <Route path="transactions" element={<TransactionList />} />
-                    <Route path="transactions/new" element={<TransactionCreate />} />
                     <Route path="transactions/:txn_id" element={<TransactionDetail />} />
                     <Route path="accounts" element={<AccountList />} />
                     <Route path="accounts/new" element={<AccountCreate />} />

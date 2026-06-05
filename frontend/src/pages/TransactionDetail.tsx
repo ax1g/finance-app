@@ -44,6 +44,13 @@ import {
   Check,
 } from "lucide-react"
 
+const CATEGORY_TYPE_MAP: Record<string, string[]> = {
+  income: ["income"],
+  expense: ["expense"],
+  adjustment: ["income", "expense"],
+  transfer: ["income", "expense"],
+}
+
 function fmtAmount(txn: TransactionRead): string {
   const sign = txn.txn_type === "expense" ? "-" : "+"
   return `${sign}${fmt(txn.amount)}`
@@ -71,6 +78,10 @@ export default function TransactionDetail() {
     account_id: "",
     category_id: "",
   })
+
+  const filteredCategories = editForm.txn_type
+    ? categories.filter((c) => CATEGORY_TYPE_MAP[editForm.txn_type]?.includes(c.type))
+    : categories
 
   useEffect(() => {
     if (!txn_id) return
@@ -187,14 +198,20 @@ export default function TransactionDetail() {
                   <Label htmlFor="edit-type">Type</Label>
                   <Select
                     value={editForm.txn_type}
-                    onValueChange={(value) =>
-                      setEditForm({ ...editForm, txn_type: value })
-                    }
+                    onValueChange={(value) => {
+                      const allowed = CATEGORY_TYPE_MAP[value] || []
+                      const currentCat = categories.find((c) => c.id === editForm.category_id)
+                      const category_id =
+                        currentCat && allowed.includes(currentCat.type)
+                          ? editForm.category_id
+                          : ""
+                      setEditForm({ ...editForm, txn_type: value, category_id })
+                    }}
                   >
                     <SelectTrigger id="edit-type">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent position="popper" style={{ maxHeight: '15rem' }}>
                       <SelectItem value="income">Income</SelectItem>
                       <SelectItem value="expense">Expense</SelectItem>
                       <SelectItem value="adjustment">Adjustment</SelectItem>
@@ -238,7 +255,7 @@ export default function TransactionDetail() {
                   <SelectTrigger id="edit-account">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper" style={{ maxHeight: '15rem' }}>
                     {accounts.map((a) => (
                       <SelectItem key={a.id} value={a.id}>
                         {a.name}
@@ -258,10 +275,10 @@ export default function TransactionDetail() {
                   <SelectTrigger id="edit-category">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((c) => (
+                  <SelectContent position="popper" className="min-w-[220px]" style={{ maxHeight: '15rem' }}>
+                    {filteredCategories.map((c) => (
                       <SelectItem key={c.id} value={c.id}>
-                        {c.name}
+                        {c.icon ? `${c.icon} ${c.name}` : c.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
