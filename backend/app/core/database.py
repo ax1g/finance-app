@@ -1,4 +1,5 @@
 import logging
+import re
 
 from collections.abc import AsyncGenerator
 from sqlalchemy import text
@@ -32,6 +33,9 @@ async def create_database_if_not_exists() -> None:
         f"{settings.POSTGRES_PORT}/postgres"
     )
     admin_engine = create_async_engine(admin_url, isolation_level="AUTOCOMMIT")
+    if not re.fullmatch(r"[a-zA-Z_][a-zA-Z0-9_]*", db_name):
+        raise ValueError(f"Invalid database name: {db_name!r}")
+
     try:
         async with admin_engine.connect() as conn:
             result = await conn.execute(
