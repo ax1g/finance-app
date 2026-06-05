@@ -71,6 +71,9 @@ async def get_current_user(
     service: UserServiceDep, token: Annotated[str, Depends(oauth2_scheme)]
 ):
     payload = decode_access_token(token)
+    if payload.get("purpose", "auth") != "auth":
+        raise AuthenticationError("Invalid token purpose.")
+
     username: str | None = payload.get("sub")
     if username is None:
         raise AuthenticationError("Could not validate credentials.")

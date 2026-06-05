@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import uuid
 from decimal import Decimal
 from datetime import date
@@ -39,9 +41,9 @@ class Account(Base, TimestampMixin):
     # ---------------------------
 
     # Many-to-One: Many accounts belong to one user
-    user: Mapped["User"] = relationship("User", back_populates="accounts")  # type: ignore # noqa
+    user: Mapped["User"] = relationship("User", back_populates="accounts")  # noqa: F821
 
     # One-to-Many: One account has many transactions
-    transactions: Mapped[list["Transaction"]] = relationship(
+    transactions: Mapped[list["Transaction"]] = relationship(  # noqa: F821
         "Transaction", back_populates="account"
-    )  # type: ignore # noqa
+    )

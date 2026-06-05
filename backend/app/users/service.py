@@ -84,7 +84,11 @@ class UserService:
         user = await self.repo.get_by_email(email)
         if not user:
             return ""
-        token = create_access_token(subject=email, expires_delta=timedelta(minutes=15))
+        token = create_access_token(
+            subject=email,
+            expires_delta=timedelta(minutes=15),
+            purpose="password_reset",
+        )
         return token
 
     async def reset_password(self, token: str, new_password: str):
@@ -92,6 +96,8 @@ class UserService:
             payload = decode_access_token(token)
         except AuthenticationError:
             raise AuthenticationError("Invalid or expired reset token.")
+        if payload.get("purpose") != "password_reset":
+            raise AuthenticationError("Invalid reset token.")
         email = payload.get("sub")
         if not email:
             raise AuthenticationError("Invalid reset token.")

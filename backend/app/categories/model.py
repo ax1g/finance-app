@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
 
@@ -42,9 +44,9 @@ class Category(Base, TimestampMixin):
     # ---------------------------
 
     # Many-to-One: Many categories belong to one user
-    user: Mapped["User"] = relationship("User", back_populates="categories")  # type: ignore # noqa
+    user: Mapped["User"] = relationship("User", back_populates="categories")  # noqa: F821
 
     # One-to-Many: One category has many transactions
-    transactions: Mapped[list["Transaction"]] = relationship(
+    transactions: Mapped[list["Transaction"]] = relationship(  # noqa: F821
         "Transaction", back_populates="category"
     )
