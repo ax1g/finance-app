@@ -6,7 +6,6 @@ import { forgotPassword, resetPassword } from "@/api/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import LogoIcon from "@/components/LogoIcon";
 import { Eye, EyeOff } from "lucide-react";
 import {
   Card,
@@ -137,9 +136,8 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-      <div className="flex flex-col items-center justify-center gap-3 mb-6">
-        <LogoIcon size={64} />
-        <span className="text-2xl font-display font-bold tracking-wide text-foreground">
+      <div className="flex flex-col items-center justify-center gap-1 mb-8">
+        <span className="text-5xl font-display font-bold tracking-wider text-foreground">
           Neco
         </span>
       </div>

@@ -145,7 +145,7 @@ class ReportService:
             )
             if t.txn_type == TransactionType.INCOME:
                 income_txns.append(item)
-            else:
+            elif t.txn_type == TransactionType.EXPENSE:
                 expense_txns.append(item)
 
         return IncomeStatementResponse(

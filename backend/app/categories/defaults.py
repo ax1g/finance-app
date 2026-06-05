@@ -38,4 +38,6 @@ DEFAULT_CATEGORIES: list[DefaultCategoryDef] = [
     {"name": "Taxes",         "type": CategoryType.EXPENSE, "icon": "📊", "description": "Income tax, property tax, fees",       "sort_order": 230},
     {"name": "Business Meals", "type": CategoryType.EXPENSE,"icon":"🍽️", "description": "Client meetings and business meals",   "sort_order": 240},
     {"name": "Other Expense", "type": CategoryType.EXPENSE, "icon": "📦", "description": "Miscellaneous expenses",              "sort_order": 300},
+    # ── Adjustment ───────────────────────────────────────
+    {"name": "Opening Balance", "type": CategoryType.EXPENSE, "icon": "🏦", "description": "System-generated opening balance adjustment", "sort_order": 0},
 ]

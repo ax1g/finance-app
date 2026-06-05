@@ -21,6 +21,17 @@ async def create_category(
     return await service.create_category(current_user.id, new_category)
 
 
+@router.get(
+    "/{category_id}", response_model=CategoryRead, status_code=status.HTTP_200_OK
+)
+async def get_category(
+    service: CategoryServiceDep,
+    current_user: CurrentUserDep,
+    category_id: uuid.UUID,
+):
+    return await service.get_category_by_id(current_user.id, category_id)
+
+
 @router.get("/", response_model=list[CategoryRead], status_code=status.HTTP_200_OK)
 async def get_categories(
     service: CategoryServiceDep,

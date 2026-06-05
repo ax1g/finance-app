@@ -154,6 +154,9 @@ export default function CalendarView() {
                           {dayTxns!.some((t) => t.txn_type === "income") && (
                             <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
                           )}
+                          {dayTxns!.some((t) => t.txn_type === "adjustment") && (
+                            <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />
+                          )}
                           {dayTxns!.some((t) => t.txn_type === "expense") && (
                             <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
                           )}
@@ -199,7 +202,7 @@ export default function CalendarView() {
                             ? "border-[var(--color-income)] text-[var(--color-income)]"
                             : txn.txn_type === "expense"
                               ? "border-[var(--color-expense)] text-[var(--color-expense)]"
-                              : ""
+                              : "border-border text-muted-foreground"
                         }
                       >
                         {txn.txn_type}
@@ -211,8 +214,14 @@ export default function CalendarView() {
                         </p>
                       </div>
                     </div>
-                    <p className={`ml-4 font-number font-semibold shrink-0 ${txn.txn_type === "income" ? "text-[var(--color-income)]" : "text-[var(--color-expense)]"}`}>
-                      {txn.txn_type === "income" ? "+" : "-"}{fmt(txn.amount)}
+                    <p className={`ml-4 font-number font-semibold shrink-0 ${
+                      txn.txn_type === "income"
+                        ? "text-[var(--color-income)]"
+                        : txn.txn_type === "adjustment"
+                          ? "text-muted-foreground"
+                          : "text-[var(--color-expense)]"
+                    }`}>
+                      {txn.txn_type === "adjustment" ? "" : txn.txn_type === "income" ? "+" : "-"}{fmt(txn.amount)}
                     </p>
                   </Link>
                 ))}

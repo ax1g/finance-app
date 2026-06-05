@@ -1,9 +1,12 @@
 import uuid
 from datetime import datetime, timezone
+from sqlalchemy import select
 
 from app.accounts.repository import AccountRepo
 from app.accounts.schema import AccountCreate, AccountUpdate
-from app.core.enums import AccountStatus
+from app.transactions.model import Transaction
+from app.categories.model import Category
+from app.core.enums import AccountStatus, CategoryType, TransactionType
 
 
 class AccountService:
@@ -16,6 +19,38 @@ class AccountService:
 
     async def create_account(self, user_id: uuid.UUID, data: AccountCreate):
         account = await self.repo.create(user_id, data)
+
+        if data.opening_balance > 0:
+            result = await self.repo.db.execute(
+                select(Category).where(
+                    Category.user_id == user_id,
+                    Category.name == "Opening Balance",
+                )
+            )
+            category = result.scalar_one_or_none()
+            if not category:
+                category = Category(
+                    name="Opening Balance",
+                    type=CategoryType.EXPENSE,
+                    icon="\U0001f3e6",
+                    description="System-generated opening balance adjustment",
+                    sort_order=0,
+                    user_id=user_id,
+                )
+                self.repo.db.add(category)
+                await self.repo.db.flush()
+
+            txn = Transaction(
+                txn_date=datetime.now(timezone.utc),
+                txn_type=TransactionType.ADJUSTMENT,
+                amount=data.opening_balance,
+                description=f"Opening balance for {data.name}",
+                account_id=account.id,
+                category_id=category.id,
+                user_id=user_id,
+            )
+            self.repo.db.add(txn)
+
         await self.repo.db.commit()
         return account
 

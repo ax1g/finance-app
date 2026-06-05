@@ -23,6 +23,7 @@ const TXN_TYPES = [
 ]
 
 function fmtAmount(txn: TransactionRead): string {
+  if (txn.txn_type === "adjustment") return fmt(txn.amount)
   const sign = txn.txn_type === "expense" ? "-" : "+"
   return `${sign}${fmt(txn.amount)}`
 }
@@ -112,11 +113,15 @@ export default function TransactionList() {
                     className={`flex h-9 w-9 items-center justify-center rounded-full ${
                       txn.txn_type === "expense"
                         ? "bg-[var(--color-expense)]/10 text-[var(--color-expense)]"
-                        : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
+                        : txn.txn_type === "adjustment"
+                          ? "bg-muted text-muted-foreground"
+                          : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
                     }`}
                   >
                     {txn.txn_type === "expense" ? (
                       <ArrowDownRight className="h-4 w-4" />
+                    ) : txn.txn_type === "adjustment" ? (
+                      <span className="text-xs font-bold">~</span>
                     ) : (
                       <ArrowUpRight className="h-4 w-4" />
                     )}
@@ -136,7 +141,9 @@ export default function TransactionList() {
                     className={`font-number text-xs ${
                       txn.txn_type === "expense"
                         ? "bg-[var(--color-expense)]/10 text-[var(--color-expense)]"
-                        : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
+                        : txn.txn_type === "adjustment"
+                          ? "bg-muted text-muted-foreground"
+                          : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
                     }`}
                   >
                     {fmtAmount(txn)}
