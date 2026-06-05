@@ -2,7 +2,7 @@
 
 @theme {
   --font-number: "JetBrains Mono", monospace;
-  --font-display: "Cinzel", serif;
+  --font-display: "Playfair Display", serif;
 }
 
 @custom-variant dark (&:is(.dark *));

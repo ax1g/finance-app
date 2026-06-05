@@ -8,6 +8,7 @@ import {
   History,
   Plus,
   Settings,
+  Snowflake,
 } from "lucide-react";
 import { useState } from "react";
 import { useModal } from "@/context/ModalContext";
@@ -50,10 +51,11 @@ export default function Sidebar() {
     >
       <button
         onClick={() => setCollapsed((c) => !c)}
-        className="flex h-14 w-full items-center border-b border-border pl-3 pr-3 text-left transition-colors hover:bg-accent/50"
+        className="flex h-16 w-full items-center gap-3 border-b border-border px-3 text-left transition-colors hover:bg-accent/50"
       >
+        <Snowflake className="h-6 w-6 shrink-0 text-sky-500" />
         <NavLabel collapsed={collapsed}>
-          <span className="ml-2 font-display font-bold text-base tracking-wider text-foreground whitespace-nowrap">
+          <span className="font-display font-bold text-2xl tracking-wider text-foreground whitespace-nowrap">
             Neco
           </span>
         </NavLabel>
