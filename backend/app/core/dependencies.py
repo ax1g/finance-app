@@ -15,6 +15,7 @@ from app.accounts.service import AccountService
 from app.categories.repository import CategoryRepo
 from app.categories.service import CategoryService
 from app.users.repository import UserRepo
+from app.users.token_repo import UserTokenRepo
 from app.users.service import UserService
 from app.transactions.repository import TransactionRepo
 from app.transactions.service import TransactionService
@@ -42,7 +43,15 @@ AccountServiceDep = Annotated[
 CategoryServiceDep = Annotated[
     CategoryService, Depends(get_service(CategoryService, CategoryRepo))
 ]
-UserServiceDep = Annotated[UserService, Depends(get_service(UserService, UserRepo))]
+
+
+async def get_user_service(db: SessionDep):
+    user_repo = UserRepo(db)
+    token_repo = UserTokenRepo(db)
+    return UserService(user_repo, token_repo)
+
+
+UserServiceDep = Annotated[UserService, Depends(get_user_service)]
 
 
 # custom service for transactions since its quite spaghetti

@@ -52,3 +52,7 @@ class User(Base, TimestampMixin):
     categories: Mapped[list["Category"]] = relationship(  # noqa: F821
         "Category", back_populates="user", cascade="all, delete-orphan"
     )
+
+    tokens: Mapped[list["UserToken"]] = relationship(  # noqa: F821
+        "UserToken", back_populates="user", cascade="all, delete-orphan"
+    )

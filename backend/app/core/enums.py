@@ -31,3 +31,8 @@ class AccountStatus(StrEnum):
     ACTIVE = "active"
     CLOSED = "closed"
     SUSPENDED = "suspended"
+
+
+class TokenPurpose(StrEnum):
+    EMAIL_VERIFICATION = "email_verification"
+    PASSWORD_RESET = "password_reset"
