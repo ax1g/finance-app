@@ -269,7 +269,7 @@ export default function Dashboard() {
                           ? "border-[var(--color-income)] text-[var(--color-income)]"
                           : txn.txn_type === "expense"
                             ? "border-[var(--color-expense)] text-[var(--color-expense)]"
-                            : ""
+                            : "border-border text-muted-foreground"
                       }
                     >
                       {txn.txn_type}
@@ -281,8 +281,14 @@ export default function Dashboard() {
                       </p>
                     </div>
                   </div>
-                  <p className={`ml-4 font-number font-semibold shrink-0 ${txn.txn_type === "income" ? "text-[var(--color-income)]" : "text-[var(--color-expense)]"}`}>
-                    {txn.txn_type === "income" ? "+" : "-"}{fmt(txn.amount)}
+                  <p className={`ml-4 font-number font-semibold shrink-0 ${
+                    txn.txn_type === "income"
+                      ? "text-[var(--color-income)]"
+                      : txn.txn_type === "adjustment"
+                        ? "text-muted-foreground"
+                        : "text-[var(--color-expense)]"
+                  }`}>
+                    {txn.txn_type === "adjustment" ? "" : txn.txn_type === "income" ? "+" : "-"}{fmt(txn.amount)}
                   </p>
                 </Link>
               ))}
