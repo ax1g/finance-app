@@ -237,7 +237,7 @@ export default function TransactionFormModal() {
             />
           </div>
 
-          <div className={cn("grid gap-3", showCategory ? "grid-cols-2" : "grid-cols-1")}>
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>{form.txn_type === "transfer" ? "From Account" : "Account"}</Label>
               <Select
