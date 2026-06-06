@@ -8,6 +8,8 @@ from app.reports.schema import (
     DashboardResponse,
     RecentTransaction,
     CategorySpending,
+    BalanceByType,
+    NetWorthHistoryItem,
     SpendingByCategoryItem,
     MonthlySummaryItem,
     AccountSummaryItem,
@@ -24,9 +26,31 @@ class ReportService:
         now = datetime.now(timezone.utc)
         start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
-        total_balance = await self.repo.get_total_balance(user_id)
+        total_assets = await self.repo.get_total_assets(user_id)
+        total_liabilities = await self.repo.get_total_liabilities(user_id)
+        total_balance = total_assets - total_liabilities
         income = await self.repo.get_period_income(user_id, start_of_month, now)
         expenses = await self.repo.get_period_expenses(user_id, start_of_month, now)
+
+        balance_by_type_data = await self.repo.get_balance_by_type(user_id)
+        balance_by_type = [
+            BalanceByType(account_type=row["account_type"], balance=row["balance"])
+            for row in balance_by_type_data
+        ]
+
+        since_5y = now - timedelta(days=1825)
+        monthly_net_data = await self.repo.get_monthly_summary(user_id, since_5y)
+        adj_data = await self.repo.get_adjustments_by_month(user_id, since_5y)
+        adj_by_month = {r["year_month"]: r["total"] for r in adj_data}
+
+        running = total_balance
+        history: list[NetWorthHistoryItem] = []
+        for row in reversed(monthly_net_data):
+            adj = adj_by_month.get(row["year_month"], Decimal("0"))
+            net_change = row["income"] - row["expense"] + adj
+            history.append(NetWorthHistoryItem(date=row["year_month"], net_worth=running))
+            running -= net_change
+        history.reverse()
 
         top_categories_data = await self.repo.get_top_spending_categories(
             user_id, start_of_month, now
@@ -61,6 +85,10 @@ class ReportService:
 
         return DashboardResponse(
             total_balance=total_balance,
+            total_assets=total_assets,
+            total_liabilities=total_liabilities,
+            balance_by_type=balance_by_type,
+            networth_history=history,
             current_month_income=income,
             current_month_expenses=expenses,
             current_month_net=income - expenses,

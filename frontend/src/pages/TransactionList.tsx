@@ -109,7 +109,7 @@ export default function TransactionList() {
               <Link
                 key={txn.id}
                 to={`/transactions/${txn.id}`}
-                className="flex items-center justify-between rounded-lg border border-border px-4 py-3 transition-colors hover:bg-muted/50"
+                className="flex items-center justify-between rounded-lg border border-border px-4 py-3 transition-colors outline-none hover:bg-muted/50 focus-visible:ring-[3px] focus-visible:ring-ring/50"
               >
                 <div className="flex items-center gap-3">
                   <div

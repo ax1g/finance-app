@@ -150,8 +150,22 @@ export interface CategorySpending {
   transaction_count: number
 }
 
+export interface BalanceByType {
+  account_type: AccountType
+  balance: string
+}
+
+export interface NetWorthHistoryItem {
+  date: string
+  net_worth: string
+}
+
 export interface DashboardResponse {
   total_balance: string
+  total_assets: string
+  total_liabilities: string
+  balance_by_type: BalanceByType[]
+  networth_history: NetWorthHistoryItem[]
   current_month_income: string
   current_month_expenses: string
   current_month_net: string
