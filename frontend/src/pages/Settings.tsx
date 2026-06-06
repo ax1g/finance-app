@@ -5,6 +5,7 @@ import { useToast } from "@/context/ToastContext"
 import { fetchCurrentUser, changePassword, updateUser } from "@/api/auth"
 import type { UserRead } from "@/types"
 import { fmt } from "@/lib/utils"
+import { getPasswordError } from "@/lib/password"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -136,8 +137,9 @@ export default function Settings() {
                 setPwError("New passwords do not match")
                 return
               }
-              if (pwForm.newPassword.length < 6) {
-                setPwError("New password must be at least 6 characters")
+              const pwErr = getPasswordError(pwForm.newPassword)
+              if (pwErr) {
+                setPwError(pwErr)
                 return
               }
               setPwSubmitting(true)

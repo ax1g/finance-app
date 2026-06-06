@@ -1,7 +1,23 @@
+import re
 import uuid
 from datetime import datetime
 
 from pydantic import BaseModel, EmailStr, ConfigDict, Field, field_validator
+
+
+_PASSWORD_RULES = [
+    (r"[A-Z]", "Password must contain at least one uppercase letter"),
+    (r"[a-z]", "Password must contain at least one lowercase letter"),
+    (r"\d", "Password must contain at least one digit"),
+    (r"[^A-Za-z0-9]", "Password must contain at least one special character"),
+]
+
+
+def _validate_password_strength(v: str) -> str:
+    for pattern, msg in _PASSWORD_RULES:
+        if not re.search(pattern, v):
+            raise ValueError(msg)
+    return v
 
 
 # share properties
@@ -14,6 +30,8 @@ class UserBase(BaseModel):
 # create schema
 class UserCreate(UserBase):
     password: str = Field(min_length=8)
+
+    _check_password = field_validator("password")(_validate_password_strength)
 
     @field_validator("username")
     @classmethod
@@ -75,6 +93,8 @@ class ChangePasswordRequest(BaseModel):
     current_password: str
     new_password: str = Field(min_length=8)
 
+    _check_password = field_validator("new_password")(_validate_password_strength)
+
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
@@ -88,6 +108,8 @@ class ForgotPasswordRequest(BaseModel):
 class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str = Field(min_length=8)
+
+    _check_password = field_validator("new_password")(_validate_password_strength)
 
 
 class MessageResponse(BaseModel):

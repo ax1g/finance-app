@@ -3,6 +3,7 @@ import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { forgotPassword, resetPassword } from "@/api/auth";
+import { getPasswordError, checkPasswordStrength } from "@/lib/password";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,6 +50,11 @@ export default function LoginPage() {
       if (mode === "signup") {
         if (form.password !== form.confirmPassword) {
           setError("Passwords do not match");
+          return;
+        }
+        const pwErr = getPasswordError(form.password);
+        if (pwErr) {
+          setError(pwErr);
           return;
         }
         await signup({
@@ -98,8 +104,9 @@ export default function LoginPage() {
       setError("Passwords do not match");
       return;
     }
-    if (resetForm.password.length < 6) {
-      setError("Password must be at least 6 characters");
+    const pwErr = getPasswordError(resetForm.password);
+    if (pwErr) {
+      setError(pwErr);
       return;
     }
     setSubmitting(true);
