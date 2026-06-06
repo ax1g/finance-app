@@ -43,14 +43,23 @@ class ReportService:
         adj_data = await self.repo.get_adjustments_by_month(user_id, since_5y)
         adj_by_month = {r["year_month"]: r["total"] for r in adj_data}
 
-        running = total_balance
-        history: list[NetWorthHistoryItem] = []
-        for row in reversed(monthly_net_data):
+        monthly_sorted = sorted(monthly_net_data, key=lambda r: r["year_month"])
+        cumulative = Decimal("0")
+        raw_history: list[NetWorthHistoryItem] = []
+        for row in monthly_sorted:
             adj = adj_by_month.get(row["year_month"], Decimal("0"))
             net_change = row["income"] - row["expense"] + adj
-            history.append(NetWorthHistoryItem(date=row["year_month"], net_worth=running))
-            running -= net_change
-        history.reverse()
+            cumulative += net_change
+            raw_history.append(NetWorthHistoryItem(date=row["year_month"], net_worth=cumulative))
+
+        if raw_history:
+            offset = total_balance - raw_history[-1].net_worth
+            history = [
+                NetWorthHistoryItem(date=h.date, net_worth=h.net_worth + offset)
+                for h in raw_history
+            ]
+        else:
+            history = []
 
         top_categories_data = await self.repo.get_top_spending_categories(
             user_id, start_of_month, now

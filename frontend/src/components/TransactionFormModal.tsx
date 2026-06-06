@@ -52,7 +52,7 @@ export default function TransactionFormModal() {
           CATEGORY_TYPE_MAP[form.txn_type]?.includes(c.type),
         )
       : categories
-  ).filter((c) => c.name !== "Opening Balance");
+  ).filter((c) => c.type !== "system");
 
   const loadData = () => {
     setLoading(true);

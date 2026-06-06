@@ -43,6 +43,7 @@ class CategoryRepo:
             select(Category)
             .where(Category.user_id == user_id)
             .where(Category.status == CategoryStatus.ACTIVE)
+            .where(Category.type != CategoryType.SYSTEM)
         )
 
         if category_type:
