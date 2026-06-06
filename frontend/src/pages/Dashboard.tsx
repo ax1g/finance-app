@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, TrendingUp, TrendingDown, Wallet, PieChart, ArrowRight } from "lucide-react"
+import { Loader2, TrendingUp, TrendingDown, Wallet, PieChart, ArrowRight, ArrowUpRight, ArrowDownRight, ArrowLeftRight } from "lucide-react"
 import { fmt, formatDate } from "@/lib/utils"
 import { Link } from "react-router-dom"
 
@@ -256,42 +256,64 @@ export default function Dashboard() {
               Loading...
             </div>
           ) : data && data.recent_transactions.length > 0 ? (
-            <div className="divide-y divide-border">
+            <div className="space-y-1">
               {data.recent_transactions.map((txn) => (
                 <Link
                   key={txn.id}
                   to={`/transactions/${txn.id}`}
-                  className="flex items-center justify-between py-2.5 hover:bg-muted/50 -mx-2 px-2 rounded transition-colors"
+                  className="flex items-center justify-between rounded-lg border border-border px-4 py-3 transition-colors hover:bg-muted/50"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <Badge
-                      variant="outline"
-                      className={
-                        txn.txn_type === "income"
-                          ? "w-24 text-center border-[var(--color-income)] text-[var(--color-income)]"
-                          : txn.txn_type === "expense"
-                            ? "w-24 text-center border-[var(--color-expense)] text-[var(--color-expense)]"
-                            : "w-24 text-center border-border text-muted-foreground"
-                      }
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`flex h-9 w-9 items-center justify-center rounded-full ${
+                        txn.txn_type === "expense"
+                          ? "bg-[var(--color-expense)]/10 text-[var(--color-expense)]"
+                          : txn.txn_type === "adjustment"
+                            ? "bg-muted text-muted-foreground"
+                            : txn.txn_type === "transfer"
+                              ? "bg-primary/10 text-primary"
+                              : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
+                      }`}
                     >
-                      {txn.txn_type}
-                    </Badge>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{txn.description || txn.category_name}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {formatDate(txn.txn_date)} · {txn.account_name}
+                      {txn.txn_type === "expense" ? (
+                        <ArrowDownRight className="h-4 w-4" />
+                      ) : txn.txn_type === "adjustment" ? (
+                        <span className="text-xs font-bold">~</span>
+                      ) : txn.txn_type === "transfer" ? (
+                        <ArrowLeftRight className="h-4 w-4" />
+                      ) : (
+                        <ArrowUpRight className="h-4 w-4" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium leading-none">
+                        {txn.description || txn.category_name || "Transfer"}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {formatDate(txn.txn_date)} &middot;{" "}
+                        {txn.txn_type === "transfer" ? (
+                          <>{txn.account_name} <ArrowRight className="inline h-3 w-3" /> {txn.to_account_name || "?"}</>
+                        ) : (
+                          txn.account_name
+                        )}
                       </p>
                     </div>
                   </div>
-                  <p className={`ml-4 font-number font-semibold shrink-0 ${
-                    txn.txn_type === "income"
-                      ? "text-[var(--color-income)]"
-                      : txn.txn_type === "adjustment"
-                        ? "text-muted-foreground"
-                        : "text-[var(--color-expense)]"
-                  }`}>
-                    {txn.txn_type === "adjustment" ? "" : txn.txn_type === "income" ? "+" : "-"}{fmt(txn.amount)}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      className={`font-number text-xs ${
+                        txn.txn_type === "expense"
+                          ? "bg-[var(--color-expense)]/10 text-[var(--color-expense)]"
+                          : txn.txn_type === "adjustment"
+                            ? "bg-muted text-muted-foreground"
+                            : txn.txn_type === "transfer"
+                              ? "bg-primary/10 text-primary"
+                              : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
+                      }`}
+                    >
+                      {txn.txn_type === "adjustment" || txn.txn_type === "transfer" ? fmt(txn.amount) : txn.txn_type === "expense" ? `-${fmt(txn.amount)}` : `+${fmt(txn.amount)}`}
+                    </Badge>
+                  </div>
                 </Link>
               ))}
               <div className="pt-2 text-center">

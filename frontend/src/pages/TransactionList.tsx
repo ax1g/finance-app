@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowUpRight, ArrowDownRight, ArrowLeftRight, Loader2 } from "lucide-react"
+import { ArrowUpRight, ArrowDownRight, ArrowLeftRight, ArrowRight, Loader2 } from "lucide-react"
 
 const TXN_TYPES = [
   { value: "all", label: "All Types" },
@@ -137,12 +137,14 @@ export default function TransactionList() {
                     <p className="text-sm font-medium leading-none">
                       {txn.description || txn.category?.name || "Transfer"}
                     </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {formatDate(txn.txn_date)} &middot;{" "}
-                      {txn.txn_type === "transfer"
-                        ? `${txn.account.name} → ${txn.to_account?.name || "?"}`
-                        : txn.account.name}
-                    </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {formatDate(txn.txn_date)} &middot;{" "}
+                        {txn.txn_type === "transfer" ? (
+                          <>{txn.account.name} <ArrowRight className="inline h-3 w-3" /> {txn.to_account?.name || "?"}</>
+                        ) : (
+                          txn.account.name
+                        )}
+                      </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">

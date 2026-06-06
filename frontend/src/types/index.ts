@@ -138,6 +138,7 @@ export interface RecentTransaction {
   description: string | null
   category_name: string
   account_name: string
+  to_account_name: string | null
 }
 
 export interface CategorySpending {
