@@ -23,7 +23,6 @@ import QuickCategoryModal from "./QuickCategoryModal";
 const CATEGORY_TYPE_MAP: Record<string, string[]> = {
   income: ["income"],
   expense: ["expense"],
-  adjustment: ["income", "expense"],
 };
 
 export default function TransactionFormModal() {

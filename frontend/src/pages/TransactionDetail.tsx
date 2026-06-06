@@ -50,7 +50,6 @@ import {
 const CATEGORY_TYPE_MAP: Record<string, string[]> = {
   income: ["income"],
   expense: ["expense"],
-  adjustment: ["income", "expense"],
 }
 
 function fmtAmount(txn: TransactionRead): string {
@@ -86,7 +85,7 @@ export default function TransactionDetail() {
   })
 
   const isTransferEdit = editForm.txn_type === "transfer"
-  const showCategoryEdit = editForm.txn_type && !isTransferEdit
+  const showCategoryEdit = editForm.txn_type && !isTransferEdit && editForm.txn_type !== "adjustment"
 
   const filteredCategories = (showCategoryEdit
     ? categories.filter((c) => CATEGORY_TYPE_MAP[editForm.txn_type]?.includes(c.type))
@@ -169,8 +168,8 @@ export default function TransactionDetail() {
         amount: editForm.amount,
         description: editForm.description || null,
         account_id: editForm.account_id,
-        category_id: isTransferEdit ? null : editForm.category_id || null,
-        to_account_id: isTransferEdit ? editForm.to_account_id : null,
+      category_id: isTransferEdit || editForm.txn_type === "adjustment" ? null : editForm.category_id || null,
+      to_account_id: isTransferEdit ? editForm.to_account_id : null,
       })
       setTxn(updated)
       setEditing(false)
