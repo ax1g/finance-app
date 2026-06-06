@@ -15,7 +15,7 @@ import { useModal } from "@/context/ModalContext";
 import TransactionFormModal from "@/components/TransactionFormModal";
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
-  `flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+  `flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 ${
     isActive
       ? "bg-muted text-foreground"
       : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
@@ -45,18 +45,22 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`flex flex-col border-r border-border bg-card transition-all duration-300 ${
+      className={`relative flex flex-col border-r border-border bg-card transition-all duration-300 ${
         collapsed ? "w-16" : "w-60"
       }`}
     >
+      <div
+        onClick={() => setCollapsed((c) => !c)}
+        className="absolute inset-y-0 -right-1.5 z-10 w-3 cursor-ew-resize"
+      />
       <div className=" space-y-1 px-3">
         <button
           onClick={() => setCollapsed((c) => !c)}
-          className="flex h-16 w-full items-center gap-3 border-b border-border px-3 py-2 text-left transition-colors hover:bg-accent/50"
+          className="flex h-16 w-full items-center gap-3 border-b border-border px-3 py-2 text-left transition-colors outline-none hover:bg-accent/50 focus-visible:ring-[3px] focus-visible:ring-ring/50 cursor-ew-resize"
         >
-          <Snowflake className="h-6 w-6 shrink-0 text-sky-500" />
+          <Snowflake className="h-6 w-6 shrink-0 text-primary" />
           <NavLabel collapsed={collapsed}>
-            <span className="font-display font-bold text-2xl tracking-wider text-foreground whitespace-nowrap">
+            <span className="font-bold text-xl text-foreground whitespace-nowrap">
               Neco
             </span>
           </NavLabel>
@@ -65,7 +69,7 @@ export default function Sidebar() {
       <div className="flex-1 space-y-1 px-3 pt-5">
         <button
           onClick={() => openModal("new-transaction", <TransactionFormModal />)}
-          className="flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+          className="flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors outline-none text-muted-foreground hover:bg-muted/50 hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
         >
           <Plus className="h-6 w-6 shrink-0" />
           <NavLabel collapsed={collapsed}>

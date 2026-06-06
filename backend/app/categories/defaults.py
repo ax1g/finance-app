@@ -34,7 +34,7 @@ DEFAULT_CATEGORIES: list[dict] = [
     {"name": "Office Supplies","type": CategoryType.EXPENSE, "icon": "📎", "description": "Stationery, printing, consumables",   "sort_order": 210},
     {"name": "Professional Services","type": CategoryType.EXPENSE,"icon":"⚖️", "description": "Legal, accounting, consulting",   "sort_order": 220},
     {"name": "Taxes",         "type": CategoryType.EXPENSE, "icon": "📊", "description": "Income tax, property tax, fees",       "sort_order": 230},
-    {"name": "Business Meals", "type": CategoryType.EXPENSE,"icon":"🍽️", "description": "Client meetings and business meals",   "sort_order": 240},
+    {"name": "Bank Charges", "type": CategoryType.EXPENSE,"icon":"🏦", "description": "Bank fees, service charges, and penalties",   "sort_order": 240},
     {"name": "Other Expense", "type": CategoryType.EXPENSE, "icon": "📦", "description": "Miscellaneous expenses",              "sort_order": 300},
     # ── Adjustment ───────────────────────────────────────
     {"name": "Opening Balance", "type": CategoryType.EXPENSE, "icon": "🏦", "description": "System-generated opening balance adjustment", "sort_order": 0},

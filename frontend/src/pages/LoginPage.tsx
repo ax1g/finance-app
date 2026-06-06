@@ -143,7 +143,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <div className="flex flex-col items-center justify-center gap-1 mb-8">
-        <span className="text-5xl font-display font-bold tracking-wider text-foreground">
+            <span className="text-5xl font-bold tracking-tight text-foreground">
           Neco
         </span>
       </div>

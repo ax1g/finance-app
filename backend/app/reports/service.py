@@ -8,6 +8,8 @@ from app.reports.schema import (
     DashboardResponse,
     RecentTransaction,
     CategorySpending,
+    BalanceByType,
+    NetWorthHistoryItem,
     SpendingByCategoryItem,
     MonthlySummaryItem,
     AccountSummaryItem,
@@ -24,9 +26,31 @@ class ReportService:
         now = datetime.now(timezone.utc)
         start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
-        total_balance = await self.repo.get_total_balance(user_id)
+        total_assets = await self.repo.get_total_assets(user_id)
+        total_liabilities = await self.repo.get_total_liabilities(user_id)
+        total_balance = total_assets - total_liabilities
         income = await self.repo.get_period_income(user_id, start_of_month, now)
         expenses = await self.repo.get_period_expenses(user_id, start_of_month, now)
+
+        balance_by_type_data = await self.repo.get_balance_by_type(user_id)
+        balance_by_type = [
+            BalanceByType(account_type=row["account_type"], balance=row["balance"])
+            for row in balance_by_type_data
+        ]
+
+        since_5y = now - timedelta(days=1825)
+        monthly_net_data = await self.repo.get_monthly_summary(user_id, since_5y)
+        adj_data = await self.repo.get_adjustments_by_month(user_id, since_5y)
+        adj_by_month = {r["year_month"]: r["total"] for r in adj_data}
+
+        running = total_balance
+        history: list[NetWorthHistoryItem] = []
+        for row in reversed(monthly_net_data):
+            adj = adj_by_month.get(row["year_month"], Decimal("0"))
+            net_change = row["income"] - row["expense"] + adj
+            history.append(NetWorthHistoryItem(date=row["year_month"], net_worth=running))
+            running -= net_change
+        history.reverse()
 
         top_categories_data = await self.repo.get_top_spending_categories(
             user_id, start_of_month, now
@@ -61,6 +85,10 @@ class ReportService:
 
         return DashboardResponse(
             total_balance=total_balance,
+            total_assets=total_assets,
+            total_liabilities=total_liabilities,
+            balance_by_type=balance_by_type,
+            networth_history=history,
             current_month_income=income,
             current_month_expenses=expenses,
             current_month_net=income - expenses,
@@ -72,6 +100,23 @@ class ReportService:
         self, user_id: uuid.UUID, start: datetime, end: datetime
     ) -> list[SpendingByCategoryItem]:
         rows = await self.repo.get_spending_by_category(user_id, start, end)
+        total = sum(row["total"] for row in rows) or Decimal("0.01")
+        return [
+            SpendingByCategoryItem(
+                category_id=row["category_id"],
+                category_name=row["category_name"],
+                icon=row["icon"],
+                total=row["total"],
+                percentage=float(row["total"] / total * 100),
+                transaction_count=row["transaction_count"],
+            )
+            for row in rows
+        ]
+
+    async def get_income_by_category(
+        self, user_id: uuid.UUID, start: datetime, end: datetime
+    ) -> list[SpendingByCategoryItem]:
+        rows = await self.repo.get_income_by_category(user_id, start, end)
         total = sum(row["total"] for row in rows) or Decimal("0.01")
         return [
             SpendingByCategoryItem(
@@ -100,22 +145,37 @@ class ReportService:
             for row in rows
         ]
 
-    async def get_account_summary(self, user_id: uuid.UUID) -> list[AccountSummaryItem]:
-        now = datetime.now(timezone.utc)
-        start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-
-        rows = await self.repo.get_account_summary(user_id, start_of_month, now)
-        return [
-            AccountSummaryItem(
-                account_id=row["account_id"],
-                account_name=row["account_name"],
-                account_type=row["account_type"],
-                balance=row["balance"],
-                income_this_month=row["income_this_month"],
-                expenses_this_month=row["expenses_this_month"],
+    async def get_account_summary(
+        self, user_id: uuid.UUID, start: datetime, end: datetime
+    ) -> list[AccountSummaryItem]:
+        rows = await self.repo.get_account_summary(user_id, start, end)
+        post_rows = await self.repo.get_account_post_period_totals(user_id, end)
+        post_by_account = {r["account_id"]: r for r in post_rows}
+        result: list[AccountSummaryItem] = []
+        for row in rows:
+            aid = row["account_id"]
+            post = post_by_account.get(aid, {})
+            post_income = post.get("income", Decimal("0"))
+            post_expenses = post.get("expenses", Decimal("0"))
+            post_adjustments = post.get("adjustments", Decimal("0"))
+            balance_as_of_end = (
+                row["balance"]
+                - post_income
+                + post_expenses
+                - post_adjustments
             )
-            for row in rows
-        ]
+            result.append(
+                AccountSummaryItem(
+                    account_id=row["account_id"],
+                    account_name=row["account_name"],
+                    account_type=row["account_type"],
+                    balance=row["balance"],
+                    balance_as_of_end=balance_as_of_end,
+                    income_this_month=row["income_this_month"],
+                    expenses_this_month=row["expenses_this_month"],
+                )
+            )
+        return result
 
     async def get_income_statement(
         self, user_id: uuid.UUID, year: int, month: int
@@ -126,10 +186,17 @@ class ReportService:
         else:
             end = datetime(year, month + 1, 1, tzinfo=timezone.utc) - timedelta(seconds=1)
 
-        closing_balance = await self.repo.get_total_balance(user_id, as_of=end)
+        now = datetime.now(timezone.utc)
+
+        current_total = await self.repo.get_total_balance(user_id)
+        income_since_start = await self.repo.get_period_income(user_id, start, now)
+        expenses_since_start = await self.repo.get_period_expenses(user_id, start, now)
+        adjustments_since_start = await self.repo.get_period_adjustments(user_id, start, now)
+        opening_balance = current_total - income_since_start + expenses_since_start - adjustments_since_start
+
         total_income = await self.repo.get_period_income(user_id, start, end)
         total_expenses = await self.repo.get_period_expenses(user_id, start, end)
-        opening_balance = closing_balance - total_income + total_expenses
+        closing_balance = opening_balance + total_income - total_expenses
 
         transactions = await self.repo.get_period_transactions(user_id, start, end)
 

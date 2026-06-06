@@ -11,7 +11,7 @@ from app.core.exceptions import RepositoryError
 from app.transactions.model import Transaction
 from app.accounts.model import Account
 from app.categories.model import Category
-from app.core.enums import CategoryType, TransactionType, AccountStatus
+from app.core.enums import CategoryType, TransactionType, AccountType, AccountStatus
 
 
 class ReportRepo:
@@ -30,6 +30,57 @@ class ReportRepo:
                 query = query.where(Account.created_at <= as_of)
             result = await self.db.execute(query)
             return result.scalar()
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}") from e
+
+    async def get_total_assets(
+        self, user_id: uuid.UUID
+    ) -> Decimal:
+        try:
+            query = select(func.coalesce(func.sum(Account.current_balance), 0)).where(
+                Account.user_id == user_id,
+                Account.status == AccountStatus.ACTIVE,
+                Account.type.in_([
+                    AccountType.CASH, AccountType.BANK,
+                    AccountType.INVESTMENT, AccountType.RECEIVABLES,
+                ]),
+            )
+            result = await self.db.execute(query)
+            return result.scalar()
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}") from e
+
+    async def get_total_liabilities(
+        self, user_id: uuid.UUID
+    ) -> Decimal:
+        try:
+            query = select(func.coalesce(func.sum(Account.current_balance), 0)).where(
+                Account.user_id == user_id,
+                Account.status == AccountStatus.ACTIVE,
+                Account.type == AccountType.PAYABLES,
+            )
+            result = await self.db.execute(query)
+            return result.scalar()
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}") from e
+
+    async def get_balance_by_type(
+        self, user_id: uuid.UUID
+    ) -> Sequence[dict]:
+        try:
+            query = (
+                select(
+                    Account.type.label("account_type"),
+                    func.coalesce(func.sum(Account.current_balance), 0).label("balance"),
+                )
+                .where(
+                    Account.user_id == user_id,
+                    Account.status == AccountStatus.ACTIVE,
+                )
+                .group_by(Account.type)
+            )
+            result = await self.db.execute(query)
+            return result.mappings().all()
         except SQLAlchemyError as e:
             raise RepositoryError(f"Database error: {str(e)}") from e
 
@@ -153,6 +204,71 @@ class ReportRepo:
         except SQLAlchemyError as e:
             raise RepositoryError(f"Database error: {str(e)}") from e
 
+    async def get_income_by_category(
+        self, user_id: uuid.UUID, start: datetime, end: datetime
+    ) -> Sequence[dict]:
+        try:
+            query = (
+                select(
+                    Category.id.label("category_id"),
+                    Category.name.label("category_name"),
+                    Category.icon,
+                    func.coalesce(func.sum(Transaction.amount), 0).label("total"),
+                    func.count(Transaction.id).label("transaction_count"),
+                )
+                .join(Transaction, Transaction.category_id == Category.id)
+                .where(
+                    Transaction.user_id == user_id,
+                    Transaction.txn_type == TransactionType.INCOME,
+                    Category.type == CategoryType.INCOME,
+                    Transaction.txn_date >= start,
+                    Transaction.txn_date <= end,
+                )
+                .group_by(Category.id, Category.name, Category.icon)
+                .order_by(desc("total"))
+            )
+            result = await self.db.execute(query)
+            return result.mappings().all()
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}") from e
+
+    async def get_adjustments_by_month(
+        self, user_id: uuid.UUID, since: datetime
+    ) -> Sequence[dict]:
+        try:
+            query = (
+                select(
+                    func.to_char(Transaction.txn_date, "YYYY-MM").label("year_month"),
+                    func.coalesce(func.sum(Transaction.amount), 0).label("total"),
+                )
+                .where(
+                    Transaction.user_id == user_id,
+                    Transaction.txn_date >= since,
+                    Transaction.txn_type == TransactionType.ADJUSTMENT,
+                )
+                .group_by("year_month")
+                .order_by(desc("year_month"))
+            )
+            result = await self.db.execute(query)
+            return result.mappings().all()
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}") from e
+
+    async def get_period_adjustments(
+        self, user_id: uuid.UUID, start: datetime, end: datetime
+    ) -> Decimal:
+        try:
+            query = select(func.coalesce(func.sum(Transaction.amount), 0)).where(
+                Transaction.user_id == user_id,
+                Transaction.txn_type == TransactionType.ADJUSTMENT,
+                Transaction.txn_date >= start,
+                Transaction.txn_date <= end,
+            )
+            result = await self.db.execute(query)
+            return result.scalar()
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}") from e
+
     async def get_monthly_summary(
         self, user_id: uuid.UUID, since: datetime
     ) -> Sequence[dict]:
@@ -246,6 +362,61 @@ class ReportRepo:
                     Account.id, Account.name, Account.type, Account.current_balance
                 )
                 .order_by(Account.name)
+            )
+            result = await self.db.execute(query)
+            return result.mappings().all()
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}") from e
+
+    async def get_account_post_period_totals(
+        self, user_id: uuid.UUID, end: datetime
+    ) -> Sequence[dict]:
+        try:
+            query = (
+                select(
+                    Transaction.account_id,
+                    func.coalesce(
+                        func.sum(
+                            case(
+                                (
+                                    Transaction.txn_type == TransactionType.INCOME,
+                                    Transaction.amount,
+                                ),
+                                else_=0,
+                            )
+                        ),
+                        0,
+                    ).label("income"),
+                    func.coalesce(
+                        func.sum(
+                            case(
+                                (
+                                    Transaction.txn_type == TransactionType.EXPENSE,
+                                    Transaction.amount,
+                                ),
+                                else_=0,
+                            )
+                        ),
+                        0,
+                    ).label("expenses"),
+                    func.coalesce(
+                        func.sum(
+                            case(
+                                (
+                                    Transaction.txn_type == TransactionType.ADJUSTMENT,
+                                    Transaction.amount,
+                                ),
+                                else_=0,
+                            )
+                        ),
+                        0,
+                    ).label("adjustments"),
+                )
+                .where(
+                    Transaction.user_id == user_id,
+                    Transaction.txn_date > end,
+                )
+                .group_by(Transaction.account_id)
             )
             result = await self.db.execute(query)
             return result.mappings().all()

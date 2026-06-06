@@ -29,8 +29,22 @@ class CategorySpending(BaseModel):
     transaction_count: int
 
 
+class BalanceByType(BaseModel):
+    account_type: AccountType
+    balance: Decimal
+
+
+class NetWorthHistoryItem(BaseModel):
+    date: str
+    net_worth: Decimal
+
+
 class DashboardResponse(BaseModel):
     total_balance: Decimal
+    total_assets: Decimal
+    total_liabilities: Decimal
+    balance_by_type: list[BalanceByType]
+    networth_history: list[NetWorthHistoryItem]
     current_month_income: Decimal
     current_month_expenses: Decimal
     current_month_net: Decimal
@@ -59,6 +73,7 @@ class AccountSummaryItem(BaseModel):
     account_name: str
     account_type: AccountType
     balance: Decimal
+    balance_as_of_end: Decimal
     income_this_month: Decimal
     expenses_this_month: Decimal
 

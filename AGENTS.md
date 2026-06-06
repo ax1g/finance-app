@@ -67,8 +67,58 @@ types/     — TypeScript interfaces matching backend Pydantic schemas
 
 The only path to create a transaction is clicking "+" in the sidebar → opens `TransactionFormModal` (modal component). The `/transactions/new` route and `TransactionCreate` page have been removed.
 
-## Current Issues
+## UI Design Principles (AI must follow strictly)
 
-- Dashboard uses hardcoded mock data instead of calling the real API
-- `/reports/dashboard` endpoint exists but `dashboard.ts` ignores it
-- `TransactionDetail.tsx` had a TDZ bug (editForm used before useState) — now fixed
+This project uses **shadcn/ui (new-york style)** with Tailwind CSS v4. Every UI decision must align with shadcn's design language — clean, minimal, functional, accessible.
+
+### Layout & Spacing
+- Use `space-y-6` for top-level page sections, `space-y-4` for card content groups, `gap-3`/`gap-4` for grid layouts
+- Cards use `p-6` for padding (via `CardHeader`/`CardContent`). Never add extra padding directly on the `Card` div.
+- Lists inside cards use `p-0` on `CardContent` with `px-6` on items so they bleed edge-to-edge
+- Item padding: `py-2.5` for compact lists, `py-3` for standard density, `px-6` to align with card edges
+- Dividers between list items: use `border-b border-border`, never per-item borders
+- Keep interactive density reasonable — don't waste space but don't crowd
+
+### Cards
+- `Card` = `rounded-xl bg-card text-card-foreground shadow-sm` (no visible `border`)
+- Cards exist as subtle elevation layers — `bg-card` is slightly off-white in light mode to separate from page background
+- `CardHeader` = heading area (`p-6 pb-3` to tighten), `CardTitle` = `font-semibold leading-none tracking-tight`
+- `CardContent` = `p-6 pt-0` (standard), or `p-0` when containing a flush list
+- Use `pb-3` on `CardHeader` when you want a tighter header-to-content gap
+
+### Colors
+- **Never hardcode hex colors**. All colors come from CSS variables: `var(--color-income)` (teal), `var(--color-expense)` (rose), `var(--chart-1)` through `var(--chart-5)` for charts
+- Use opacity modifiers for backgrounds: `bg-[var(--color-income)]/10`, never define new custom colors
+- Semantic colors: `text-muted-foreground` for secondary text, `text-foreground` for primary, `text-destructive` for errors
+- Border colors: always `border-border` or `border-border/50` for more subtle
+
+### Typography
+- System sans-serif for everything — no serif fonts
+- `font-number` class (JetBrains Mono) for all monetary amounts
+- `font-medium` for emphasis, `font-semibold` for headings, never `font-bold` except for display text
+- `tracking-tight` on large numbers and headings
+- Line heights: `leading-none` for single-line items, `leading-snug` for readable paragraphs
+- Text sizes: `text-xs` for metadata/labels, `text-sm` for body, `text-2xl`/`text-4xl` for values
+
+### Lists & Interactive Items
+- List rows: no border or background by default; add `hover:bg-muted/50` for interactivity
+- Use `border-b border-border` between items only, never wrap each item in a border card
+- Icons in lists: `h-7 w-7 rounded-full` with `h-3.5 w-3.5` icons, color-coded backgrounds
+- Truncate overflowing text with `truncate` or `min-w-0` on flex children
+- Amounts align right, description left
+
+### Focus & Keyboard
+- Every interactive element must have `outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50`
+- Use `focus-visible:ring-inset` for items flush with card edges
+- Tab order should follow visual layout — sidebar nav first, then main content
+
+### Animations
+- Subtle only: `animate-fade-in` (0.5s ease-out) for entrance, `transition-colors`/`transition-all` for interactions
+- Count-up animations limited to 800ms, max 30 steps
+- No framer-motion or heavy animation libraries — pure CSS
+
+### Dark Mode
+- Dark mode enabled via `.dark` class on `<html>`. Always test both themes.
+- Dark card backgrounds (`oklch(0.185 0 0)`) are slightly lighter than page background (`oklch(0.145 0 0)`) to create elevation
+- Use `dark:` variants sparingly — most colors come from CSS variables that switch automatically
+- Inputs in dark mode: `dark:bg-input/30` for subtle fill
