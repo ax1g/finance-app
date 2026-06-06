@@ -58,8 +58,10 @@ export interface TransactionRead {
   description: string | null
   account_id: string
   account: AccountRead
-  category_id: string
-  category: CategoryRead
+  category_id: string | null
+  category: CategoryRead | null
+  to_account_id: string | null
+  to_account: AccountRead | null
 }
 
 export interface TransactionCreate {
@@ -68,7 +70,8 @@ export interface TransactionCreate {
   amount: string
   description: string | null
   account_id: string
-  category_id: string
+  category_id?: string | null
+  to_account_id?: string | null
 }
 
 export interface TransactionUpdate {
@@ -77,12 +80,9 @@ export interface TransactionUpdate {
   amount?: string
   description?: string | null
   account_id?: string
-  category_id?: string
+  category_id?: string | null
+  to_account_id?: string | null
 }
-
-export const TRANSACTION_TYPES: TransactionType[] = ["income", "expense", "adjustment", "transfer"]
-export const ACCOUNT_TYPES: AccountType[] = ["cash", "bank", "investment", "receivables", "payables"]
-export const CATEGORY_TYPES: CategoryType[] = ["income", "expense"]
 
 export interface AuthTokens {
   access_token: string

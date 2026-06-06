@@ -3,7 +3,7 @@ import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { forgotPassword, resetPassword } from "@/api/auth";
-import { getPasswordError, checkPasswordStrength } from "@/lib/password";
+import { getPasswordError } from "@/lib/password";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

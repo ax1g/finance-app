@@ -1,8 +1,6 @@
 from app.core.enums import CategoryType
 
-DefaultCategoryDef = dict
-
-DEFAULT_CATEGORIES: list[DefaultCategoryDef] = [
+DEFAULT_CATEGORIES: list[dict] = [
     # ── Income ──────────────────────────────────────────
     {"name": "Salary",        "type": CategoryType.INCOME,  "icon": "💼", "description": "Employment wages and salaries",         "sort_order": 10},
     {"name": "Freelance",     "type": CategoryType.INCOME,  "icon": "💻", "description": "Freelance and contract work",           "sort_order": 20},

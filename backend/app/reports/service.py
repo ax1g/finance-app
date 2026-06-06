@@ -52,8 +52,9 @@ class ReportService:
                 txn_type=t.txn_type,
                 amount=t.amount,
                 description=t.description,
-                category_name=t.category.name if t.category else "",
+                category_name=t.category.name if t.category else None,
                 account_name=t.account.name if t.account else "",
+                to_account_name=t.to_account.name if t.to_account else None,
             )
             for t in transactions
         ]
@@ -140,8 +141,9 @@ class ReportService:
                 txn_type=t.txn_type,
                 description=t.description,
                 amount=t.amount,
-                category_name=t.category.name if t.category else "",
+                category_name=t.category.name if t.category else None,
                 account_name=t.account.name if t.account else "",
+                to_account_name=t.to_account.name if t.to_account else None,
             )
             if t.txn_type == TransactionType.INCOME:
                 income_txns.append(item)

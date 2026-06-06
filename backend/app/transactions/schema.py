@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, model_validator
 
 from app.core.enums import TransactionType
 from app.accounts.schema import AccountRead
@@ -23,7 +23,18 @@ class TransactionBase(BaseModel):
 # Create Schema
 class TransactionCreate(TransactionBase):
     account_id: uuid.UUID
-    category_id: uuid.UUID
+    category_id: uuid.UUID | None = None
+    to_account_id: uuid.UUID | None = None
+
+    @model_validator(mode="after")
+    def validate_transfer(self):
+        if self.txn_type == TransactionType.TRANSFER:
+            if not self.to_account_id:
+                raise ValueError("to_account_id is required for transfers")
+            if self.to_account_id == self.account_id:
+                raise ValueError("from and to accounts must be different")
+            self.category_id = None
+        return self
 
 
 # Read Schema
@@ -32,8 +43,11 @@ class TransactionRead(TransactionBase):
     account_id: uuid.UUID
     account: AccountRead
 
-    category_id: uuid.UUID
-    category: CategoryRead
+    category_id: uuid.UUID | None
+    category: CategoryRead | None = None
+
+    to_account_id: uuid.UUID | None
+    to_account: AccountRead | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -50,4 +64,16 @@ class TransactionUpdate(BaseModel):
 
     account_id: uuid.UUID | None = None
 
+    to_account_id: uuid.UUID | None = None
+
     description: str | None = Field(default=None, max_length=255)
+
+    @model_validator(mode="after")
+    def validate_transfer(self):
+        txn_type = self.txn_type
+        if txn_type == TransactionType.TRANSFER:
+            if not self.to_account_id:
+                raise ValueError("to_account_id is required for transfers")
+            if self.to_account_id and self.account_id and self.to_account_id == self.account_id:
+                raise ValueError("from and to accounts must be different")
+        return self

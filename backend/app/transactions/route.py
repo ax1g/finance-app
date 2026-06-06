@@ -27,6 +27,12 @@ async def create_transaction(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Adjustments are system-generated and cannot be created manually.",
         )
+    if data.txn_type == TransactionType.TRANSFER and not data.to_account_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="to_account_id is required for transfers.",
+        )
+
     return await service.create_transaction(current_user.id, data)
 
 
@@ -34,11 +40,11 @@ async def create_transaction(
 async def read_transactions(
     service: TransactionServiceDep,
     current_user: CurrentUserDep,
-    txn_type: TransactionType | None = None,  # Optional filter
+    txn_type: TransactionType | None = None,
     limit: int = Query(default=100, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
-    start: datetime | None = None,  # Optional filter
-    end: datetime | None = None,  # Optional filter
+    start: datetime | None = None,
+    end: datetime | None = None,
 ):
     if start and end and (start > end):
         raise HTTPException(

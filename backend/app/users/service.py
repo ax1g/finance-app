@@ -22,13 +22,6 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 
-def _safe_send_email(to: str, subject: str, body: str) -> None:
-    try:
-        send_email(to, subject, body)
-    except Exception:
-        logger.exception("Failed to send email to %s", to)
-
-
 def _generate_token() -> tuple[str, str]:
     raw = secrets.token_urlsafe(32)
     token_hash = hashlib.sha256(raw.encode()).hexdigest()

@@ -13,8 +13,9 @@ class RecentTransaction(BaseModel):
     txn_type: TransactionType
     amount: Decimal
     description: str | None
-    category_name: str
+    category_name: str | None
     account_name: str
+    to_account_name: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -67,8 +68,9 @@ class IncomeStatementItem(BaseModel):
     txn_type: TransactionType
     description: str | None
     amount: Decimal
-    category_name: str
+    category_name: str | None
     account_name: str
+    to_account_name: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
