@@ -1,7 +1,7 @@
-import os
+from app.core.config import settings
 
 
 def test_database_url_is_set():
-    db_url = os.getenv("DATABASE_URL")
-    assert db_url is not None
-    assert "postgres" in db_url
+    url = settings.DATABASE_URL
+    assert url is not None
+    assert "postgres" in url

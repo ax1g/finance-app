@@ -22,7 +22,14 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U postgres" --health-interval 10s --health-timeout 5s --health-retries 5
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+      PROJECT_NAME: "Neco CI"
+      ENVIRONMENT: test
+      SECRET_KEY: ci-secret-key-change-in-prod
+      POSTGRES_SERVER: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
 
     steps:
       - name: Checkout
@@ -39,9 +46,7 @@ jobs:
           uv sync --all-extras --dev
 
       - name: Lint (ruff)
-        run: uv run --package backend ruff check backend || true
+        run: uv run --package backend ruff check backend
 
       - name: Run tests
-        env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
         run: uv run --package backend pytest -q backend/tests
