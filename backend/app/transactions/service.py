@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from decimal import Decimal
 
 from app.core.enums import TransactionType
 from app.transactions.schema import TransactionCreate, TransactionUpdate
@@ -62,7 +63,7 @@ class TransactionService:
         return await self.repo.get_by_id(user_id, txn_id)
 
     async def _reverse_txn(
-        self, user_id: uuid.UUID, account_id: uuid.UUID, txn_type: TransactionType, amount: float, to_account_id: uuid.UUID | None = None
+        self, user_id: uuid.UUID, account_id: uuid.UUID, txn_type: TransactionType, amount: Decimal, to_account_id: uuid.UUID | None = None
     ):
         if txn_type == TransactionType.INCOME:
             await self.accounts_service.decrease_balance(user_id, account_id, amount)
@@ -76,7 +77,7 @@ class TransactionService:
                 await self.accounts_service.decrease_balance(user_id, to_account_id, amount)
 
     async def _apply_txn(
-        self, user_id: uuid.UUID, account_id: uuid.UUID, txn_type: TransactionType, amount: float, to_account_id: uuid.UUID | None = None
+        self, user_id: uuid.UUID, account_id: uuid.UUID, txn_type: TransactionType, amount: Decimal, to_account_id: uuid.UUID | None = None
     ):
         if txn_type == TransactionType.INCOME:
             await self.accounts_service.increase_balance(user_id, account_id, amount)
@@ -111,7 +112,7 @@ class TransactionService:
 
         await self.repo.db.commit()
         return transaction
-
+      
     async def delete_transaction(self, user_id: uuid.UUID, txn_id: uuid.UUID):
         transaction = await self.repo.get_by_id(user_id, txn_id)
 

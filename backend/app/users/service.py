@@ -101,10 +101,10 @@ class UserService:
         await self.repo.update(user_id, {"hashed_password": hashed})
         await self.repo.db.commit()
 
-    async def forgot_password(self, email: str, bg: BackgroundTasks) -> None:
+    async def forgot_password(self, email: str, bg: BackgroundTasks) -> str | None:
         user = await self.repo.get_by_email(email)
         if not user:
-            return
+            return None
 
         await self.token_repo.invalidate_pending(user.id, TokenPurpose.PASSWORD_RESET)
 
@@ -125,6 +125,7 @@ class UserService:
             "Reset your Neco password",
             f"Click the link to reset your password:\n\n{link}\n\nThis link expires in 1 hour.",
         )
+        return raw
 
     async def reset_password(self, token: str, new_password: str) -> None:
         token_hash = hashlib.sha256(token.encode()).hexdigest()

@@ -13,6 +13,7 @@ from app.users.schema import (
     ForgotPasswordRequest,
     ResetPasswordRequest,
     MessageResponse,
+    ForgotPasswordResponse,
 )
 
 from app.core.dependencies import UserServiceDep, CurrentUserDep
@@ -42,15 +43,21 @@ async def create_user(
     return await service.create_user(new_user, bg)
 
 
-@router.post("/forgot-password", response_model=MessageResponse)
+@router.post("/forgot-password", response_model=ForgotPasswordResponse)
 async def forgot_password(
     service: UserServiceDep,
     data: ForgotPasswordRequest,
     bg: BackgroundTasks,
 ):
-    await service.forgot_password(data.email, bg)
-    return MessageResponse(
-        message="If an account with that email exists, a reset link has been sent."
+    reset_token = await service.forgot_password(data.email, bg)
+    if reset_token:
+        return ForgotPasswordResponse(
+            message="Use the token below to reset your password.",
+            reset_token=reset_token,
+        )
+    return ForgotPasswordResponse(
+        message="If an account with that email exists, a reset link has been sent.",
+        reset_token="",
     )
 
 
