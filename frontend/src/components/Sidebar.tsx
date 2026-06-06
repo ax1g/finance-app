@@ -45,14 +45,18 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`flex flex-col border-r border-border bg-card transition-all duration-300 ${
+      className={`relative flex flex-col border-r border-border bg-card transition-all duration-300 ${
         collapsed ? "w-16" : "w-60"
       }`}
     >
+      <div
+        onClick={() => setCollapsed((c) => !c)}
+        className="absolute inset-y-0 -right-1.5 z-10 w-3 cursor-ew-resize"
+      />
       <div className=" space-y-1 px-3">
         <button
           onClick={() => setCollapsed((c) => !c)}
-          className="flex h-16 w-full items-center gap-3 border-b border-border px-3 py-2 text-left transition-colors outline-none hover:bg-accent/50 focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          className="flex h-16 w-full items-center gap-3 border-b border-border px-3 py-2 text-left transition-colors outline-none hover:bg-accent/50 focus-visible:ring-[3px] focus-visible:ring-ring/50 cursor-ew-resize"
         >
           <Snowflake className="h-6 w-6 shrink-0 text-primary" />
           <NavLabel collapsed={collapsed}>

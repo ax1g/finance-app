@@ -98,10 +98,10 @@ export default function Dashboard() {
   }))
 
   const assetColors: Record<string, string> = {
-    cash: "var(--color-income)",
-    bank: "var(--chart-2)",
-    investment: "var(--chart-4)",
-    receivables: "var(--chart-5)",
+    cash: "oklch(0.7 0.18 150)",
+    bank: "oklch(0.55 0.16 155)",
+    investment: "oklch(0.42 0.12 145)",
+    receivables: "oklch(0.3 0.08 140)",
     payables: "var(--color-expense)",
   }
 
@@ -137,27 +137,25 @@ export default function Dashboard() {
 
       <Card className="animate-fade-in overflow-hidden">
         <div className="bg-gradient-to-r from-[var(--color-income)]/10 via-transparent to-[var(--color-expense)]/10 p-6">
-          <div className="flex items-start justify-between">
-            <div>
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
               <p className="text-sm font-medium text-muted-foreground">Net Worth</p>
-              <div className="mt-2 flex items-center gap-3">
-                <p className="text-4xl font-bold font-number tracking-tight">
-                  {loading ? "..." : showBalance ? (
-                    <AnimatedNumber value={data?.total_balance ?? "0"} visible={showBalance} />
-                  ) : (
-                    <span className="tracking-[0.05em]">{fmt(data!.total_balance).replace(/\S/g, "•")}</span>
-                  )}
-                </p>
-                {!loading && (
-                  <button
-                    onClick={() => setShowBalance((s) => !s)}
-                    className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted/50"
-                  >
-                    {showBalance ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
+              <p className="mt-2 text-4xl font-bold font-number tracking-tight truncate">
+                {loading ? "..." : showBalance ? (
+                  <AnimatedNumber value={data?.total_balance ?? "0"} visible={showBalance} />
+                ) : (
+                  <span className="tracking-[0.05em]">{fmt(data!.total_balance).replace(/\S/g, "•")}</span>
                 )}
-              </div>
+              </p>
             </div>
+            {!loading && (
+              <button
+                onClick={() => setShowBalance((s) => !s)}
+                className="mt-1 shrink-0 rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted/50"
+              >
+                {showBalance ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            )}
           </div>
           {!loading && data && (
             <div className="mt-4 flex items-center gap-6 text-sm">
@@ -215,19 +213,20 @@ export default function Dashboard() {
           ) : (
             <div className="h-[250px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
                   <XAxis
                     dataKey="label"
                     className="text-xs text-muted-foreground"
                     tickLine={false}
                     axisLine={false}
-                    dy={10}
+                    dy={14}
                   />
                   <YAxis
                     className="text-xs text-muted-foreground"
                     tickLine={false}
                     axisLine={false}
+                    tickMargin={6}
                     tickFormatter={(v) => fmt(v).charAt(0) === "$" ? `$${(v / 1000).toFixed(0)}k` : `${(v / 1000).toFixed(0)}k`}
                   />
                   <Tooltip

@@ -11,6 +11,20 @@ export async function fetchDashboard(): Promise<DashboardResponse> {
   return apiFetch<DashboardResponse>("/reports/dashboard")
 }
 
+export async function fetchIncomeByCategory(
+  start?: string,
+  end?: string,
+): Promise<SpendingByCategoryItem[]> {
+  const params = new URLSearchParams()
+  if (start) params.set("start_date", start)
+  if (end) params.set("end_date", end)
+
+  const qs = params.toString()
+  return apiFetch<SpendingByCategoryItem[]>(
+    `/reports/income-by-category${qs ? `?${qs}` : ""}`,
+  )
+}
+
 export async function fetchSpendingByCategory(
   start?: string,
   end?: string,

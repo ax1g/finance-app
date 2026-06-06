@@ -45,6 +45,23 @@ async def spending_by_category(
 
 
 @router.get(
+    "/income-by-category",
+    response_model=list[SpendingByCategoryItem],
+    status_code=status.HTTP_200_OK,
+)
+async def income_by_category(
+    service: ReportServiceDep,
+    current_user: CurrentUserDep,
+    start_date: datetime | None = Query(default=None),
+    end_date: datetime | None = Query(default=None),
+):
+    now = datetime.now(timezone.utc)
+    start = start_date or now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    end = end_date or now
+    return await service.get_income_by_category(current_user.id, start, end)
+
+
+@router.get(
     "/monthly-summary",
     response_model=list[MonthlySummaryItem],
     status_code=status.HTTP_200_OK,

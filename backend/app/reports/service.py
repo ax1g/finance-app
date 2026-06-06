@@ -113,6 +113,23 @@ class ReportService:
             for row in rows
         ]
 
+    async def get_income_by_category(
+        self, user_id: uuid.UUID, start: datetime, end: datetime
+    ) -> list[SpendingByCategoryItem]:
+        rows = await self.repo.get_income_by_category(user_id, start, end)
+        total = sum(row["total"] for row in rows) or Decimal("0.01")
+        return [
+            SpendingByCategoryItem(
+                category_id=row["category_id"],
+                category_name=row["category_name"],
+                icon=row["icon"],
+                total=row["total"],
+                percentage=float(row["total"] / total * 100),
+                transaction_count=row["transaction_count"],
+            )
+            for row in rows
+        ]
+
     async def get_monthly_summary(
         self, user_id: uuid.UUID, months: int = 12
     ) -> list[MonthlySummaryItem]:

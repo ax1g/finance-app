@@ -204,6 +204,34 @@ class ReportRepo:
         except SQLAlchemyError as e:
             raise RepositoryError(f"Database error: {str(e)}") from e
 
+    async def get_income_by_category(
+        self, user_id: uuid.UUID, start: datetime, end: datetime
+    ) -> Sequence[dict]:
+        try:
+            query = (
+                select(
+                    Category.id.label("category_id"),
+                    Category.name.label("category_name"),
+                    Category.icon,
+                    func.coalesce(func.sum(Transaction.amount), 0).label("total"),
+                    func.count(Transaction.id).label("transaction_count"),
+                )
+                .join(Transaction, Transaction.category_id == Category.id)
+                .where(
+                    Transaction.user_id == user_id,
+                    Transaction.txn_type == TransactionType.INCOME,
+                    Category.type == CategoryType.INCOME,
+                    Transaction.txn_date >= start,
+                    Transaction.txn_date <= end,
+                )
+                .group_by(Category.id, Category.name, Category.icon)
+                .order_by(desc("total"))
+            )
+            result = await self.db.execute(query)
+            return result.mappings().all()
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}") from e
+
     async def get_adjustments_by_month(
         self, user_id: uuid.UUID, since: datetime
     ) -> Sequence[dict]:
