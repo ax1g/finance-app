@@ -43,7 +43,12 @@ class Account(Base, TimestampMixin):
     # Many-to-One: Many accounts belong to one user
     user: Mapped["User"] = relationship("User", back_populates="accounts")  # noqa: F821
 
-    # One-to-Many: One account has many transactions
+    # One-to-Many: One account has many transactions (source account)
     transactions: Mapped[list["Transaction"]] = relationship(  # noqa: F821
-        "Transaction", back_populates="account"
+        "Transaction", back_populates="account", foreign_keys="Transaction.account_id"
+    )
+
+    # One-to-Many: One account receives transfers (destination account)
+    incoming_transfers: Mapped[list["Transaction"]] = relationship(  # noqa: F821
+        "Transaction", back_populates="to_account", foreign_keys="Transaction.to_account_id"
     )

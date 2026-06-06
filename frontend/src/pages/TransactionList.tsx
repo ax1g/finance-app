@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowUpRight, ArrowDownRight, Loader2 } from "lucide-react"
+import { ArrowUpRight, ArrowDownRight, ArrowLeftRight, Loader2 } from "lucide-react"
 
 const TXN_TYPES = [
   { value: "all", label: "All Types" },
@@ -25,6 +25,7 @@ const TXN_TYPES = [
 
 function fmtAmount(txn: TransactionRead): string {
   if (txn.txn_type === "adjustment") return fmt(txn.amount)
+  if (txn.txn_type === "transfer") return fmt(txn.amount)
   const sign = txn.txn_type === "expense" ? "-" : "+"
   return `${sign}${fmt(txn.amount)}`
 }
@@ -117,24 +118,30 @@ export default function TransactionList() {
                         ? "bg-[var(--color-expense)]/10 text-[var(--color-expense)]"
                         : txn.txn_type === "adjustment"
                           ? "bg-muted text-muted-foreground"
-                          : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
+                          : txn.txn_type === "transfer"
+                            ? "bg-primary/10 text-primary"
+                            : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
                     }`}
                   >
                     {txn.txn_type === "expense" ? (
                       <ArrowDownRight className="h-4 w-4" />
                     ) : txn.txn_type === "adjustment" ? (
                       <span className="text-xs font-bold">~</span>
+                    ) : txn.txn_type === "transfer" ? (
+                      <ArrowLeftRight className="h-4 w-4" />
                     ) : (
                       <ArrowUpRight className="h-4 w-4" />
                     )}
                   </div>
                   <div>
                     <p className="text-sm font-medium leading-none">
-                      {txn.description || txn.category.name}
+                      {txn.description || txn.category?.name || "Transfer"}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {formatDate(txn.txn_date)} &middot;{" "}
-                      {txn.account.name}
+                      {txn.txn_type === "transfer"
+                        ? `${txn.account.name} → ${txn.to_account?.name || "?"}`
+                        : txn.account.name}
                     </p>
                   </div>
                 </div>
@@ -145,7 +152,9 @@ export default function TransactionList() {
                         ? "bg-[var(--color-expense)]/10 text-[var(--color-expense)]"
                         : txn.txn_type === "adjustment"
                           ? "bg-muted text-muted-foreground"
-                          : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
+                          : txn.txn_type === "transfer"
+                            ? "bg-primary/10 text-primary"
+                            : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
                     }`}
                   >
                     {fmtAmount(txn)}

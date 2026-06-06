@@ -39,6 +39,7 @@ import {
   ArrowLeft,
   ArrowUpRight,
   ArrowDownRight,
+  ArrowLeftRight,
   Loader2,
   Pencil,
   Trash2,
@@ -50,11 +51,11 @@ const CATEGORY_TYPE_MAP: Record<string, string[]> = {
   income: ["income"],
   expense: ["expense"],
   adjustment: ["income", "expense"],
-  transfer: ["income", "expense"],
 }
 
 function fmtAmount(txn: TransactionRead): string {
   if (txn.txn_type === "adjustment") return fmt(txn.amount)
+  if (txn.txn_type === "transfer") return fmt(txn.amount)
   const sign = txn.txn_type === "expense" ? "-" : "+"
   return `${sign}${fmt(txn.amount)}`
 }
@@ -81,9 +82,13 @@ export default function TransactionDetail() {
     description: "",
     account_id: "",
     category_id: "",
+    to_account_id: "",
   })
 
-  const filteredCategories = (editForm.txn_type
+  const isTransferEdit = editForm.txn_type === "transfer"
+  const showCategoryEdit = editForm.txn_type && !isTransferEdit
+
+  const filteredCategories = (showCategoryEdit
     ? categories.filter((c) => CATEGORY_TYPE_MAP[editForm.txn_type]?.includes(c.type))
     : categories
   ).filter((c) => c.name !== "Opening Balance")
@@ -108,7 +113,8 @@ export default function TransactionDetail() {
           amount: txnData.amount,
           description: txnData.description || "",
           account_id: txnData.account_id,
-          category_id: txnData.category_id,
+          category_id: txnData.category_id || "",
+          to_account_id: txnData.to_account_id || "",
         })
       })
       .catch((err) => {
@@ -143,10 +149,17 @@ export default function TransactionDetail() {
     if (
       !txn_id ||
       !editForm.txn_type ||
-      !editForm.account_id ||
-      !editForm.category_id
+      !editForm.account_id
     )
       return
+    if (isTransferEdit && !editForm.to_account_id) {
+      toast({ title: "Error", description: "Please select a destination account", variant: "destructive" })
+      return
+    }
+    if (!isTransferEdit && !editForm.category_id) {
+      toast({ title: "Error", description: "Please select a category", variant: "destructive" })
+      return
+    }
     setSaving(true)
     setError("")
     try {
@@ -156,7 +169,8 @@ export default function TransactionDetail() {
         amount: editForm.amount,
         description: editForm.description || null,
         account_id: editForm.account_id,
-        category_id: editForm.category_id,
+        category_id: isTransferEdit ? null : editForm.category_id || null,
+        to_account_id: isTransferEdit ? editForm.to_account_id : null,
       })
       setTxn(updated)
       setEditing(false)
@@ -221,7 +235,12 @@ export default function TransactionDetail() {
                         currentCat && allowed.includes(currentCat.type)
                           ? editForm.category_id
                           : ""
-                      setEditForm({ ...editForm, txn_type: value, category_id })
+                      setEditForm({
+                        ...editForm,
+                        txn_type: value,
+                        category_id,
+                        to_account_id: value === "transfer" ? editForm.to_account_id : "",
+                      })
                     }}
                   >
                     <SelectTrigger id="edit-type">
@@ -261,7 +280,9 @@ export default function TransactionDetail() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-account">Account</Label>
+                <Label htmlFor="edit-account">
+                  {isTransferEdit ? "From Account" : "Account"}
+                </Label>
                 <Select
                   value={editForm.account_id}
                   onValueChange={(value) =>
@@ -272,34 +293,62 @@ export default function TransactionDetail() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent position="popper" style={{ maxHeight: '15rem' }}>
-                    {accounts.map((a) => (
-                      <SelectItem key={a.id} value={a.id}>
-                        {a.name}
-                      </SelectItem>
-                    ))}
+                    {accounts
+                      .filter((a) => !isTransferEdit || a.id !== editForm.to_account_id)
+                      .map((a) => (
+                        <SelectItem key={a.id} value={a.id}>
+                          {a.name}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-category">Category</Label>
-                <Select
-                  value={editForm.category_id}
-                  onValueChange={(value) =>
-                    setEditForm({ ...editForm, category_id: value })
-                  }
-                >
-                  <SelectTrigger id="edit-category">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent position="popper" className="min-w-[220px]" style={{ maxHeight: '15rem' }}>
-                    {filteredCategories.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.icon ? `${c.icon} ${c.name}` : c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {isTransferEdit && (
+                <div className="space-y-2">
+                  <Label htmlFor="edit-to-account">To Account</Label>
+                  <Select
+                    value={editForm.to_account_id}
+                    onValueChange={(value) =>
+                      setEditForm({ ...editForm, to_account_id: value })
+                    }
+                  >
+                    <SelectTrigger id="edit-to-account">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent position="popper" style={{ maxHeight: '15rem' }}>
+                      {accounts
+                        .filter((a) => a.id !== editForm.account_id)
+                        .map((a) => (
+                          <SelectItem key={a.id} value={a.id}>
+                            {a.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              {showCategoryEdit && (
+                <div className="space-y-2">
+                  <Label htmlFor="edit-category">Category</Label>
+                  <Select
+                    value={editForm.category_id}
+                    onValueChange={(value) =>
+                      setEditForm({ ...editForm, category_id: value })
+                    }
+                  >
+                    <SelectTrigger id="edit-category">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent position="popper" className="min-w-[220px]" style={{ maxHeight: '15rem' }}>
+                      {filteredCategories.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.icon ? `${c.icon} ${c.name}` : c.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="edit-description">Description</Label>
                 <Input
@@ -394,19 +443,23 @@ export default function TransactionDetail() {
                   ? "bg-[var(--color-expense)]/10 text-[var(--color-expense)]"
                   : txn.txn_type === "adjustment"
                     ? "bg-muted text-muted-foreground"
-                    : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
+                    : txn.txn_type === "transfer"
+                      ? "bg-primary/10 text-primary"
+                      : "bg-[var(--color-income)]/10 text-[var(--color-income)]"
               }`}
             >
               {txn.txn_type === "expense" ? (
                 <ArrowDownRight className="h-6 w-6" />
               ) : txn.txn_type === "adjustment" ? (
                 <span className="text-lg font-bold">~</span>
+              ) : txn.txn_type === "transfer" ? (
+                <ArrowLeftRight className="h-6 w-6" />
               ) : (
                 <ArrowUpRight className="h-6 w-6" />
               )}
             </div>
             <Badge
-              variant={txn.txn_type === "adjustment" ? "outline" : txn.txn_type === "expense" ? "destructive" : "secondary"}
+              variant={txn.txn_type === "adjustment" ? "outline" : txn.txn_type === "expense" ? "destructive" : txn.txn_type === "transfer" ? "default" : "secondary"}
               className="font-number text-base"
             >
               {fmtAmount(txn)}
@@ -416,14 +469,29 @@ export default function TransactionDetail() {
           <Separator className="mb-4" />
 
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-muted-foreground">Account</p>
-              <p className="font-medium">{txn.account.name}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Category</p>
-              <p className="font-medium">{txn.category.name}</p>
-            </div>
+            {txn.txn_type === "transfer" ? (
+              <>
+                <div>
+                  <p className="text-muted-foreground">From Account</p>
+                  <p className="font-medium">{txn.account.name}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">To Account</p>
+                  <p className="font-medium">{txn.to_account?.name || "—"}</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <p className="text-muted-foreground">Account</p>
+                  <p className="font-medium">{txn.account.name}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Category</p>
+                  <p className="font-medium">{txn.category?.name || "—"}</p>
+                </div>
+              </>
+            )}
             {txn.description && (
               <div className="col-span-2">
                 <p className="text-muted-foreground">Description</p>

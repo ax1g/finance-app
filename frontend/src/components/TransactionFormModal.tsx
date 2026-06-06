@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, ArrowLeftRight } from "lucide-react";
 import QuickAccountModal from "./QuickAccountModal";
 import QuickCategoryModal from "./QuickCategoryModal";
 
@@ -24,7 +24,6 @@ const CATEGORY_TYPE_MAP: Record<string, string[]> = {
   income: ["income"],
   expense: ["expense"],
   adjustment: ["income", "expense"],
-  transfer: ["income", "expense"],
 };
 
 export default function TransactionFormModal() {
@@ -43,10 +42,13 @@ export default function TransactionFormModal() {
     description: "",
     account_id: "",
     category_id: "",
+    to_account_id: "",
   });
 
+  const showCategory = form.txn_type && form.txn_type !== "transfer";
+
   const filteredCategories = (
-    form.txn_type
+    showCategory && form.txn_type
       ? categories.filter((c) =>
           CATEGORY_TYPE_MAP[form.txn_type]?.includes(c.type),
         )
@@ -70,13 +72,16 @@ export default function TransactionFormModal() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (
-      !form.txn_type ||
-      !form.account_id ||
-      !form.category_id ||
-      !form.amount
-    ) {
+    if (!form.txn_type || !form.account_id || !form.amount) {
       setError("Please fill in all required fields");
+      return;
+    }
+    if (form.txn_type === "transfer" && !form.to_account_id) {
+      setError("Please select a destination account");
+      return;
+    }
+    if (form.txn_type !== "transfer" && !form.category_id) {
+      setError("Please select a category");
       return;
     }
     setSubmitting(true);
@@ -89,7 +94,8 @@ export default function TransactionFormModal() {
         amount: form.amount,
         description: form.description || null,
         account_id: form.account_id,
-        category_id: form.category_id,
+        category_id: form.txn_type === "transfer" ? null : form.category_id,
+        to_account_id: form.txn_type === "transfer" ? form.to_account_id : null,
       });
       signal("transactions");
       closeTopModal();
@@ -102,13 +108,13 @@ export default function TransactionFormModal() {
     }
   };
 
-  const openQuickAccount = () => {
+  const openQuickAccount = (field: "account_id" | "to_account_id") => {
     openModal(
       "quick-account",
       <QuickAccountModal
         onCreated={(account) => {
           setAccounts((prev) => [...prev, account]);
-          setForm((prev) => ({ ...prev, account_id: account.id }));
+          setForm((prev) => ({ ...prev, [field]: account.id }));
         }}
       />,
     );
@@ -147,6 +153,7 @@ export default function TransactionFormModal() {
                 const selected = form.txn_type === type;
                 const isIncome = type === "income";
                 const isExpense = type === "expense";
+                const isTransfer = type === "transfer";
                 return (
                   <button
                     key={type}
@@ -160,7 +167,12 @@ export default function TransactionFormModal() {
                         currentCat && allowed.includes(currentCat.type)
                           ? form.category_id
                           : "";
-                      setForm({ ...form, txn_type: type, category_id });
+                      setForm({
+                        ...form,
+                        txn_type: type,
+                        category_id,
+                        to_account_id: "",
+                      });
                     }}
                     className={cn(
                       "flex-1 rounded-full px-4 py-2 text-sm font-medium transition-all",
@@ -173,7 +185,14 @@ export default function TransactionFormModal() {
                         : "border border-input bg-transparent text-muted-foreground hover:bg-accent hover:text-foreground",
                     )}
                   >
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                    {isTransfer ? (
+                      <span className="inline-flex items-center gap-1">
+                        <ArrowLeftRight className="h-4 w-4" />
+                        Transfer
+                      </span>
+                    ) : (
+                      type.charAt(0).toUpperCase() + type.slice(1)
+                    )}
                   </button>
                 );
               })}
@@ -218,9 +237,9 @@ export default function TransactionFormModal() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className={cn("grid gap-3", showCategory ? "grid-cols-2" : "grid-cols-1")}>
             <div className="space-y-2">
-              <Label>Account</Label>
+              <Label>{form.txn_type === "transfer" ? "From Account" : "Account"}</Label>
               <Select
                 value={form.account_id}
                 onValueChange={(value) =>
@@ -237,60 +256,102 @@ export default function TransactionFormModal() {
                   align="start"
                   style={{ maxHeight: "15rem" }}
                 >
-                  {accounts.map((a) => (
-                    <SelectItem key={a.id} value={a.id}>
-                      {a.name}
-                    </SelectItem>
-                  ))}
+                  {accounts
+                    .filter((a) => a.id !== form.to_account_id)
+                    .map((a) => (
+                      <SelectItem key={a.id} value={a.id}>
+                        {a.name}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
               <button
                 type="button"
-                onClick={openQuickAccount}
+                onClick={() => openQuickAccount("account_id")}
                 className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors mt-1"
               >
                 <Plus className="h-3 w-3" />
                 New Account
               </button>
             </div>
-            <div className="space-y-2">
-              <Label>Category</Label>
-              <Select
-                value={form.category_id}
-                onValueChange={(value) =>
-                  setForm({ ...form, category_id: value })
-                }
-              >
-                <SelectTrigger
-                  id="modal-category"
-                  className="w-full max-w-full"
+            {form.txn_type === "transfer" && (
+              <div className="space-y-2">
+                <Label>To Account</Label>
+                <Select
+                  value={form.to_account_id}
+                  onValueChange={(value) =>
+                    setForm({ ...form, to_account_id: value })
+                  }
                 >
-                  <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-left">
-                    <SelectValue placeholder="Select category" />
-                  </span>
-                </SelectTrigger>
-                <SelectContent
-                  position="popper"
-                  align="start"
-                  className="min-w-[220px]"
-                  style={{ maxHeight: "15rem" }}
+                  <SelectTrigger id="modal-to-account" className="w-full max-w-full">
+                    <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-left">
+                      <SelectValue placeholder="Select account" />
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent
+                    position="popper"
+                    align="start"
+                    style={{ maxHeight: "15rem" }}
+                  >
+                    {accounts
+                      .filter((a) => a.id !== form.account_id)
+                      .map((a) => (
+                        <SelectItem key={a.id} value={a.id}>
+                          {a.name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <button
+                  type="button"
+                  onClick={() => openQuickAccount("to_account_id")}
+                  className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors mt-1"
                 >
-                  {filteredCategories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.icon ? `${c.icon} ${c.name}` : c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <button
-                type="button"
-                onClick={openQuickCategory}
-                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors mt-1"
-              >
-                <Plus className="h-3 w-3" />
-                New Category
-              </button>
-            </div>
+                  <Plus className="h-3 w-3" />
+                  New Account
+                </button>
+              </div>
+            )}
+            {showCategory && (
+              <div className="space-y-2">
+                <Label>Category</Label>
+                <Select
+                  value={form.category_id}
+                  onValueChange={(value) =>
+                    setForm({ ...form, category_id: value })
+                  }
+                >
+                  <SelectTrigger
+                    id="modal-category"
+                    className="w-full max-w-full"
+                  >
+                    <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-left">
+                      <SelectValue placeholder="Select category" />
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent
+                    position="popper"
+                    align="start"
+                    className="min-w-[220px]"
+                    style={{ maxHeight: "15rem" }}
+                  >
+                    {filteredCategories.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.icon ? `${c.icon} ${c.name}` : c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <button
+                  type="button"
+                  onClick={openQuickCategory}
+                  className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors mt-1"
+                >
+                  <Plus className="h-3 w-3" />
+                  New Category
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
