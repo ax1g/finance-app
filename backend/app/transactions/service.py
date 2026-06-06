@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from decimal import Decimal
 
 from app.core.enums import TransactionType
 from app.transactions.schema import TransactionCreate, TransactionUpdate
@@ -59,28 +60,47 @@ class TransactionService:
         self, user_id: uuid.UUID, txn_id: uuid.UUID, data: TransactionUpdate
     ):
         old = await self.repo.get_by_id(user_id, txn_id)
-        was_adjustment = old.txn_type == TransactionType.ADJUSTMENT
+
+        new_type = data.txn_type if data.txn_type is not None else old.txn_type
+        new_amount = data.amount if data.amount is not None else old.amount
+
+        type_changed = data.txn_type is not None and data.txn_type != old.txn_type
+        amount_changed = data.amount is not None and data.amount != old.amount
 
         transaction = await self.repo.update(user_id, txn_id, data)
 
-        if was_adjustment and data.amount is not None:
-            delta = data.amount - old.amount
-            if delta != 0:
-                await self.accounts_service.adjust_balance(
-                    user_id, old.account_id, delta
-                )
+        if type_changed or amount_changed:
+            await self._reverse_balance(user_id, old.account_id, old.txn_type, old.amount)
+            await self._apply_balance(user_id, old.account_id, new_type, new_amount)
 
         await self.repo.db.commit()
         return transaction
+
+    async def _reverse_balance(
+        self, user_id: uuid.UUID, account_id: uuid.UUID, txn_type: TransactionType, amount: Decimal
+    ) -> None:
+        if txn_type == TransactionType.INCOME:
+            await self.accounts_service.decrease_balance(user_id, account_id, amount)
+        elif txn_type == TransactionType.EXPENSE:
+            await self.accounts_service.increase_balance(user_id, account_id, amount)
+        elif txn_type == TransactionType.ADJUSTMENT:
+            await self.accounts_service.adjust_balance(user_id, account_id, -amount)
+
+    async def _apply_balance(
+        self, user_id: uuid.UUID, account_id: uuid.UUID, txn_type: TransactionType, amount: Decimal
+    ) -> None:
+        if txn_type == TransactionType.INCOME:
+            await self.accounts_service.increase_balance(user_id, account_id, amount)
+        elif txn_type == TransactionType.EXPENSE:
+            await self.accounts_service.decrease_balance(user_id, account_id, amount)
+        elif txn_type == TransactionType.ADJUSTMENT:
+            await self.accounts_service.adjust_balance(user_id, account_id, amount)
 
     async def delete_transaction(self, user_id: uuid.UUID, txn_id: uuid.UUID):
         transaction = await self.repo.get_by_id(user_id, txn_id)
 
         await self.repo.delete(user_id, txn_id)
 
-        if transaction.txn_type == TransactionType.ADJUSTMENT:
-            await self.accounts_service.adjust_balance(
-                user_id, transaction.account_id, -transaction.amount
-            )
+        await self._reverse_balance(user_id, transaction.account_id, transaction.txn_type, transaction.amount)
 
         await self.repo.db.commit()

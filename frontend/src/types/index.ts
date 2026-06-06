@@ -95,6 +95,7 @@ export interface ChangePasswordRequest {
 }
 
 export interface ForgotPasswordResponse {
+  message: string
   reset_token: string
 }
 
