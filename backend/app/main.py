@@ -72,11 +72,6 @@ app.add_middleware(
 )
 
 
-@app.get("/api/v1/dashboard")
-async def dashboard():
-    return {"message": "Welcome to personal finance dashboard"}
-
-
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 

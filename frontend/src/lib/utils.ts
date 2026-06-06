@@ -51,7 +51,3 @@ export function toLocalDatetime(date: Date): string {
   return `${y}-${m}-${d} ${h}:${min}`
 }
 
-export function parseLocalDatetime(str: string): string {
-  const d = new Date(str)
-  return d.toISOString()
-}

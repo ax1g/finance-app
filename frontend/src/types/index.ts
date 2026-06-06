@@ -84,10 +84,6 @@ export interface TransactionUpdate {
   to_account_id?: string | null
 }
 
-export const TRANSACTION_TYPES: TransactionType[] = ["income", "expense", "adjustment", "transfer"]
-export const ACCOUNT_TYPES: AccountType[] = ["cash", "bank", "investment", "receivables", "payables"]
-export const CATEGORY_TYPES: CategoryType[] = ["income", "expense"]
-
 export interface AuthTokens {
   access_token: string
   token_type: string
