@@ -888,7 +888,7 @@ function IncomeStatement() {
                 <h3 className="text-sm font-semibold mb-2">
                   Income Transactions
                 </h3>
-                <div className="min-h-[250px]">
+                <div className="min-h-0">
                   {data.income_transactions.length === 0 ? (
                     <p className="text-sm text-muted-foreground py-4 text-center">
                       No income this month.
@@ -935,7 +935,7 @@ function IncomeStatement() {
                 <h3 className="text-sm font-semibold mb-2">
                   Expense Transactions
                 </h3>
-                <div className="min-h-[250px]">
+                <div className="min-h-0">
                   {data.expense_transactions.length === 0 ? (
                     <p className="text-sm text-muted-foreground py-4 text-center">
                       No expenses this month.
