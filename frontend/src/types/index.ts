@@ -194,6 +194,7 @@ export interface AccountSummaryItem {
   account_name: string
   account_type: AccountType
   balance: string
+  balance_as_of_end: string
   income_this_month: string
   expenses_this_month: string
 }

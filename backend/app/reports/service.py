@@ -149,17 +149,33 @@ class ReportService:
         self, user_id: uuid.UUID, start: datetime, end: datetime
     ) -> list[AccountSummaryItem]:
         rows = await self.repo.get_account_summary(user_id, start, end)
-        return [
-            AccountSummaryItem(
-                account_id=row["account_id"],
-                account_name=row["account_name"],
-                account_type=row["account_type"],
-                balance=row["balance"],
-                income_this_month=row["income_this_month"],
-                expenses_this_month=row["expenses_this_month"],
+        post_rows = await self.repo.get_account_post_period_totals(user_id, end)
+        post_by_account = {r["account_id"]: r for r in post_rows}
+        result: list[AccountSummaryItem] = []
+        for row in rows:
+            aid = row["account_id"]
+            post = post_by_account.get(aid, {})
+            post_income = post.get("income", Decimal("0"))
+            post_expenses = post.get("expenses", Decimal("0"))
+            post_adjustments = post.get("adjustments", Decimal("0"))
+            balance_as_of_end = (
+                row["balance"]
+                - post_income
+                + post_expenses
+                - post_adjustments
             )
-            for row in rows
-        ]
+            result.append(
+                AccountSummaryItem(
+                    account_id=row["account_id"],
+                    account_name=row["account_name"],
+                    account_type=row["account_type"],
+                    balance=row["balance"],
+                    balance_as_of_end=balance_as_of_end,
+                    income_this_month=row["income_this_month"],
+                    expenses_this_month=row["expenses_this_month"],
+                )
+            )
+        return result
 
     async def get_income_statement(
         self, user_id: uuid.UUID, year: int, month: int

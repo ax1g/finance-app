@@ -22,6 +22,11 @@ import {
   FileSpreadsheet,
   ChevronLeft,
   ChevronRight,
+  Banknote,
+  Landmark,
+  PiggyBank,
+  Handshake,
+  Building2,
 } from "lucide-react";
 import { fmt } from "@/lib/utils";
 import {
@@ -344,17 +349,33 @@ function CategoryBreakdown() {
 
 const accountGroupMeta: Record<
   string,
-  { label: string; icon: string; color: string }
+  { label: string; icon: React.ReactNode; color: string }
 > = {
-  cash: { label: "Cash", icon: "💵", color: "oklch(0.7 0.18 150)" },
-  bank: { label: "Bank", icon: "🏦", color: "oklch(0.55 0.15 220)" },
-  investment: { label: "Investment", icon: "📈", color: "oklch(0.5 0.14 280)" },
+  cash: {
+    label: "Cash",
+    icon: <Banknote className="h-5 w-5" />,
+    color: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400",
+  },
+  bank: {
+    label: "Bank",
+    icon: <Landmark className="h-5 w-5" />,
+    color: "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
+  },
+  investment: {
+    label: "Investment",
+    icon: <PiggyBank className="h-5 w-5" />,
+    color: "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
+  },
   receivables: {
     label: "Receivables",
-    icon: "📋",
-    color: "oklch(0.6 0.16 80)",
+    icon: <Handshake className="h-5 w-5" />,
+    color: "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400",
   },
-  payables: { label: "Payables", icon: "💳", color: "var(--color-expense)" },
+  payables: {
+    label: "Payables",
+    icon: <Building2 className="h-5 w-5" />,
+    color: "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400",
+  },
 };
 
 function AccountSummaryCard() {
@@ -457,8 +478,16 @@ function AccountSummaryCard() {
               const accounts = grouped[type];
               if (!accounts) return null;
               const meta = accountGroupMeta[type];
+              const groupIncome = accounts.reduce(
+                (s, a) => s + parseFloat(a.income_this_month),
+                0,
+              );
+              const groupExpenses = accounts.reduce(
+                (s, a) => s + parseFloat(a.expenses_this_month),
+                0,
+              );
               const typeTotal = accounts.reduce(
-                (s, a) => s + parseFloat(a.balance),
+                (s, a) => s + parseFloat(a.balance_as_of_end),
                 0,
               );
               return (
@@ -466,55 +495,51 @@ function AccountSummaryCard() {
                   key={type}
                   className="rounded-lg border border-border/50 p-4"
                 >
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-lg">{meta.icon}</span>
-                    <div>
-                      <p className="text-sm font-semibold">{meta.label}</p>
-                      <p className="text-xs font-number text-muted-foreground">
-                        {fmt(typeTotal)}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className={`flex h-8 w-8 items-center justify-center rounded-full shrink-0 ${meta.color}`}
+                      >
+                        {meta.icon}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold truncate">
+                          {meta.label}
+                        </p>
+                        <p className="text-xs font-number text-muted-foreground">
+                          {fmt(typeTotal)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-xs font-number text-[var(--color-income)]">
+                        +{fmt(groupIncome)}
+                      </p>
+                      <p className="text-xs font-number text-[var(--color-expense)]">
+                        -{fmt(groupExpenses)}
                       </p>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    {accounts.map((acc) => {
-                      const balance = parseFloat(acc.balance);
-                      const income = parseFloat(acc.income_this_month);
-                      const expenses = parseFloat(acc.expenses_this_month);
-                      return (
-                        <div
-                          key={acc.account_id}
-                          className="flex items-center justify-between text-sm"
-                        >
-                          <span className="text-muted-foreground truncate min-w-0">
-                            {acc.account_name}
-                          </span>
-                          <span className="font-number font-medium shrink-0 ml-2">
-                            {fmt(balance)}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="mt-3 flex items-center gap-3 text-xs border-t border-border pt-2">
-                    <span className="text-[var(--color-income)]">
-                      +
-                      {fmt(
-                        accounts.reduce(
-                          (s, a) => s + parseFloat(a.income_this_month),
-                          0,
-                        ),
-                      )}
-                    </span>
-                    <span className="text-[var(--color-expense)]">
-                      -
-                      {fmt(
-                        accounts.reduce(
-                          (s, a) => s + parseFloat(a.expenses_this_month),
-                          0,
-                        ),
-                      )}
-                    </span>
-                  </div>
+                  {accounts.length > 0 && (
+                    <>
+                      <div className="mt-2.5 border-t border-border" />
+                      <div className="mt-2 space-y-1">
+                        {accounts.map((acc) => (
+                          <div
+                            key={acc.account_id}
+                            className="flex items-center justify-between gap-2 text-sm"
+                          >
+                            <span className="text-muted-foreground truncate min-w-0">
+                              {acc.account_name}
+                            </span>
+                            <span className="font-number font-medium shrink-0">
+                              {fmt(acc.balance_as_of_end)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               );
             })}

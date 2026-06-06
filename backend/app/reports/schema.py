@@ -73,6 +73,7 @@ class AccountSummaryItem(BaseModel):
     account_name: str
     account_type: AccountType
     balance: Decimal
+    balance_as_of_end: Decimal
     income_this_month: Decimal
     expenses_this_month: Decimal
 

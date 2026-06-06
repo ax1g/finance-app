@@ -367,3 +367,58 @@ class ReportRepo:
             return result.mappings().all()
         except SQLAlchemyError as e:
             raise RepositoryError(f"Database error: {str(e)}") from e
+
+    async def get_account_post_period_totals(
+        self, user_id: uuid.UUID, end: datetime
+    ) -> Sequence[dict]:
+        try:
+            query = (
+                select(
+                    Transaction.account_id,
+                    func.coalesce(
+                        func.sum(
+                            case(
+                                (
+                                    Transaction.txn_type == TransactionType.INCOME,
+                                    Transaction.amount,
+                                ),
+                                else_=0,
+                            )
+                        ),
+                        0,
+                    ).label("income"),
+                    func.coalesce(
+                        func.sum(
+                            case(
+                                (
+                                    Transaction.txn_type == TransactionType.EXPENSE,
+                                    Transaction.amount,
+                                ),
+                                else_=0,
+                            )
+                        ),
+                        0,
+                    ).label("expenses"),
+                    func.coalesce(
+                        func.sum(
+                            case(
+                                (
+                                    Transaction.txn_type == TransactionType.ADJUSTMENT,
+                                    Transaction.amount,
+                                ),
+                                else_=0,
+                            )
+                        ),
+                        0,
+                    ).label("adjustments"),
+                )
+                .where(
+                    Transaction.user_id == user_id,
+                    Transaction.txn_date > end,
+                )
+                .group_by(Transaction.account_id)
+            )
+            result = await self.db.execute(query)
+            return result.mappings().all()
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}") from e
