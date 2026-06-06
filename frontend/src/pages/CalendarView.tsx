@@ -154,13 +154,13 @@ export default function CalendarView() {
                       {count > 0 && (
                         <div className="flex gap-0.5 mt-0.5">
                           {dayTxns!.some((t) => t.txn_type === "income") && (
-                            <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                            <div className="h-1.5 w-1.5 rounded-full bg-[var(--color-income)]" />
                           )}
                           {dayTxns!.some((t) => t.txn_type === "adjustment") && (
                             <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />
                           )}
                           {dayTxns!.some((t) => t.txn_type === "expense") && (
-                            <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                            <div className="h-1.5 w-1.5 rounded-full bg-[var(--color-expense)]" />
                           )}
                         </div>
                       )}
@@ -210,9 +210,9 @@ export default function CalendarView() {
                         {txn.txn_type}
                       </Badge>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium truncate">{txn.description || txn.category.name}</p>
+                        <p className="text-sm font-medium truncate">{txn.description || txn.category?.name || "Adjustment"}</p>
                         <p className="text-xs text-muted-foreground truncate">
-                          {txn.account.name} · {txn.category.name}
+                          {txn.account?.name ?? "Unknown"} · {txn.category?.name ?? "Other"}
                         </p>
                       </div>
                     </div>

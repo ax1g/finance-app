@@ -19,6 +19,7 @@ class AccountType(StrEnum):
 class CategoryType(StrEnum):
     INCOME = "income"
     EXPENSE = "expense"
+    SYSTEM = "system"
 
 
 class CategoryStatus(StrEnum):

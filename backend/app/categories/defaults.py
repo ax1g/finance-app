@@ -37,5 +37,5 @@ DEFAULT_CATEGORIES: list[dict] = [
     {"name": "Bank Charges", "type": CategoryType.EXPENSE,"icon":"🏦", "description": "Bank fees, service charges, and penalties",   "sort_order": 240},
     {"name": "Other Expense", "type": CategoryType.EXPENSE, "icon": "📦", "description": "Miscellaneous expenses",              "sort_order": 300},
     # ── Adjustment ───────────────────────────────────────
-    {"name": "Opening Balance", "type": CategoryType.EXPENSE, "icon": "🏦", "description": "System-generated opening balance adjustment", "sort_order": 0},
+    {"name": "Opening Balance", "type": CategoryType.SYSTEM, "icon": "🏦", "description": "System-generated opening balance adjustment", "sort_order": 0},
 ]

@@ -79,6 +79,12 @@ async def update_transaction(
     txn_id: uuid.UUID,
     txn_data: TransactionUpdate,
 ):
+    txn = await service.get_transaction_by_id(current_user.id, txn_id)
+    if txn.txn_type == TransactionType.ADJUSTMENT:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Adjustments are system-generated and cannot be modified.",
+        )
     return await service.update_transaction(current_user.id, txn_id, txn_data)
 
 
@@ -88,4 +94,10 @@ async def delete_transaction(
     current_user: CurrentUserDep,
     txn_id: uuid.UUID,
 ) -> None:
+    txn = await service.get_transaction_by_id(current_user.id, txn_id)
+    if txn.txn_type == TransactionType.ADJUSTMENT:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Adjustments are system-generated and cannot be deleted.",
+        )
     return await service.delete_transaction(current_user.id, txn_id)

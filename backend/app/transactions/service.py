@@ -3,6 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from app.core.enums import TransactionType
+from app.core.exceptions import AuthorizationError
 from app.transactions.schema import TransactionCreate, TransactionUpdate
 from app.transactions.repository import TransactionRepo
 from app.accounts.service import AccountService
@@ -94,6 +95,8 @@ class TransactionService:
         self, user_id: uuid.UUID, txn_id: uuid.UUID, data: TransactionUpdate
     ):
         old = await self.repo.get_by_id(user_id, txn_id)
+        if old.txn_type == TransactionType.ADJUSTMENT:
+            raise AuthorizationError("Adjustments are system-generated and cannot be modified.")
 
         new_type = data.txn_type if data.txn_type is not None else old.txn_type
         new_amount = data.amount if data.amount is not None else old.amount
@@ -115,6 +118,8 @@ class TransactionService:
       
     async def delete_transaction(self, user_id: uuid.UUID, txn_id: uuid.UUID):
         transaction = await self.repo.get_by_id(user_id, txn_id)
+        if transaction.txn_type == TransactionType.ADJUSTMENT:
+            raise AuthorizationError("Adjustments are system-generated and cannot be deleted.")
 
         if transaction.txn_type == TransactionType.TRANSFER and transaction.to_account_id:
             await self.accounts_service.increase_balance(
