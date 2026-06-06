@@ -2,14 +2,22 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import {
   Loader2,
   BarChart3,
   TrendingUp,
   TrendingDown,
   PieChart,
-  Download,
+  Upload,
   FileText,
   FileSpreadsheet,
   ChevronLeft,
@@ -40,21 +48,30 @@ function BalancesCard({ data }: { data: DashboardResponse | null }) {
   return (
     <div className="grid grid-cols-3 gap-6">
       <div className="rounded-xl bg-card p-6 shadow-sm">
-        <p className="text-sm font-medium text-muted-foreground">Income This Month</p>
+        <p className="text-sm font-medium text-muted-foreground">
+          Income This Month
+        </p>
         <p className="mt-3 text-4xl font-bold font-number tracking-tight text-[var(--color-income)]">
           {fmt(data.current_month_income)}
         </p>
       </div>
       <div className="rounded-xl bg-card p-6 shadow-sm">
-        <p className="text-sm font-medium text-muted-foreground">Expenses This Month</p>
+        <p className="text-sm font-medium text-muted-foreground">
+          Expenses This Month
+        </p>
         <p className="mt-3 text-4xl font-bold font-number tracking-tight text-[var(--color-expense)]">
           {fmt(data.current_month_expenses)}
         </p>
       </div>
       <div className="rounded-xl bg-card p-6 shadow-sm">
-        <p className="text-sm font-medium text-muted-foreground">Net This Month</p>
-        <p className={`mt-3 text-4xl font-bold font-number tracking-tight ${net >= 0 ? "text-[var(--color-income)]" : "text-[var(--color-expense)]"}`}>
-          {net >= 0 ? "+" : "-"}{fmt(Math.abs(net))}
+        <p className="text-sm font-medium text-muted-foreground">
+          Net This Month
+        </p>
+        <p
+          className={`mt-3 text-4xl font-bold font-number tracking-tight ${net >= 0 ? "text-[var(--color-income)]" : "text-[var(--color-expense)]"}`}
+        >
+          {net >= 0 ? "+" : "-"}
+          {fmt(Math.abs(net))}
         </p>
       </div>
     </div>
@@ -128,8 +145,14 @@ function MonthlyTrends() {
       <CardContent>
         <div className="h-[300px] w-full [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-surface]:bg-transparent">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+            <BarChart
+              data={chartData}
+              margin={{ top: 5, right: 10, left: 10, bottom: 10 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                className="stroke-border/50"
+              />
               <XAxis
                 dataKey="label"
                 className="text-xs text-muted-foreground"
@@ -142,26 +165,37 @@ function MonthlyTrends() {
                 tickLine={false}
                 axisLine={false}
                 tickMargin={6}
-                tickFormatter={(v) => fmt(v).charAt(0) === "$" ? `$${(v / 1000).toFixed(0)}k` : `${(v / 1000).toFixed(0)}k`}
+                tickFormatter={(v) =>
+                  fmt(v).charAt(0) === "$"
+                    ? `$${(v / 1000).toFixed(0)}k`
+                    : `${(v / 1000).toFixed(0)}k`
+                }
               />
               <Tooltip
                 content={({ active, payload, label }) => {
-                  if (!active || !payload?.length) return null
+                  if (!active || !payload?.length) return null;
                   return (
                     <div className="rounded-lg border bg-background px-3 py-2 text-sm shadow-md space-y-1">
                       <p className="font-medium text-foreground">{label}</p>
                       {payload.map((entry) => (
-                        <div key={entry.name} className="flex items-center gap-2">
+                        <div
+                          key={entry.name}
+                          className="flex items-center gap-2"
+                        >
                           <div
                             className="h-2 w-2 rounded-full"
                             style={{ backgroundColor: entry.color }}
                           />
-                          <span className="text-muted-foreground capitalize">{entry.name}:</span>
-                          <span className="font-number font-medium">{fmt(entry.value as number)}</span>
+                          <span className="text-muted-foreground capitalize">
+                            {entry.name}:
+                          </span>
+                          <span className="font-number font-medium">
+                            {fmt(entry.value as number)}
+                          </span>
                         </div>
                       ))}
                     </div>
-                  )
+                  );
                 }}
               />
               <Bar
@@ -237,8 +271,10 @@ function CategoryBreakdown() {
             variant="outline"
             size="sm"
             onClick={() => {
-              if (month === 0) { setYear((y) => y - 1); setMonth(11); }
-              else setMonth((m) => m - 1);
+              if (month === 0) {
+                setYear((y) => y - 1);
+                setMonth(11);
+              } else setMonth((m) => m - 1);
             }}
           >
             Prev
@@ -253,8 +289,10 @@ function CategoryBreakdown() {
             variant="outline"
             size="sm"
             onClick={() => {
-              if (month === 11) { setYear((y) => y + 1); setMonth(0); }
-              else setMonth((m) => m + 1);
+              if (month === 11) {
+                setYear((y) => y + 1);
+                setMonth(0);
+              } else setMonth((m) => m + 1);
             }}
           >
             Next
@@ -304,11 +342,18 @@ function CategoryBreakdown() {
   );
 }
 
-const accountGroupMeta: Record<string, { label: string; icon: string; color: string }> = {
+const accountGroupMeta: Record<
+  string,
+  { label: string; icon: string; color: string }
+> = {
   cash: { label: "Cash", icon: "💵", color: "oklch(0.7 0.18 150)" },
   bank: { label: "Bank", icon: "🏦", color: "oklch(0.55 0.15 220)" },
   investment: { label: "Investment", icon: "📈", color: "oklch(0.5 0.14 280)" },
-  receivables: { label: "Receivables", icon: "📋", color: "oklch(0.6 0.16 80)" },
+  receivables: {
+    label: "Receivables",
+    icon: "📋",
+    color: "oklch(0.6 0.16 80)",
+  },
   payables: { label: "Payables", icon: "💳", color: "var(--color-expense)" },
 };
 
@@ -348,8 +393,7 @@ function AccountSummaryCard() {
 
   useEffect(() => load(), [load]);
 
-  if (loading)
-    return <LoadingCard title="Accounts" icon={<LandmarkIcon />} />;
+  if (loading) return <LoadingCard title="Accounts" icon={<LandmarkIcon />} />;
   if (error) return <ErrorCard title="Accounts" error={error} />;
 
   const grouped: Record<string, AccountSummaryItem[]> = {};
@@ -369,32 +413,36 @@ function AccountSummaryCard() {
             Account Summary
           </CardTitle>
           <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              if (month === 0) { setYear((y) => y - 1); setMonth(11); }
-              else setMonth((m) => m - 1);
-            }}
-          >
-            Prev
-          </Button>
-          <span className="text-sm font-medium min-w-[120px] text-center">
-            {new Date(year, month).toLocaleString("en-US", {
-              month: "long",
-              year: "numeric",
-            })}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              if (month === 11) { setYear((y) => y + 1); setMonth(0); }
-              else setMonth((m) => m + 1);
-            }}
-          >
-            Next
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (month === 0) {
+                  setYear((y) => y - 1);
+                  setMonth(11);
+                } else setMonth((m) => m - 1);
+              }}
+            >
+              Prev
+            </Button>
+            <span className="text-sm font-medium min-w-[120px] text-center">
+              {new Date(year, month).toLocaleString("en-US", {
+                month: "long",
+                year: "numeric",
+              })}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (month === 11) {
+                  setYear((y) => y + 1);
+                  setMonth(0);
+                } else setMonth((m) => m + 1);
+              }}
+            >
+              Next
+            </Button>
           </div>
         </div>
       </CardHeader>
@@ -409,14 +457,22 @@ function AccountSummaryCard() {
               const accounts = grouped[type];
               if (!accounts) return null;
               const meta = accountGroupMeta[type];
-              const typeTotal = accounts.reduce((s, a) => s + parseFloat(a.balance), 0);
+              const typeTotal = accounts.reduce(
+                (s, a) => s + parseFloat(a.balance),
+                0,
+              );
               return (
-                <div key={type} className="rounded-lg border border-border/50 p-4">
+                <div
+                  key={type}
+                  className="rounded-lg border border-border/50 p-4"
+                >
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-lg">{meta.icon}</span>
                     <div>
                       <p className="text-sm font-semibold">{meta.label}</p>
-                      <p className="text-xs font-number text-muted-foreground">{fmt(typeTotal)}</p>
+                      <p className="text-xs font-number text-muted-foreground">
+                        {fmt(typeTotal)}
+                      </p>
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -425,19 +481,38 @@ function AccountSummaryCard() {
                       const income = parseFloat(acc.income_this_month);
                       const expenses = parseFloat(acc.expenses_this_month);
                       return (
-                        <div key={acc.account_id} className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground truncate min-w-0">{acc.account_name}</span>
-                          <span className="font-number font-medium shrink-0 ml-2">{fmt(balance)}</span>
+                        <div
+                          key={acc.account_id}
+                          className="flex items-center justify-between text-sm"
+                        >
+                          <span className="text-muted-foreground truncate min-w-0">
+                            {acc.account_name}
+                          </span>
+                          <span className="font-number font-medium shrink-0 ml-2">
+                            {fmt(balance)}
+                          </span>
                         </div>
                       );
                     })}
                   </div>
                   <div className="mt-3 flex items-center gap-3 text-xs border-t border-border pt-2">
                     <span className="text-[var(--color-income)]">
-                      +{fmt(accounts.reduce((s, a) => s + parseFloat(a.income_this_month), 0))}
+                      +
+                      {fmt(
+                        accounts.reduce(
+                          (s, a) => s + parseFloat(a.income_this_month),
+                          0,
+                        ),
+                      )}
                     </span>
                     <span className="text-[var(--color-expense)]">
-                      -{fmt(accounts.reduce((s, a) => s + parseFloat(a.expenses_this_month), 0))}
+                      -
+                      {fmt(
+                        accounts.reduce(
+                          (s, a) => s + parseFloat(a.expenses_this_month),
+                          0,
+                        ),
+                      )}
                     </span>
                   </div>
                 </div>
@@ -501,8 +576,10 @@ function IncomeByCategory() {
             variant="outline"
             size="sm"
             onClick={() => {
-              if (month === 0) { setYear((y) => y - 1); setMonth(11); }
-              else setMonth((m) => m - 1);
+              if (month === 0) {
+                setYear((y) => y - 1);
+                setMonth(11);
+              } else setMonth((m) => m - 1);
             }}
           >
             Prev
@@ -517,8 +594,10 @@ function IncomeByCategory() {
             variant="outline"
             size="sm"
             onClick={() => {
-              if (month === 11) { setYear((y) => y + 1); setMonth(0); }
-              else setMonth((m) => m + 1);
+              if (month === 11) {
+                setYear((y) => y + 1);
+                setMonth(0);
+              } else setMonth((m) => m + 1);
             }}
           >
             Next
@@ -616,7 +695,19 @@ function IncomeStatement() {
 
   function exportCSV() {
     if (!data) return;
+    const monthLabel = new Date(year, month - 1).toLocaleString("en-US", {
+      month: "long",
+      year: "numeric",
+    });
     const rows = [
+      [`Income Statement - ${monthLabel}`],
+      [""],
+      ["Opening Balance", data.opening_balance],
+      ["Total Income", data.total_income],
+      ["Total Expenses", data.total_expenses],
+      ["Net", data.net],
+      ["Closing Balance", data.closing_balance],
+      [""],
       ["Date", "Type", "Description", "Category", "Account", "Amount"],
       ...data.income_transactions.map((t) => [
         t.txn_date.slice(0, 10),
@@ -661,15 +752,29 @@ function IncomeStatement() {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <FileText className="h-5 w-5" />
-            Income Statement
-          </CardTitle>
+          <div>
+            <CardTitle className="flex items-center gap-2 text-3xl">
+              <FileText className="h-8 w-8" />
+              Income Statement
+            </CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">
+              For the month of{" "}
+              {new Date(year, month - 1).toLocaleString("en-US", {
+                month: "long",
+                year: "numeric",
+              })}
+            </p>
+          </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
-              <Button variant="ghost" size="sm" onClick={prevMonth} className="h-7 w-7 p-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={prevMonth}
+                className="h-7 w-7 p-0"
+              >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <span className="text-sm font-semibold min-w-[160px] text-center select-none">
@@ -678,23 +783,41 @@ function IncomeStatement() {
                   year: "numeric",
                 })}
               </span>
-              <Button variant="ghost" size="sm" onClick={nextMonth} className="h-7 w-7 p-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={nextMonth}
+                className="h-7 w-7 p-0"
+              >
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
             <div ref={exportRef} className="relative">
-              <Button variant="outline" size="sm" onClick={() => setExportOpen((o) => !o)}>
-                <Download className="h-4 w-4 mr-1" /> Export
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setExportOpen((o) => !o)}
+              >
+                <Upload className="h-4 w-4 mr-1" /> Export
               </Button>
               {exportOpen && (
                 <div className="absolute right-0 top-full mt-1 z-50 w-40 rounded-lg border bg-background p-1 shadow-md">
-                  <button onClick={exportCSV} className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm hover:bg-muted transition-colors">
+                  <button
+                    onClick={exportCSV}
+                    className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm hover:bg-muted transition-colors"
+                  >
                     <FileSpreadsheet className="h-4 w-4" /> CSV
                   </button>
-                  <button disabled className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm text-muted-foreground cursor-not-allowed">
+                  <button
+                    disabled
+                    className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm text-muted-foreground cursor-not-allowed"
+                  >
                     <FileText className="h-4 w-4" /> PDF
                   </button>
-                  <button disabled className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm text-muted-foreground cursor-not-allowed">
+                  <button
+                    disabled
+                    className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm text-muted-foreground cursor-not-allowed"
+                  >
                     <FileSpreadsheet className="h-4 w-4" /> XLSX
                   </button>
                 </div>
@@ -712,39 +835,47 @@ function IncomeStatement() {
           <div className="space-y-6">
             {/* Summary */}
             <div className="grid grid-cols-2 gap-6">
-              <div className="rounded-lg bg-muted p-4">
-                <h3 className="text-sm font-semibold text-muted-foreground mb-3">
+              <div className="rounded-lg bg-muted p-6">
+                <h3 className="text-xl font-semibold text-muted-foreground mb-4">
                   Income
                 </h3>
-                <div className="space-y-1.5 text-sm">
-                  <div className="flex justify-between">
-                    <span>Opening Balance</span>
-                    <span className="font-number font-medium">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-base text-muted-foreground">
+                      Opening Balance
+                    </span>
+                    <span className="font-number text-xl font-semibold">
                       {fmt(data.opening_balance)}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Total Income</span>
-                    <span className="font-number font-medium text-[var(--color-income)]">
+                  <div className="flex items-center justify-between">
+                    <span className="text-base text-muted-foreground">
+                      Total Income
+                    </span>
+                    <span className="font-number text-xl font-semibold text-[var(--color-income)]">
                       {fmt(data.total_income)}
                     </span>
                   </div>
                 </div>
               </div>
-              <div className="rounded-lg bg-muted p-4">
-                <h3 className="text-sm font-semibold text-muted-foreground mb-3">
+              <div className="rounded-lg bg-muted p-6">
+                <h3 className="text-xl font-semibold text-muted-foreground mb-4">
                   Expenses
                 </h3>
-                <div className="space-y-1.5 text-sm">
-                  <div className="flex justify-between">
-                    <span>Closing Balance</span>
-                    <span className="font-number font-medium">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-base text-muted-foreground">
+                      Closing Balance
+                    </span>
+                    <span className="font-number text-xl font-semibold">
                       {fmt(data.closing_balance)}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Total Expenses</span>
-                    <span className="font-number font-medium text-[var(--color-expense)]">
+                  <div className="flex items-center justify-between">
+                    <span className="text-base text-muted-foreground">
+                      Total Expenses
+                    </span>
+                    <span className="font-number text-xl font-semibold text-[var(--color-expense)]">
                       -{fmt(data.total_expenses)}
                     </span>
                   </div>
