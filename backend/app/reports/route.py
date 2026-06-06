@@ -82,8 +82,13 @@ async def monthly_summary(
 async def account_summary(
     service: ReportServiceDep,
     current_user: CurrentUserDep,
+    start_date: datetime | None = Query(default=None),
+    end_date: datetime | None = Query(default=None),
 ):
-    return await service.get_account_summary(current_user.id)
+    now = datetime.now(timezone.utc)
+    start = start_date or now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    end = end_date or now
+    return await service.get_account_summary(current_user.id, start, end)
 
 
 @router.get(

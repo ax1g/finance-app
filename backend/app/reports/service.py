@@ -145,11 +145,10 @@ class ReportService:
             for row in rows
         ]
 
-    async def get_account_summary(self, user_id: uuid.UUID) -> list[AccountSummaryItem]:
-        now = datetime.now(timezone.utc)
-        start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-
-        rows = await self.repo.get_account_summary(user_id, start_of_month, now)
+    async def get_account_summary(
+        self, user_id: uuid.UUID, start: datetime, end: datetime
+    ) -> list[AccountSummaryItem]:
+        rows = await self.repo.get_account_summary(user_id, start, end)
         return [
             AccountSummaryItem(
                 account_id=row["account_id"],

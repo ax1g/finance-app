@@ -126,7 +126,7 @@ function MonthlyTrends() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px] w-full">
+        <div className="h-[300px] w-full [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-surface]:bg-transparent">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 10 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
@@ -194,12 +194,17 @@ function CategoryBreakdown() {
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
 
+  const initialLoad = useRef(true);
+
   const startDate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
   const endDate = new Date(year, month + 1, 0).toISOString().slice(0, 10);
 
   const load = useCallback(() => {
     let cancelled = false;
-    setLoading(true);
+    if (initialLoad.current) {
+      setLoading(true);
+      initialLoad.current = false;
+    }
     fetchSpendingByCategory(startDate, endDate)
       .then((d) => {
         if (!cancelled) setData(d);
@@ -231,9 +236,10 @@ function CategoryBreakdown() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() =>
-              setMonth((m) => (m === 0 ? (setYear((y) => y - 1), 11) : m - 1))
-            }
+            onClick={() => {
+              if (month === 0) { setYear((y) => y - 1); setMonth(11); }
+              else setMonth((m) => m - 1);
+            }}
           >
             Prev
           </Button>
@@ -246,9 +252,10 @@ function CategoryBreakdown() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() =>
-              setMonth((m) => (m === 11 ? (setYear((y) => y + 1), 0) : m + 1))
-            }
+            onClick={() => {
+              if (month === 11) { setYear((y) => y + 1); setMonth(0); }
+              else setMonth((m) => m + 1);
+            }}
           >
             Next
           </Button>
@@ -309,10 +316,22 @@ function AccountSummaryCard() {
   const [data, setData] = useState<AccountSummaryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const now = new Date();
+  const [year, setYear] = useState(now.getFullYear());
+  const [month, setMonth] = useState(now.getMonth());
 
-  useEffect(() => {
+  const initialLoad = useRef(true);
+
+  const startDate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
+  const endDate = new Date(year, month + 1, 0).toISOString().slice(0, 10);
+
+  const load = useCallback(() => {
     let cancelled = false;
-    fetchAccountSummary()
+    if (initialLoad.current) {
+      setLoading(true);
+      initialLoad.current = false;
+    }
+    fetchAccountSummary(startDate, endDate)
       .then((d) => {
         if (!cancelled) setData(d);
       })
@@ -325,7 +344,9 @@ function AccountSummaryCard() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [startDate, endDate]);
+
+  useEffect(() => load(), [load]);
 
   if (loading)
     return <LoadingCard title="Accounts" icon={<LandmarkIcon />} />;
@@ -342,10 +363,40 @@ function AccountSummaryCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <LandmarkIcon />
-          Account Summary (This Month)
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <LandmarkIcon />
+            Account Summary
+          </CardTitle>
+          <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (month === 0) { setYear((y) => y - 1); setMonth(11); }
+              else setMonth((m) => m - 1);
+            }}
+          >
+            Prev
+          </Button>
+          <span className="text-sm font-medium min-w-[120px] text-center">
+            {new Date(year, month).toLocaleString("en-US", {
+              month: "long",
+              year: "numeric",
+            })}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (month === 11) { setYear((y) => y + 1); setMonth(0); }
+              else setMonth((m) => m + 1);
+            }}
+          >
+            Next
+          </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         {data.length === 0 ? (
@@ -407,12 +458,17 @@ function IncomeByCategory() {
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
 
+  const initialLoad = useRef(true);
+
   const startDate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
   const endDate = new Date(year, month + 1, 0).toISOString().slice(0, 10);
 
   const load = useCallback(() => {
     let cancelled = false;
-    setLoading(true);
+    if (initialLoad.current) {
+      setLoading(true);
+      initialLoad.current = false;
+    }
     fetchIncomeByCategory(startDate, endDate)
       .then((d) => {
         if (!cancelled) setData(d);
@@ -444,9 +500,10 @@ function IncomeByCategory() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() =>
-              setMonth((m) => (m === 0 ? (setYear((y) => y - 1), 11) : m - 1))
-            }
+            onClick={() => {
+              if (month === 0) { setYear((y) => y - 1); setMonth(11); }
+              else setMonth((m) => m - 1);
+            }}
           >
             Prev
           </Button>
@@ -459,9 +516,10 @@ function IncomeByCategory() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() =>
-              setMonth((m) => (m === 11 ? (setYear((y) => y + 1), 0) : m + 1))
-            }
+            onClick={() => {
+              if (month === 11) { setYear((y) => y + 1); setMonth(0); }
+              else setMonth((m) => m + 1);
+            }}
           >
             Next
           </Button>
@@ -530,9 +588,14 @@ function IncomeStatement() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  const initialLoad = useRef(true);
+
   const load = useCallback(() => {
     let cancelled = false;
-    setLoading(true);
+    if (initialLoad.current) {
+      setLoading(true);
+      initialLoad.current = false;
+    }
     setError("");
     fetchIncomeStatement(year, month)
       .then((d) => {
@@ -666,16 +729,6 @@ function IncomeStatement() {
                       {fmt(data.total_income)}
                     </span>
                   </div>
-                  <hr className="my-2 border-border" />
-                  <div className="flex justify-between font-semibold">
-                    <span>Total</span>
-                    <span className="font-number">
-                      {fmt(
-                        parseFloat(data.opening_balance) +
-                          parseFloat(data.total_income),
-                      )}
-                    </span>
-                  </div>
                 </div>
               </div>
               <div className="rounded-lg bg-muted p-4">
@@ -693,16 +746,6 @@ function IncomeStatement() {
                     <span>Total Expenses</span>
                     <span className="font-number font-medium text-[var(--color-expense)]">
                       -{fmt(data.total_expenses)}
-                    </span>
-                  </div>
-                  <hr className="my-2 border-border" />
-                  <div className="flex justify-between font-semibold">
-                    <span>Net</span>
-                    <span
-                      className={`font-number ${parseFloat(data.net) >= 0 ? "text-[var(--color-income)]" : "text-[var(--color-expense)]"}`}
-                    >
-                      {parseFloat(data.net) >= 0 ? "+" : "-"}
-                      {fmt(Math.abs(parseFloat(data.net)))}
                     </span>
                   </div>
                 </div>
@@ -917,14 +960,14 @@ export default function Reports() {
 
       <MonthlyTrends />
 
+      <AccountSummaryCard />
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <IncomeByCategory />
         <CategoryBreakdown />
       </div>
 
       <IncomeStatement />
-
-      <AccountSummaryCard />
     </div>
   );
 }
