@@ -254,6 +254,21 @@ class ReportRepo:
         except SQLAlchemyError as e:
             raise RepositoryError(f"Database error: {str(e)}") from e
 
+    async def get_period_adjustments(
+        self, user_id: uuid.UUID, start: datetime, end: datetime
+    ) -> Decimal:
+        try:
+            query = select(func.coalesce(func.sum(Transaction.amount), 0)).where(
+                Transaction.user_id == user_id,
+                Transaction.txn_type == TransactionType.ADJUSTMENT,
+                Transaction.txn_date >= start,
+                Transaction.txn_date <= end,
+            )
+            result = await self.db.execute(query)
+            return result.scalar()
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}") from e
+
     async def get_monthly_summary(
         self, user_id: uuid.UUID, since: datetime
     ) -> Sequence[dict]:

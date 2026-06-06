@@ -170,10 +170,17 @@ class ReportService:
         else:
             end = datetime(year, month + 1, 1, tzinfo=timezone.utc) - timedelta(seconds=1)
 
-        closing_balance = await self.repo.get_total_balance(user_id, as_of=end)
+        now = datetime.now(timezone.utc)
+
+        current_total = await self.repo.get_total_balance(user_id)
+        income_since_start = await self.repo.get_period_income(user_id, start, now)
+        expenses_since_start = await self.repo.get_period_expenses(user_id, start, now)
+        adjustments_since_start = await self.repo.get_period_adjustments(user_id, start, now)
+        opening_balance = current_total - income_since_start + expenses_since_start - adjustments_since_start
+
         total_income = await self.repo.get_period_income(user_id, start, end)
         total_expenses = await self.repo.get_period_expenses(user_id, start, end)
-        opening_balance = closing_balance - total_income + total_expenses
+        closing_balance = opening_balance + total_income - total_expenses
 
         transactions = await self.repo.get_period_transactions(user_id, start, end)
 

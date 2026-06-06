@@ -700,7 +700,7 @@ function IncomeStatement() {
       year: "numeric",
     });
     const rows = [
-      [`Income Statement - ${monthLabel}`],
+      [`Monthly Statement - ${monthLabel}`],
       [""],
       ["Opening Balance", data.opening_balance],
       ["Total Income", data.total_income],
@@ -755,9 +755,8 @@ function IncomeStatement() {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2 text-3xl">
-              <FileText className="h-8 w-8" />
-              Income Statement
+            <CardTitle className="text-4xl">
+              Monthly Statement
             </CardTitle>
             <p className="mt-1 text-sm text-muted-foreground">
               For the month of{" "}
@@ -889,91 +888,95 @@ function IncomeStatement() {
                 <h3 className="text-sm font-semibold mb-2">
                   Income Transactions
                 </h3>
-                {data.income_transactions.length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-4 text-center">
-                    No income this month.
-                  </p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr className="border-b border-border text-left text-muted-foreground">
-                          <th className="pb-1.5 pr-2 font-medium">Date</th>
-                          <th className="pb-1.5 pr-2 font-medium">
-                            Particulars
-                          </th>
-                          <th className="pb-1.5 pr-2 font-medium">Category</th>
-                          <th className="pb-1.5 pr-2 font-medium">Mode</th>
-                          <th className="pb-1.5 text-right font-medium">
-                            Amount
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {data.income_transactions.map((t, i) => (
-                          <tr key={i} className="border-b border-border/50">
-                            <td className="py-1.5 pr-2 whitespace-nowrap font-number">
-                              {t.txn_date.slice(0, 10)}
-                            </td>
-                            <td className="py-1.5 pr-2">
-                              {t.description ?? "—"}
-                            </td>
-                            <td className="py-1.5 pr-2">{t.category_name}</td>
-                            <td className="py-1.5 pr-2">{t.account_name}</td>
-                            <td className="py-1.5 text-right font-number text-[var(--color-income)]">
-                              {fmt(t.amount)}
-                            </td>
+                <div className="min-h-[250px]">
+                  {data.income_transactions.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-4 text-center">
+                      No income this month.
+                    </p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b border-border text-left text-muted-foreground">
+                            <th className="pb-1.5 pr-2 font-medium">Date</th>
+                            <th className="pb-1.5 pr-2 font-medium">
+                              Particulars
+                            </th>
+                            <th className="pb-1.5 pr-2 font-medium">Category</th>
+                            <th className="pb-1.5 pr-2 font-medium">Mode</th>
+                            <th className="pb-1.5 text-right font-medium">
+                              Amount
+                            </th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                        </thead>
+                        <tbody>
+                          {data.income_transactions.map((t, i) => (
+                            <tr key={i} className="border-b border-border/50">
+                              <td className="py-1.5 pr-2 whitespace-nowrap font-number">
+                                {t.txn_date.slice(0, 10)}
+                              </td>
+                              <td className="py-1.5 pr-2">
+                                {t.description ?? "—"}
+                              </td>
+                              <td className="py-1.5 pr-2">{t.category_name}</td>
+                              <td className="py-1.5 pr-2">{t.account_name}</td>
+                              <td className="py-1.5 text-right font-number text-[var(--color-income)]">
+                                {fmt(t.amount)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
               </div>
               <div>
                 <h3 className="text-sm font-semibold mb-2">
                   Expense Transactions
                 </h3>
-                {data.expense_transactions.length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-4 text-center">
-                    No expenses this month.
-                  </p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr className="border-b border-border text-left text-muted-foreground">
-                          <th className="pb-1.5 pr-2 font-medium">Date</th>
-                          <th className="pb-1.5 pr-2 font-medium">
-                            Particulars
-                          </th>
-                          <th className="pb-1.5 pr-2 font-medium">Category</th>
-                          <th className="pb-1.5 pr-2 font-medium">Mode</th>
-                          <th className="pb-1.5 text-right font-medium">
-                            Amount
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {data.expense_transactions.map((t, i) => (
-                          <tr key={i} className="border-b border-border/50">
-                            <td className="py-1.5 pr-2 whitespace-nowrap font-number">
-                              {t.txn_date.slice(0, 10)}
-                            </td>
-                            <td className="py-1.5 pr-2">
-                              {t.description ?? "—"}
-                            </td>
-                            <td className="py-1.5 pr-2">{t.category_name}</td>
-                            <td className="py-1.5 pr-2">{t.account_name}</td>
-                            <td className="py-1.5 text-right font-number text-[var(--color-expense)]">
-                              -{fmt(t.amount)}
-                            </td>
+                <div className="min-h-[250px]">
+                  {data.expense_transactions.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-4 text-center">
+                      No expenses this month.
+                    </p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b border-border text-left text-muted-foreground">
+                            <th className="pb-1.5 pr-2 font-medium">Date</th>
+                            <th className="pb-1.5 pr-2 font-medium">
+                              Particulars
+                            </th>
+                            <th className="pb-1.5 pr-2 font-medium">Category</th>
+                            <th className="pb-1.5 pr-2 font-medium">Mode</th>
+                            <th className="pb-1.5 text-right font-medium">
+                              Amount
+                            </th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                        </thead>
+                        <tbody>
+                          {data.expense_transactions.map((t, i) => (
+                            <tr key={i} className="border-b border-border/50">
+                              <td className="py-1.5 pr-2 whitespace-nowrap font-number">
+                                {t.txn_date.slice(0, 10)}
+                              </td>
+                              <td className="py-1.5 pr-2">
+                                {t.description ?? "—"}
+                              </td>
+                              <td className="py-1.5 pr-2">{t.category_name}</td>
+                              <td className="py-1.5 pr-2">{t.account_name}</td>
+                              <td className="py-1.5 text-right font-number text-[var(--color-expense)]">
+                                -{fmt(t.amount)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
