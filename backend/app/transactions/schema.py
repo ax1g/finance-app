@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
 from decimal import Decimal
+from typing import Generic, TypeVar
 
 from pydantic import BaseModel, Field, ConfigDict, model_validator
 
@@ -9,14 +12,14 @@ from app.accounts.schema import AccountRead
 from app.categories.schema import CategoryRead
 
 
+T = TypeVar("T")
+
+
 # shared properties
 class TransactionBase(BaseModel):
     txn_date: datetime
-
     txn_type: TransactionType
-
     amount: Decimal = Field(ge=0, max_digits=12, decimal_places=2)
-
     description: str | None = Field(default=None, max_length=255)
 
 
@@ -37,42 +40,60 @@ class TransactionCreate(TransactionBase):
         return self
 
 
-# Read Schema
+# Read Schema (full detail with nested objects)
 class TransactionRead(TransactionBase):
     id: uuid.UUID
     account_id: uuid.UUID
     account: AccountRead
-
     category_id: uuid.UUID | None
     category: CategoryRead | None = None
-
     to_account_id: uuid.UUID | None
     to_account: AccountRead | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
 
+# Flat summary for list views (no nested objects)
+class TransactionSummary(BaseModel):
+    id: uuid.UUID
+    txn_date: datetime
+    txn_type: TransactionType
+    amount: Decimal
+    description: str | None
+    account_id: uuid.UUID
+    account_name: str
+    to_account_id: uuid.UUID | None
+    to_account_name: str | None
+    category_id: uuid.UUID | None
+    category_name: str | None
+
+
+# Generic cursor-paginated response
+class CursorPage(BaseModel, Generic[T]):
+    items: list[T]
+    next_cursor: str | None = None
+    has_more: bool = False
+
+
 # Update Schema (partial updates)
 class TransactionUpdate(BaseModel):
     txn_date: datetime | None = None
-
     txn_type: TransactionType | None = None
-
     amount: Decimal | None = Field(default=None, ge=0, max_digits=12, decimal_places=2)
-
     category_id: uuid.UUID | None = None
-
     account_id: uuid.UUID | None = None
-
     to_account_id: uuid.UUID | None = None
-
     description: str | None = Field(default=None, max_length=255)
 
     @model_validator(mode="after")
     def validate_transfer(self):
         txn_type = self.txn_type
         to_account_id = self.to_account_id
-        if to_account_id and txn_type is not None and txn_type != TransactionType.TRANSFER:
+        if (
+            to_account_id
+            and txn_type is not None
+            and txn_type != TransactionType.TRANSFER
+        ):
             raise ValueError("to_account_id is only valid for transfers")
         if txn_type == TransactionType.TRANSFER:
             if not to_account_id:

@@ -55,7 +55,10 @@ class Transaction(Base, TimestampMixin):
     )
 
     account: Mapped["Account"] = relationship(  # noqa: F821
-        "Account", back_populates="transactions", foreign_keys=[account_id], lazy="selectin"
+        "Account",
+        back_populates="transactions",
+        foreign_keys=[account_id],
+        lazy="selectin",
     )
 
     to_account: Mapped["Account | None"] = relationship(  # noqa: F821

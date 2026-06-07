@@ -50,13 +50,13 @@ class TransactionService:
         self,
         user_id: uuid.UUID,
         limit: int,
-        offset: int,
+        cursor: str | None,
         txn_type: TransactionType | None,
         start: datetime | None,
         end: datetime | None,
     ):
         return await self.repo.get_transactions(
-            user_id, limit, offset, txn_type, start, end
+            user_id, limit, cursor, txn_type, start, end
         )
 
     async def get_transaction_by_id(self, user_id: uuid.UUID, txn_id: uuid.UUID):

@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import { fetchTransactions, type TransactionFilters } from "@/api/transactions"
 import { useDataRefresh } from "@/context/DataRefreshContext"
-import type { TransactionRead } from "@/types"
+import type { TransactionSummary } from "@/types"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { fmt, formatDate } from "@/lib/utils"
 import {
   Select,
@@ -23,7 +24,7 @@ const TXN_TYPES = [
   { value: "transfer", label: "Transfer" },
 ]
 
-function fmtAmount(txn: TransactionRead): string {
+function fmtAmount(txn: TransactionSummary): string {
   if (txn.txn_type === "adjustment") return fmt(txn.amount)
   if (txn.txn_type === "transfer") return fmt(txn.amount)
   const sign = txn.txn_type === "expense" ? "-" : "+"
@@ -32,22 +33,39 @@ function fmtAmount(txn: TransactionRead): string {
 
 export default function TransactionList() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [transactions, setTransactions] = useState<TransactionRead[]>([])
+  const [transactions, setTransactions] = useState<TransactionSummary[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [nextCursor, setNextCursor] = useState<string | null>(null)
+  const [hasMore, setHasMore] = useState(false)
   const [error, setError] = useState("")
   const { version } = useDataRefresh()
 
   const txnType = searchParams.get("txn_type") || ""
 
-  useEffect(() => {
-    let cancelled = false
-
+  const load = useCallback(async (cursor?: string) => {
     const filters: TransactionFilters = { limit: 50 }
     if (txnType && txnType !== "all") filters.txn_type = txnType
+    if (cursor) filters.cursor = cursor
 
-    fetchTransactions(filters)
-      .then((data) => {
-        if (!cancelled) setTransactions(data)
+    const page = await fetchTransactions(filters)
+    return page
+  }, [txnType])
+
+  useEffect(() => {
+    let cancelled = false
+    setTransactions([])
+    setNextCursor(null)
+    setHasMore(false)
+    setLoading(true)
+    setError("")
+
+    load()
+      .then((page) => {
+        if (cancelled) return
+        setTransactions(page.items)
+        setNextCursor(page.next_cursor)
+        setHasMore(page.has_more)
       })
       .catch((err) => {
         if (!cancelled) setError(err.message)
@@ -56,10 +74,23 @@ export default function TransactionList() {
         if (!cancelled) setLoading(false)
       })
 
-    return () => {
-      cancelled = true
+    return () => { cancelled = true }
+  }, [load, version.transactions])
+
+  const handleLoadMore = async () => {
+    if (!nextCursor || loadingMore) return
+    setLoadingMore(true)
+    try {
+      const page = await load(nextCursor)
+      setTransactions((prev) => [...prev, ...page.items])
+      setNextCursor(page.next_cursor)
+      setHasMore(page.has_more)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load more")
+    } finally {
+      setLoadingMore(false)
     }
-  }, [txnType, version.transactions])
+  }
 
   return (
     <Card>
@@ -135,14 +166,14 @@ export default function TransactionList() {
                   </div>
                   <div>
                     <p className="text-sm font-medium leading-none">
-                      {txn.description || txn.category?.name || "Transfer"}
+                      {txn.description || txn.category_name || "Transfer"}
                     </p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {formatDate(txn.txn_date)} &middot;{" "}
                         {txn.txn_type === "transfer" ? (
-                          <>{txn.account.name} <ArrowRight className="inline h-3 w-3" /> {txn.to_account?.name || "?"}</>
+                          <>{txn.account_name} <ArrowRight className="inline h-3 w-3" /> {txn.to_account_name || "?"}</>
                         ) : (
-                          txn.account.name
+                          txn.account_name
                         )}
                       </p>
                   </div>
@@ -164,6 +195,17 @@ export default function TransactionList() {
                 </div>
               </Link>
             ))}
+          </div>
+        )}
+        {hasMore && !loading && (
+          <div className="mt-4 flex justify-center">
+            <Button variant="outline" onClick={handleLoadMore} disabled={loadingMore}>
+              {loadingMore ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading...</>
+              ) : (
+                "Load More"
+              )}
+            </Button>
           </div>
         )}
       </CardContent>

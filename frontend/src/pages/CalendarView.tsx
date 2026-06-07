@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { fetchTransactions } from "@/api/transactions";
-import type { TransactionRead } from "@/types";
+import type { TransactionSummary } from "@/types";
 import { fmt } from "@/lib/utils";
 
 const WEEKDAY_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -29,7 +29,7 @@ export default function CalendarView() {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
-  const [transactions, setTransactions] = useState<TransactionRead[]>([]);
+  const [transactions, setTransactions] = useState<TransactionSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
@@ -44,9 +44,10 @@ export default function CalendarView() {
     let cancelled = false;
     setSelectedDay(null);
 
-    fetchTransactions({ start: startDate, end: endDate })
-      .then((d) => {
-        if (!cancelled) setTransactions(d);
+    // Fetch up to 500 transactions for the month (calendar view needs all)
+    fetchTransactions({ start: startDate, end: endDate, limit: 500 })
+      .then((page) => {
+        if (!cancelled) setTransactions(page.items);
       })
       .catch((err) => {
         if (!cancelled) setError(err.message);
@@ -61,7 +62,7 @@ export default function CalendarView() {
   }, [startDate, endDate, version.transactions]);
 
   const txnByDay = useMemo(() => {
-    const map = new Map<string, TransactionRead[]>();
+    const map = new Map<string, TransactionSummary[]>();
     for (const txn of transactions) {
       const date = txn.txn_date.slice(0, 10);
       if (!map.has(date)) map.set(date, []);
@@ -238,12 +239,12 @@ export default function CalendarView() {
                       <div className="min-w-0">
                         <p className="text-sm font-medium truncate">
                           {txn.description ||
-                            txn.category?.name ||
+                            txn.category_name ||
                             "Adjustment"}
                         </p>
                         <p className="text-xs text-muted-foreground truncate">
-                          {txn.account?.name ?? "Unknown"} ·{" "}
-                          {txn.category?.name ?? "Other"}
+                          {txn.account_name ?? "Unknown"} ·{" "}
+                          {txn.category_name ?? "Other"}
                         </p>
                       </div>
                     </div>
