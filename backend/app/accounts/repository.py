@@ -152,9 +152,6 @@ class AccountRepo:
     ) -> None:
         if delta == 0:
             return
-        account = await self.db.get(Account, account_id)
-        if not account or account.user_id != user_id:
-            raise ResourceNotFoundError(f"Account {account_id} not found or not owned by user")
         stmt = (
             sa_update(Account)
             .where(Account.id == account_id)
@@ -162,7 +159,13 @@ class AccountRepo:
             .values(current_balance=Account.current_balance + delta)
         )
         try:
-            await self.db.execute(stmt)
+            result = await self.db.execute(stmt)
+            if result.rowcount == 0:
+                raise ResourceNotFoundError(
+                    f"Account {account_id} not found or not owned by user"
+                )
+        except (ResourceNotFoundError,):
+            raise
         except SQLAlchemyError as e:
             await self.db.rollback()
             raise RepositoryError(f"Database error: {str(e)}") from e

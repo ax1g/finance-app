@@ -1,5 +1,7 @@
 import type {
   TransactionRead,
+  TransactionSummary,
+  CursorPage,
   TransactionCreate,
   TransactionUpdate,
 } from "../types";
@@ -8,23 +10,23 @@ import { apiFetch } from "./client";
 export interface TransactionFilters {
   txn_type?: string;
   limit?: number;
-  offset?: number;
+  cursor?: string;
   start?: string;
   end?: string;
 }
 
 export async function fetchTransactions(
   filters: TransactionFilters = {},
-): Promise<TransactionRead[]> {
+): Promise<CursorPage<TransactionSummary>> {
   const params = new URLSearchParams();
   if (filters.txn_type) params.set("txn_type", filters.txn_type);
   if (filters.limit) params.set("limit", String(filters.limit));
-  if (filters.offset) params.set("offset", String(filters.offset));
+  if (filters.cursor) params.set("cursor", filters.cursor);
   if (filters.start) params.set("start", toDateTime(filters.start, "start"));
   if (filters.end) params.set("end", toDateTime(filters.end, "end"));
 
   const qs = params.toString();
-  return apiFetch<TransactionRead[]>(`/transactions/${qs ? `?${qs}` : ""}`);
+  return apiFetch<CursorPage<TransactionSummary>>(`/transactions/${qs ? `?${qs}` : ""}`);
 }
 
 function toDateTime(value: string, boundary: "start" | "end"): string {
