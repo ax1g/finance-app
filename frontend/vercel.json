@@ -1,0 +1,13 @@
+{
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/api/v1/:path*",
+      "destination": "https://neco-080aad15.fastapicloud.dev/api/v1/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

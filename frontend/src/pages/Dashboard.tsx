@@ -144,7 +144,7 @@ export default function Dashboard() {
                 {loading ? "..." : showBalance ? (
                   <AnimatedNumber value={data?.total_balance ?? "0"} visible={showBalance} />
                 ) : (
-                  <span className="tracking-[0.05em]">{fmt(data!.total_balance).replace(/\S/g, "•")}</span>
+                  <span className="tracking-[0.05em]">{fmt(data?.total_balance ?? "0").replace(/\S/g, "•")}</span>
                 )}
               </p>
             </div>

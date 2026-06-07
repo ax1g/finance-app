@@ -3,7 +3,7 @@ name = "neco-app"
 version = "0.1.0"
 description = "A fullstack personal finance app for simple people like us and (Forrest Gump ofc!)."
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.12"
 dependencies = []
 
 [tool.uv.workspace]

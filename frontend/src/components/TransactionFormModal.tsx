@@ -23,6 +23,7 @@ import QuickCategoryModal from "./QuickCategoryModal";
 const CATEGORY_TYPE_MAP: Record<string, string[]> = {
   income: ["income"],
   expense: ["expense"],
+  system: ["system"],
 };
 
 export default function TransactionFormModal() {
@@ -238,7 +239,9 @@ export default function TransactionFormModal() {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>{form.txn_type === "transfer" ? "From Account" : "Account"}</Label>
+              <Label>
+                {form.txn_type === "transfer" ? "From Account" : "Account"}
+              </Label>
               <Select
                 value={form.account_id}
                 onValueChange={(value) =>
@@ -282,7 +285,10 @@ export default function TransactionFormModal() {
                     setForm({ ...form, to_account_id: value })
                   }
                 >
-                  <SelectTrigger id="modal-to-account" className="w-full max-w-full">
+                  <SelectTrigger
+                    id="modal-to-account"
+                    className="w-full max-w-full"
+                  >
                     <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-left">
                       <SelectValue placeholder="Select account" />
                     </span>

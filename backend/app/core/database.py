@@ -4,6 +4,7 @@ import re
 from collections.abc import AsyncGenerator
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from contextlib import asynccontextmanager
 
 from app.core.config import settings
 
@@ -16,6 +17,7 @@ engine = create_async_engine(
     echo=(settings.ENVIRONMENT == "local"),  # True only during debugging
     pool_pre_ping=True,  # checks dead connections
     pool_recycle=3600,  # refresh stale connections
+    connect_args={"ssl": True} if "sslmode=require" in settings.DATABASE_URL else {}
 )
 
 
@@ -24,17 +26,40 @@ SessionFactory = async_sessionmaker(
     bind=engine, class_=AsyncSession, autoflush=False, expire_on_commit=False
 )
 
+@asynccontextmanager
+async def get_raw_connection():
+    async with engine.connect() as conn:
+        # Use the raw underlying asyncpg connection
+        raw = await conn.get_raw_connection()
+        yield raw.driver_connection  # the actual asyncpg Connection object
+
 
 async def create_database_if_not_exists() -> None:
     db_name = settings.POSTGRES_DB
+    
+    # If POSTGRES_DB isn't set, we are likely using a unified production connection string (e.g., Neon).
+    # We skip dynamic creation as the database is pre-provisioned.
+    if not db_name:
+        if settings.DATABASE_URL:
+            # Optional: Extract DB name from connection string for logging/validation purposes
+            # Matches the characters after the trailing slash, ignoring URL parameters
+            match = re.search(r"/([^/?]+)(?:\?.*)?$", settings.DATABASE_URL)
+            extracted_name = match.group(1) if match else "unknown"
+            logger.info("Using remote/unified database URL connection to '%s'. Skipping generation.", extracted_name)
+            return
+        raise ValueError("Database configuration missing: Neither POSTGRES_DB nor DATABASE_URL is set.")
+
+    # Validate database name layout for local fallbacks
+    if not re.fullmatch(r"[a-zA-Z_][a-zA-Z0-9_]*", db_name):
+        raise ValueError(f"Invalid database name format: {db_name!r}")
+
     admin_url = (
-        f"postgresql+psycopg://{settings.POSTGRES_USER}:"
+        f"postgresql+asyncpg://{settings.POSTGRES_USER}:"
         f"{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_SERVER}:"
         f"{settings.POSTGRES_PORT}/postgres"
     )
+    
     admin_engine = create_async_engine(admin_url, isolation_level="AUTOCOMMIT")
-    if not re.fullmatch(r"[a-zA-Z_][a-zA-Z0-9_]*", db_name):
-        raise ValueError(f"Invalid database name: {db_name!r}")
 
     try:
         async with admin_engine.connect() as conn:
@@ -47,6 +72,9 @@ async def create_database_if_not_exists() -> None:
                 logger.info("Created database '%s'", db_name)
             else:
                 logger.info("Database '%s' already exists", db_name)
+    except Exception as e:
+        logger.error("Failed to verify or create local fallback database: %s", e)
+        raise
     finally:
         await admin_engine.dispose()
 

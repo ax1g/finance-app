@@ -1,15 +1,15 @@
-import type { CategoryRead, CategoryCreate, CategoryUpdate } from "../types"
-import { apiFetch } from "./client"
+import type { CategoryRead, CategoryCreate, CategoryUpdate } from "../types";
+import { apiFetch } from "./client";
 
 export async function fetchCategories(
   categoryType?: string,
 ): Promise<CategoryRead[]> {
-  const params = categoryType ? `?category_type=${categoryType}` : ""
-  return apiFetch<CategoryRead[]>(`/categories/${params}`)
+  const params = categoryType ? `?category_type=${categoryType}` : "";
+  return apiFetch<CategoryRead[]>(`/categories/${params}`);
 }
 
 export async function fetchCategory(id: string): Promise<CategoryRead> {
-  return apiFetch<CategoryRead>(`/categories/${id}`)
+  return apiFetch<CategoryRead>(`/categories/${id}`);
 }
 
 export async function createCategory(
@@ -18,7 +18,7 @@ export async function createCategory(
   return apiFetch<CategoryRead>("/categories/", {
     method: "POST",
     body: JSON.stringify(data),
-  })
+  });
 }
 
 export async function updateCategory(
@@ -28,9 +28,9 @@ export async function updateCategory(
   return apiFetch<CategoryRead>(`/categories/${id}`, {
     method: "PATCH",
     body: JSON.stringify(data),
-  })
+  });
 }
 
 export async function deleteCategory(id: string): Promise<void> {
-  await apiFetch<void>(`/categories/${id}`, { method: "DELETE" })
+  await apiFetch<void>(`/categories/${id}`, { method: "DELETE" });
 }

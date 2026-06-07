@@ -71,9 +71,12 @@ class TransactionUpdate(BaseModel):
     @model_validator(mode="after")
     def validate_transfer(self):
         txn_type = self.txn_type
+        to_account_id = self.to_account_id
+        if to_account_id and txn_type is not None and txn_type != TransactionType.TRANSFER:
+            raise ValueError("to_account_id is only valid for transfers")
         if txn_type == TransactionType.TRANSFER:
-            if not self.to_account_id:
+            if not to_account_id:
                 raise ValueError("to_account_id is required for transfers")
-            if self.to_account_id and self.account_id and self.to_account_id == self.account_id:
+            if to_account_id and self.account_id and to_account_id == self.account_id:
                 raise ValueError("from and to accounts must be different")
         return self

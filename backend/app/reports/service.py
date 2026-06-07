@@ -64,14 +64,14 @@ class ReportService:
         top_categories_data = await self.repo.get_top_spending_categories(
             user_id, start_of_month, now
         )
-        total_expenses = expenses or Decimal("0.01")
+        total_expenses = expenses or Decimal("0")
         top_categories = [
             CategorySpending(
                 category_id=row["category_id"],
                 category_name=row["category_name"],
                 icon=row["icon"],
                 total=row["total"],
-                percentage=float(row["total"] / total_expenses * 100),
+                percentage=float(row["total"] / total_expenses * 100) if total_expenses > 0 else 0,
                 transaction_count=row["transaction_count"],
             )
             for row in top_categories_data
@@ -109,14 +109,14 @@ class ReportService:
         self, user_id: uuid.UUID, start: datetime, end: datetime
     ) -> list[SpendingByCategoryItem]:
         rows = await self.repo.get_spending_by_category(user_id, start, end)
-        total = sum(row["total"] for row in rows) or Decimal("0.01")
+        total = sum(row["total"] for row in rows) or Decimal("0")
         return [
             SpendingByCategoryItem(
                 category_id=row["category_id"],
                 category_name=row["category_name"],
                 icon=row["icon"],
                 total=row["total"],
-                percentage=float(row["total"] / total * 100),
+                percentage=float(row["total"] / total * 100) if total > 0 else 0,
                 transaction_count=row["transaction_count"],
             )
             for row in rows
@@ -126,14 +126,14 @@ class ReportService:
         self, user_id: uuid.UUID, start: datetime, end: datetime
     ) -> list[SpendingByCategoryItem]:
         rows = await self.repo.get_income_by_category(user_id, start, end)
-        total = sum(row["total"] for row in rows) or Decimal("0.01")
+        total = sum(row["total"] for row in rows) or Decimal("0")
         return [
             SpendingByCategoryItem(
                 category_id=row["category_id"],
                 category_name=row["category_name"],
                 icon=row["icon"],
                 total=row["total"],
-                percentage=float(row["total"] / total * 100),
+                percentage=float(row["total"] / total * 100) if total > 0 else 0,
                 transaction_count=row["transaction_count"],
             )
             for row in rows
