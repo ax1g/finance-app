@@ -2,7 +2,7 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from sqlalchemy import select, asc, func
+from sqlalchemy import select, asc, func, or_
 
 from app.users.model import User
 from app.core.exceptions import RepositoryError, ResourceNotFoundError, ConflictError
@@ -57,6 +57,19 @@ class UserRepo:
     async def get_by_email(self, email: str):
         try:
             query = select(User).where(func.lower(User.email) == email.lower())
+            result = await self.db.execute(query)
+            return result.scalars().first()
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}") from e
+
+    async def get_by_username_or_email(self, login: str):
+        try:
+            query = select(User).where(
+                or_(
+                    func.lower(User.username) == login.lower(),
+                    func.lower(User.email) == login.lower(),
+                )
+            )
             result = await self.db.execute(query)
             return result.scalars().first()
         except SQLAlchemyError as e:
