@@ -71,7 +71,6 @@ export default function AccountDetail() {
 
   const [account, setAccount] = useState<AccountRead | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
   const [editing, setEditing] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -92,7 +91,9 @@ export default function AccountDetail() {
         setEditForm({ name: data.name, type: data.type })
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message)
+        if (!cancelled) {
+          toast({ title: "Error", description: err.message, variant: "destructive" })
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -113,7 +114,6 @@ export default function AccountDetail() {
       navigate("/accounts", { replace: true })
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Delete failed"
-      setError(msg)
       toast({ title: "Error", description: msg, variant: "destructive" })
       setDeleting(false)
     }
@@ -122,7 +122,6 @@ export default function AccountDetail() {
   const handleSave = async () => {
     if (!account_id || !editForm.name || !editForm.type) return
     setSaving(true)
-    setError("")
     try {
       const updated = await updateAccount(account_id, {
         name: editForm.name,
@@ -134,7 +133,6 @@ export default function AccountDetail() {
       toast({ title: "Account updated", variant: "success" })
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Update failed"
-      setError(msg)
       toast({ title: "Error", description: msg, variant: "destructive" })
     } finally {
       setSaving(false)
@@ -149,10 +147,6 @@ export default function AccountDetail() {
       </div>
     )
   }
-  if (error && !account)
-    return (
-      <p className="py-8 text-center text-sm text-destructive">{error}</p>
-    )
   if (!account)
     return (
       <p className="py-8 text-center text-sm text-muted-foreground">
@@ -202,7 +196,6 @@ export default function AccountDetail() {
                   </SelectContent>
                 </Select>
               </div>
-              {error && <p className="text-sm text-destructive">{error}</p>}
               <div className="flex gap-3">
                 <Button
                   variant="outline"

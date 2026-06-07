@@ -69,7 +69,6 @@ export default function TransactionDetail() {
   const [accounts, setAccounts] = useState<AccountRead[]>([])
   const [categories, setCategories] = useState<CategoryRead[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
   const [editing, setEditing] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -117,7 +116,9 @@ export default function TransactionDetail() {
         })
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message)
+        if (!cancelled) {
+          toast({ title: "Error", description: err.message, variant: "destructive" })
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -138,7 +139,6 @@ export default function TransactionDetail() {
       navigate("/transactions", { replace: true })
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Delete failed"
-      setError(msg)
       toast({ title: "Error", description: msg, variant: "destructive" })
       setDeleting(false)
     }
@@ -160,7 +160,6 @@ export default function TransactionDetail() {
       return
     }
     setSaving(true)
-    setError("")
     try {
       const updated = await updateTransaction(txn_id, {
         txn_date: new Date(editForm.txn_date).toISOString(),
@@ -177,7 +176,6 @@ export default function TransactionDetail() {
       toast({ title: "Transaction updated", variant: "success" })
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Update failed"
-      setError(msg)
       toast({ title: "Error", description: msg, variant: "destructive" })
     } finally {
       setSaving(false)
@@ -192,10 +190,6 @@ export default function TransactionDetail() {
       </div>
     )
   }
-  if (error && !txn)
-    return (
-      <p className="py-8 text-center text-sm text-destructive">{error}</p>
-    )
   if (!txn)
     return (
       <p className="py-8 text-center text-sm text-muted-foreground">
@@ -358,7 +352,6 @@ export default function TransactionDetail() {
                   }
                 />
               </div>
-              {error && <p className="text-sm text-destructive">{error}</p>}
               <div className="flex gap-3">
                 <Button
                   variant="outline"

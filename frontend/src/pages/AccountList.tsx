@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchAccounts } from "@/api/accounts";
 import { useDataRefresh } from "@/context/DataRefreshContext";
+import { useToast } from "@/context/ToastContext";
 import type { AccountRead } from "@/types";
 import { Button } from "@/components/ui/button";
 import { useModal } from "@/context/ModalContext";
@@ -225,9 +226,9 @@ function SectionList({
 export default function AccountList() {
   const { openModal } = useModal();
   const { version } = useDataRefresh();
+  const { toast } = useToast();
   const [accounts, setAccounts] = useState<AccountRead[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [expanded, setExpanded] = useState<Set<string>>(new Set(["cash", "bank"]));
 
@@ -235,13 +236,12 @@ export default function AccountList() {
     let cancelled = false;
 
     setLoading(true);
-    setError("");
     fetchAccounts()
       .then((data) => {
         if (!cancelled) setAccounts(data);
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message);
+        if (!cancelled) toast({ title: "Error", description: err.message, variant: "destructive" });
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -311,7 +311,7 @@ export default function AccountList() {
           </Button>
         </div>
         <div className="flex items-center gap-3">
-          {!loading && !error && (
+          {!loading && (
             <p className="text-sm text-muted-foreground">
               Net:{" "}
               <span
@@ -352,8 +352,7 @@ export default function AccountList() {
           Loading...
         </div>
       )}
-      {error && <p className="py-8 text-center text-sm text-destructive">{error}</p>}
-      {!loading && !error && accounts.length === 0 && (
+      {!loading && accounts.length === 0 && (
         <p className="py-8 text-center text-sm text-muted-foreground">
           No accounts yet.{" "}
           <button
@@ -364,7 +363,7 @@ export default function AccountList() {
           </button>
         </p>
       )}
-      {!loading && !error && accounts.length > 0 && (
+      {!loading && accounts.length > 0 && (
         <div className="space-y-6">
           {viewMode === "grid" ? (
             <>

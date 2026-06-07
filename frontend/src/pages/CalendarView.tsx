@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useDataRefresh } from "@/context/DataRefreshContext";
+import { useToast } from "@/context/ToastContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,9 +32,9 @@ export default function CalendarView() {
   const [month, setMonth] = useState(now.getMonth());
   const [transactions, setTransactions] = useState<TransactionSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const { version } = useDataRefresh();
+  const { toast } = useToast();
 
   const startDate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
   const endDate = new Date(year, month + 1, 0).toISOString().slice(0, 10);
@@ -50,7 +51,7 @@ export default function CalendarView() {
         if (!cancelled) setTransactions(page.items);
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message);
+        if (!cancelled) toast({ title: "Error", description: err.message, variant: "destructive" });
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -127,16 +128,16 @@ export default function CalendarView() {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          {loadingInitial ? (
-            <div className="flex items-center justify-center py-16 text-muted-foreground">
-              <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-              Loading...
-            </div>
-          ) : error && transactions.length === 0 ? (
-            <p className="py-8 text-center text-sm text-destructive">{error}</p>
-          ) : (
-            <>
+         <CardContent>
+           {loadingInitial ? (
+             <div className="flex items-center justify-center py-16 text-muted-foreground">
+               <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+               Loading...
+             </div>
+           ) : transactions.length === 0 ? (
+             <p className="py-8 text-center text-sm text-muted-foreground">No transactions this month.</p>
+           ) : (
+             <>
               <div className="grid grid-cols-7 gap-px">
                 {WEEKDAY_HEADERS.map((h) => (
                   <div

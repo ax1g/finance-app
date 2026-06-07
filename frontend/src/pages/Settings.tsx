@@ -72,13 +72,10 @@ export default function Settings() {
   const [loading, setLoading] = useState(true)
   const [pwForm, setPwForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" })
   const [showPw, setShowPw] = useState({ current: false, new: false, confirm: false })
-  const [pwError, setPwError] = useState("")
-  const [pwSuccess, setPwSuccess] = useState("")
   const [pwSubmitting, setPwSubmitting] = useState(false)
   const [selectedCurrency, setSelectedCurrency] = useState("USD")
   const [customSymbol, setCustomSymbol] = useState("")
   const [currencySaving, setCurrencySaving] = useState(false)
-  const [currencyMsg, setCurrencyMsg] = useState("")
 
   useEffect(() => {
     fetchCurrentUser()
@@ -131,15 +128,13 @@ export default function Settings() {
           <form
             onSubmit={async (e) => {
               e.preventDefault()
-              setPwError("")
-              setPwSuccess("")
               if (pwForm.newPassword !== pwForm.confirmPassword) {
-                setPwError("New passwords do not match")
+                toast({ title: "Error", description: "New passwords do not match", variant: "destructive" })
                 return
               }
               const pwErr = getPasswordError(pwForm.newPassword)
               if (pwErr) {
-                setPwError(pwErr)
+                toast({ title: "Error", description: pwErr, variant: "destructive" })
                 return
               }
               setPwSubmitting(true)
@@ -148,16 +143,14 @@ export default function Settings() {
                   current_password: pwForm.currentPassword,
                   new_password: pwForm.newPassword,
                 })
-                setPwSuccess("Password updated successfully")
                 toast({ title: "Password updated", variant: "success" })
                 setPwForm({ currentPassword: "", newPassword: "", confirmPassword: "" })
-                } catch (err) {
-                  const msg = err instanceof Error ? err.message : "Something went wrong"
-                  setPwError(msg)
-                  toast({ title: "Error", description: msg, variant: "destructive" })
-                } finally {
-                  setPwSubmitting(false)
-                }
+              } catch (err) {
+                const msg = err instanceof Error ? err.message : "Something went wrong"
+                toast({ title: "Error", description: msg, variant: "destructive" })
+              } finally {
+                setPwSubmitting(false)
+              }
             }}
             className="space-y-4"
           >
@@ -203,30 +196,28 @@ export default function Settings() {
                 </button>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  type={showPw.confirm ? "text" : "password"}
-                  value={pwForm.confirmPassword}
-                  onChange={(e) => setPwForm({ ...pwForm, confirmPassword: e.target.value })}
-                  required
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPw({ ...showPw, confirm: !showPw.confirm })}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  tabIndex={-1}
-                >
-                  {showPw.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showPw.confirm ? "text" : "password"}
+                    value={pwForm.confirmPassword}
+                    onChange={(e) => setPwForm({ ...pwForm, confirmPassword: e.target.value })}
+                    required
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPw({ ...showPw, confirm: !showPw.confirm })}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    tabIndex={-1}
+                  >
+                    {showPw.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
-            </div>
-            {pwError && <p className="text-sm text-destructive">{pwError}</p>}
-            {pwSuccess && <p className="text-sm text-green-600 dark:text-green-400">{pwSuccess}</p>}
-            <Button type="submit" disabled={pwSubmitting}>
+              <Button type="submit" disabled={pwSubmitting}>
               {pwSubmitting ? "Updating..." : "Update Password"}
             </Button>
           </form>
@@ -373,7 +364,6 @@ export default function Settings() {
                   disabled={currencySaving}
                   onClick={async () => {
                     setCurrencySaving(true)
-                    setCurrencyMsg("")
                     try {
                       const payload: { currency: string; currency_custom_symbol?: string | null } = { currency: selectedCurrency }
                       const trimmedSymbol = customSymbol.trim()
@@ -391,10 +381,8 @@ export default function Settings() {
                         localStorage.removeItem("currency_custom_symbol")
                       }
                       toast({ title: "Currency updated", variant: "success" })
-                      setCurrencyMsg("Currency updated")
                     } catch (err) {
                       const msg = err instanceof Error ? err.message : "Failed to save"
-                      setCurrencyMsg(msg)
                       toast({ title: "Error", description: msg, variant: "destructive" })
                     } finally {
                       setCurrencySaving(false)
@@ -418,11 +406,7 @@ export default function Settings() {
                 </span>
               )}
             </div>
-            {currencyMsg && (
-              <p className={`mt-2 text-xs ${currencyMsg === "Currency updated" ? "text-green-600 dark:text-green-400" : "text-destructive"}`}>
-                {currencyMsg}
-              </p>
-            )}
+
           </div>
         </CardContent>
       </Card>

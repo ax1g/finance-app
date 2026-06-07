@@ -36,7 +36,6 @@ export default function AccountCreate() {
   const { toast } = useToast()
   const { signal } = useDataRefresh()
   const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState("")
 
   const [form, setForm] = useState({
     name: "",
@@ -47,11 +46,10 @@ export default function AccountCreate() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.name || !form.type) {
-      setError("Name and type are required")
+      toast({ title: "Error", description: "Name and type are required", variant: "destructive" })
       return
     }
     setSubmitting(true)
-    setError("")
 
     try {
       const created = await createAccount({
@@ -64,7 +62,6 @@ export default function AccountCreate() {
       navigate(`/accounts/${created.id}`)
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to create account"
-      setError(msg)
       toast({ title: "Error", description: msg, variant: "destructive" })
     } finally {
       setSubmitting(false)
@@ -124,7 +121,6 @@ export default function AccountCreate() {
                 }
               />
             </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
             <div className="flex gap-3">
               <Button
                 type="button"

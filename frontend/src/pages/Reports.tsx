@@ -28,6 +28,7 @@ import {
   Building2,
 } from "lucide-react";
 import { fmt } from "@/lib/utils";
+import { useToast } from "@/context/ToastContext";
 import {
   fetchDashboard,
   fetchMonthlySummary,
@@ -85,7 +86,7 @@ function BalancesCard({ data }: { data: DashboardResponse | null }) {
 function MonthlyTrends() {
   const [data, setData] = useState<MonthlySummaryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     let cancelled = false;
@@ -94,7 +95,7 @@ function MonthlyTrends() {
         if (!cancelled) setData(d);
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message);
+        if (!cancelled) toast({ title: "Error", description: err.message, variant: "destructive" });
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -111,7 +112,6 @@ function MonthlyTrends() {
         icon={<BarChart3 className="h-5 w-5" />}
       />
     );
-  if (error) return <ErrorCard title="Monthly Trends" error={error} />;
 
   if (data.length === 0) {
     return (
@@ -227,10 +227,10 @@ function MonthlyTrends() {
 function CategoryBreakdown() {
   const [data, setData] = useState<SpendingByCategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
+  const { toast } = useToast();
 
   const startDate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
   const endDate = new Date(year, month + 1, 0).toISOString().slice(0, 10);
@@ -243,7 +243,7 @@ function CategoryBreakdown() {
         if (!cancelled) setData(d);
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message);
+        if (!cancelled) toast({ title: "Error", description: err.message, variant: "destructive" });
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -299,8 +299,6 @@ function CategoryBreakdown() {
       <CardContent>
         {loading ? (
           <LoadingInline />
-        ) : error ? (
-          <p className="text-sm text-destructive">{error}</p>
         ) : data.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
             No expenses this month.
@@ -376,10 +374,10 @@ const accountGroupMeta: Record<
 function AccountSummaryCard() {
   const [data, setData] = useState<AccountSummaryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
+  const { toast } = useToast();
 
   const startDate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
   const endDate = new Date(year, month + 1, 0).toISOString().slice(0, 10);
@@ -392,7 +390,7 @@ function AccountSummaryCard() {
         if (!cancelled) setData(d);
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message);
+        if (!cancelled) toast({ title: "Error", description: err.message, variant: "destructive" });
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -403,7 +401,6 @@ function AccountSummaryCard() {
   }, [startDate, endDate]);
 
   if (loading) return <LoadingCard title="Accounts" icon={<LandmarkIcon />} />;
-  if (error) return <ErrorCard title="Accounts" error={error} />;
 
   const grouped: Record<string, AccountSummaryItem[]> = {};
   for (const acc of data) {
@@ -541,10 +538,10 @@ function AccountSummaryCard() {
 function IncomeByCategory() {
   const [data, setData] = useState<SpendingByCategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
+  const { toast } = useToast();
 
   const startDate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
   const endDate = new Date(year, month + 1, 0).toISOString().slice(0, 10);
@@ -557,7 +554,7 @@ function IncomeByCategory() {
         if (!cancelled) setData(d);
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message);
+        if (!cancelled) toast({ title: "Error", description: err.message, variant: "destructive" });
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -613,8 +610,6 @@ function IncomeByCategory() {
       <CardContent>
         {loading ? (
           <LoadingInline />
-        ) : error ? (
-          <p className="text-sm text-destructive">{error}</p>
         ) : data.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
             No income this month.
@@ -659,9 +654,9 @@ function IncomeStatement() {
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [data, setData] = useState<IncomeStatementResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [exportOpen, setExportOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -676,13 +671,12 @@ function IncomeStatement() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    setError("");
     fetchIncomeStatement(year, month)
       .then((d) => {
         if (!cancelled) setData(d);
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message);
+        if (!cancelled) toast({ title: "Error", description: err.message, variant: "destructive" });
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -834,8 +828,6 @@ function IncomeStatement() {
       <CardContent>
         {loading ? (
           <LoadingInline />
-        ) : error ? (
-          <p className="text-sm text-destructive">{error}</p>
         ) : data ? (
           <div className="space-y-6">
             {/* Summary */}
@@ -1092,21 +1084,6 @@ function LoadingCard({
   );
 }
 
-function ErrorCard({ title, error }: { title: string; error: string }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-destructive">{error}</p>
-      </CardContent>
-    </Card>
-  );
-}
-
 function LoadingInline() {
   return (
     <div className="flex items-center justify-center py-6 text-muted-foreground">
@@ -1121,7 +1098,7 @@ export default function Reports() {
     null,
   );
   const [dashLoading, setDashLoading] = useState(true);
-  const [dashError, setDashError] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     let cancelled = false;
@@ -1130,7 +1107,7 @@ export default function Reports() {
         if (!cancelled) setDashboardData(d);
       })
       .catch((err) => {
-        if (!cancelled) setDashError(err.message);
+        if (!cancelled) toast({ title: "Error", description: err.message, variant: "destructive" });
       })
       .finally(() => {
         if (!cancelled) setDashLoading(false);
@@ -1148,8 +1125,6 @@ export default function Reports() {
 
       {dashLoading ? (
         <LoadingCard title="Summary" icon={<BarChart3 className="h-5 w-5" />} />
-      ) : dashError ? (
-        <ErrorCard title="Summary" error={dashError} />
       ) : (
         <BalancesCard data={dashboardData} />
       )}

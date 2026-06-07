@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import { fetchTransactions, type TransactionFilters } from "@/api/transactions"
 import { useDataRefresh } from "@/context/DataRefreshContext"
+import { useToast } from "@/context/ToastContext"
 import type { TransactionSummary } from "@/types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -38,8 +39,8 @@ export default function TransactionList() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [hasMore, setHasMore] = useState(false)
-  const [error, setError] = useState("")
   const { version } = useDataRefresh()
+  const { toast } = useToast()
 
   const txnType = searchParams.get("txn_type") || ""
 
@@ -58,7 +59,6 @@ export default function TransactionList() {
     setNextCursor(null)
     setHasMore(false)
     setLoading(true)
-    setError("")
 
     load()
       .then((page) => {
@@ -68,7 +68,7 @@ export default function TransactionList() {
         setHasMore(page.has_more)
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message)
+        if (!cancelled) toast({ title: "Error", description: err.message, variant: "destructive" });
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -86,7 +86,7 @@ export default function TransactionList() {
       setNextCursor(page.next_cursor)
       setHasMore(page.has_more)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load more")
+      toast({ title: "Error", description: err instanceof Error ? err.message : "Failed to load more", variant: "destructive" });
     } finally {
       setLoadingMore(false)
     }
@@ -126,15 +126,12 @@ export default function TransactionList() {
             Loading...
           </div>
         )}
-        {error && (
-          <p className="py-8 text-center text-sm text-destructive">{error}</p>
-        )}
-        {!loading && !error && transactions.length === 0 && (
+        {!loading && transactions.length === 0 && (
           <p className="py-8 text-center text-sm text-muted-foreground">
             No transactions found.
           </p>
         )}
-        {!loading && !error && transactions.length > 0 && (
+        {!loading && transactions.length > 0 && (
           <div className="space-y-1">
             {transactions.map((txn) => (
               <Link
