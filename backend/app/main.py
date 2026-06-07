@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 
 from app.api.v1.api import api_router
 from app.core.config import settings
-from app.core.database import create_database_if_not_exists
+from app.core.database import create_database_if_not_exists, get_raw_connection
 from app.core.exceptions import (
     AppError,
     AuthenticationError,
@@ -25,24 +25,35 @@ from app.core.exceptions import (
 logger = logging.getLogger(__name__)
 
 
+MIGRATION_LOCK_ID = 123456789  # Any arbitrary int — just needs to be consistent
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Starting up...")
     await create_database_if_not_exists()
 
     alembic_ini = Path(__file__).parent.parent / "alembic.ini"
-    logger.info("Running migrations...")
-    try:
-        proc = await asyncio.create_subprocess_exec(
-            "python", "-m", "alembic", "upgrade", "head",
-            cwd=alembic_ini.parent,
-        )
-        rc = await proc.wait()
-        if rc != 0:
-            raise RuntimeError(f"Alembic exited with code {rc}")
-        logger.info("Migrations complete.")
-    except Exception:
-        logger.exception("Migration failed")
+    logger.info("Acquiring migration lock...")
+
+    async with get_raw_connection() as conn:
+        # Blocks until this instance is the only one holding the lock
+        await conn.execute(f"SELECT pg_advisory_lock({MIGRATION_LOCK_ID})")
+        try:
+            logger.info("Running migrations...")
+            proc = await asyncio.create_subprocess_exec(
+                "python", "-m", "alembic", "upgrade", "head",
+                cwd=alembic_ini.parent,
+            )
+            rc = await proc.wait()
+            if rc != 0:
+                raise RuntimeError(f"Alembic exited with code {rc}")
+            logger.info("Migrations complete.")
+        except Exception:
+            logger.exception("Migration failed")
+            raise  # Re-raise so the instance doesn't start in a broken state
+        finally:
+            await conn.execute(f"SELECT pg_advisory_unlock({MIGRATION_LOCK_ID})")
 
     yield
     logger.info("Shutting down...")
@@ -62,6 +73,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "https://neco-money.vercel.app",
         "http://localhost:5173",
         "http://localhost:8080",
         "http://localhost",

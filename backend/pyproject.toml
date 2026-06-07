@@ -3,11 +3,10 @@ name = "backend"
 version = "0.1.0"
 description = "a finance api to track money."
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.18.4",
-    "fastapi>=0.136.1",
-    "psycopg[binary]>=3.3.4",
+    "fastapi[standard]>=0.136.1",
     "pydantic[email]>=2.13.4",
     "pydantic-settings>=2.14.1",
     "sqlalchemy>=2.0.49",
@@ -19,6 +18,9 @@ dependencies = [
     "pwdlib[argon2]>=0.3.0",
     "httpx>=0.28.1",
     "pyjwt>=2.13.0",
+    "fastapi-cloud>=0.0.1",
+    "asyncpg>=0.31.0",
+    "uuid6>=2025.0.1",
 ]
 
 [dependency-groups]
@@ -35,3 +37,6 @@ dev = [
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+
+[tool.fastapi]
+entrypoint = "app.main:app"
