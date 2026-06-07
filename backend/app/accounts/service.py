@@ -33,6 +33,11 @@ class AccountService:
     ) -> None:
         await self.repo.adjust_balance(user_id, account_id, delta)
 
+    async def lock_account(
+        self, user_id: uuid.UUID, account_id: uuid.UUID
+    ):
+        await self.repo.lock_for_update(user_id, account_id)
+
     async def create_account(self, user_id: uuid.UUID, data: AccountCreate):
         account = await self.repo.create(user_id, data)
 

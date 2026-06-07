@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,6 @@ import {
   Loader2,
   BarChart3,
   TrendingUp,
-  TrendingDown,
   PieChart,
   Upload,
   FileText,
@@ -233,17 +232,12 @@ function CategoryBreakdown() {
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
 
-  const initialLoad = useRef(true);
-
   const startDate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
   const endDate = new Date(year, month + 1, 0).toISOString().slice(0, 10);
 
-  const load = useCallback(() => {
+  useEffect(() => {
     let cancelled = false;
-    if (initialLoad.current) {
-      setLoading(true);
-      initialLoad.current = false;
-    }
+    setLoading(true);
     fetchSpendingByCategory(startDate, endDate)
       .then((d) => {
         if (!cancelled) setData(d);
@@ -258,8 +252,6 @@ function CategoryBreakdown() {
       cancelled = true;
     };
   }, [startDate, endDate]);
-
-  useEffect(() => load(), [load]);
 
   const maxTotal =
     data.length > 0 ? Math.max(...data.map((d) => parseFloat(d.total))) : 0;
@@ -354,7 +346,8 @@ const accountGroupMeta: Record<
   cash: {
     label: "Cash",
     icon: <Banknote className="h-5 w-5" />,
-    color: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400",
+    color:
+      "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400",
   },
   bank: {
     label: "Bank",
@@ -364,12 +357,14 @@ const accountGroupMeta: Record<
   investment: {
     label: "Investment",
     icon: <PiggyBank className="h-5 w-5" />,
-    color: "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
+    color:
+      "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
   },
   receivables: {
     label: "Receivables",
     icon: <Handshake className="h-5 w-5" />,
-    color: "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400",
+    color:
+      "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400",
   },
   payables: {
     label: "Payables",
@@ -386,17 +381,12 @@ function AccountSummaryCard() {
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
 
-  const initialLoad = useRef(true);
-
   const startDate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
   const endDate = new Date(year, month + 1, 0).toISOString().slice(0, 10);
 
-  const load = useCallback(() => {
+  useEffect(() => {
     let cancelled = false;
-    if (initialLoad.current) {
-      setLoading(true);
-      initialLoad.current = false;
-    }
+    setLoading(true);
     fetchAccountSummary(startDate, endDate)
       .then((d) => {
         if (!cancelled) setData(d);
@@ -411,8 +401,6 @@ function AccountSummaryCard() {
       cancelled = true;
     };
   }, [startDate, endDate]);
-
-  useEffect(() => load(), [load]);
 
   if (loading) return <LoadingCard title="Accounts" icon={<LandmarkIcon />} />;
   if (error) return <ErrorCard title="Accounts" error={error} />;
@@ -558,17 +546,12 @@ function IncomeByCategory() {
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
 
-  const initialLoad = useRef(true);
-
   const startDate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
   const endDate = new Date(year, month + 1, 0).toISOString().slice(0, 10);
 
-  const load = useCallback(() => {
+  useEffect(() => {
     let cancelled = false;
-    if (initialLoad.current) {
-      setLoading(true);
-      initialLoad.current = false;
-    }
+    setLoading(true);
     fetchIncomeByCategory(startDate, endDate)
       .then((d) => {
         if (!cancelled) setData(d);
@@ -583,8 +566,6 @@ function IncomeByCategory() {
       cancelled = true;
     };
   }, [startDate, endDate]);
-
-  useEffect(() => load(), [load]);
 
   const maxTotal =
     data.length > 0 ? Math.max(...data.map((d) => parseFloat(d.total))) : 0;
@@ -692,14 +673,9 @@ function IncomeStatement() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const initialLoad = useRef(true);
-
-  const load = useCallback(() => {
+  useEffect(() => {
     let cancelled = false;
-    if (initialLoad.current) {
-      setLoading(true);
-      initialLoad.current = false;
-    }
+    setLoading(true);
     setError("");
     fetchIncomeStatement(year, month)
       .then((d) => {
@@ -715,8 +691,6 @@ function IncomeStatement() {
       cancelled = true;
     };
   }, [year, month]);
-
-  useEffect(() => load(), [load]);
 
   function exportCSV() {
     if (!data) return;
@@ -780,9 +754,7 @@ function IncomeStatement() {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-4xl">
-              Monthly Statement
-            </CardTitle>
+            <CardTitle className="text-4xl">Monthly Statement</CardTitle>
             <p className="mt-1 text-sm text-muted-foreground">
               For the month of{" "}
               {new Date(year, month - 1).toLocaleString("en-US", {
@@ -927,7 +899,9 @@ function IncomeStatement() {
                             <th className="pb-1.5 pr-2 font-medium">
                               Particulars
                             </th>
-                            <th className="pb-1.5 pr-2 font-medium">Category</th>
+                            <th className="pb-1.5 pr-2 font-medium">
+                              Category
+                            </th>
                             <th className="pb-1.5 pr-2 font-medium">Mode</th>
                             <th className="pb-1.5 text-right font-medium">
                               Amount
@@ -974,7 +948,9 @@ function IncomeStatement() {
                             <th className="pb-1.5 pr-2 font-medium">
                               Particulars
                             </th>
-                            <th className="pb-1.5 pr-2 font-medium">Category</th>
+                            <th className="pb-1.5 pr-2 font-medium">
+                              Category
+                            </th>
                             <th className="pb-1.5 pr-2 font-medium">Mode</th>
                             <th className="pb-1.5 text-right font-medium">
                               Amount

@@ -45,6 +45,8 @@ export async function apiFetch<T>(
   }
 
   if (res.status === 401) {
+    clearTokens()
+    window.dispatchEvent(new CustomEvent("auth:unauthorized"))
     try {
       const body = await res.json()
       const detail =
@@ -57,18 +59,18 @@ export async function apiFetch<T>(
         throw new Error("Session expired. Please log in again.")
       }
       throw e
-    } finally {
-      clearTokens()
-      window.dispatchEvent(new CustomEvent("auth:unauthorized"))
     }
   }
 
   const text = await res.text()
+  if (!text) {
+    throw new Error(`Request failed: ${res.status}`)
+  }
   let data: unknown
   try {
     data = JSON.parse(text)
   } catch {
-    throw new Error(text || `Request failed: ${res.status}`)
+    throw new Error(`Request failed: ${res.status}`)
   }
 
   if (!res.ok) {

@@ -117,7 +117,9 @@ class AccountRepo:
             .values(current_balance=Account.current_balance + amount)
         )
         try:
-            await self.db.execute(stmt)
+            result = await self.db.execute(stmt)
+            if result.rowcount == 0:
+                raise ResourceNotFoundError(f"Account {account_id} not found or not owned by user")
         except SQLAlchemyError as e:
             await self.db.rollback()
             raise RepositoryError(f"Database error: {str(e)}") from e
@@ -135,7 +137,12 @@ class AccountRepo:
         try:
             result = await self.db.execute(stmt)
             if result.rowcount == 0:
+                account = await self.db.get(Account, account_id)
+                if not account or account.user_id != user_id:
+                    raise ResourceNotFoundError(f"Account {account_id} not found or not owned by user")
                 raise ConflictError("Insufficient funds in the account.")
+        except (ResourceNotFoundError, ConflictError):
+            raise
         except SQLAlchemyError as e:
             await self.db.rollback()
             raise RepositoryError(f"Database error: {str(e)}") from e
@@ -145,20 +152,38 @@ class AccountRepo:
     ) -> None:
         if delta == 0:
             return
-        if delta > 0:
-            await self.increase_balance(user_id, account_id, delta)
-        else:
-            stmt = (
-                sa_update(Account)
-                .where(Account.id == account_id)
-                .where(Account.user_id == user_id)
-                .values(current_balance=Account.current_balance + delta)
-            )
-            try:
-                await self.db.execute(stmt)
-            except SQLAlchemyError as e:
-                await self.db.rollback()
-                raise RepositoryError(f"Database error: {str(e)}") from e
+        account = await self.db.get(Account, account_id)
+        if not account or account.user_id != user_id:
+            raise ResourceNotFoundError(f"Account {account_id} not found or not owned by user")
+        stmt = (
+            sa_update(Account)
+            .where(Account.id == account_id)
+            .where(Account.user_id == user_id)
+            .values(current_balance=Account.current_balance + delta)
+        )
+        try:
+            await self.db.execute(stmt)
+        except SQLAlchemyError as e:
+            await self.db.rollback()
+            raise RepositoryError(f"Database error: {str(e)}") from e
+
+    async def lock_for_update(
+        self, user_id: uuid.UUID, account_id: uuid.UUID
+    ) -> Account:
+        stmt = (
+            select(Account)
+            .where(Account.id == account_id)
+            .where(Account.user_id == user_id)
+            .with_for_update()
+        )
+        try:
+            result = await self.db.execute(stmt)
+            account = result.scalar_one_or_none()
+            if not account:
+                raise ResourceNotFoundError(f"Account {account_id} not found or not owned by user")
+            return account
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}") from e
 
     async def delete(self, user_id: uuid.UUID, account_id: uuid.UUID, payload: dict):
         """
