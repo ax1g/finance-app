@@ -141,6 +141,26 @@ export interface RecentTransaction {
   to_account_name: string | null
 }
 
+export interface TransactionSummary {
+  id: string
+  txn_date: string
+  txn_type: TransactionType
+  amount: string
+  description: string | null
+  account_id: string
+  account_name: string
+  to_account_id: string | null
+  to_account_name: string | null
+  category_id: string | null
+  category_name: string | null
+}
+
+export interface CursorPage<T> {
+  items: T[]
+  next_cursor: string | null
+  has_more: boolean
+}
+
 export interface CategorySpending {
   category_id: string
   category_name: string
@@ -213,7 +233,9 @@ export interface IncomeStatementResponse {
   closing_balance: string
   total_income: string
   total_expenses: string
+  total_adjustments: string
   net: string
   income_transactions: IncomeStatementItem[]
   expense_transactions: IncomeStatementItem[]
+  adjustment_transactions: IncomeStatementItem[]
 }

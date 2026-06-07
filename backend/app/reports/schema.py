@@ -95,6 +95,8 @@ class IncomeStatementResponse(BaseModel):
     closing_balance: Decimal
     total_income: Decimal
     total_expenses: Decimal
+    total_adjustments: Decimal
     net: Decimal
     income_transactions: list[IncomeStatementItem]
     expense_transactions: list[IncomeStatementItem]
+    adjustment_transactions: list[IncomeStatementItem]

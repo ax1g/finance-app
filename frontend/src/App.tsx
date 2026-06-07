@@ -1,6 +1,6 @@
-import { lazy, Suspense } from "react"
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react"
 import { BrowserRouter, Routes, Route } from "react-router-dom"
-import { AuthProvider } from "./context/AuthContext"
+import { AuthProvider, useAuth } from "./context/AuthContext"
 import { ThemeProvider } from "./context/ThemeContext"
 import { ModalProvider } from "./context/ModalContext"
 import { ToastProvider } from "./context/ToastContext"
@@ -9,7 +9,9 @@ import ErrorBoundary from "./components/ErrorBoundary"
 import ModalRenderer from "./components/ModalRenderer"
 import Toaster from "./components/ui/toaster"
 import Layout from "./components/Layout"
+import StartupScreen from "./components/StartupScreen"
 import { Loader2 } from "lucide-react"
+import { checkHealth } from "./api/health"
 
 const LoginPage = lazy(() => import("./pages/LoginPage"))
 const Dashboard = lazy(() => import("./pages/Dashboard"))
@@ -32,12 +34,50 @@ const LoadingFallback = () => (
   </div>
 )
 
+function BackendGate({ children }: { children: ReactNode }) {
+  const { isAuth } = useAuth()
+  const readyRef = useRef(false)
+  const [showGate, setShowGate] = useState(false)
+
+  useEffect(() => {
+    if (!isAuth) {
+      setShowGate(false)
+      return
+    }
+    if (readyRef.current) {
+      setShowGate(false)
+      return
+    }
+    setShowGate(true)
+    let cancelled = false
+    const poll = async () => {
+      while (!cancelled) {
+        const ok = await checkHealth()
+        if (ok) {
+          if (!cancelled) {
+            readyRef.current = true
+            setShowGate(false)
+          }
+          return
+        }
+        await new Promise((r) => setTimeout(r, 2000))
+      }
+    }
+    poll()
+    return () => { cancelled = true }
+  }, [isAuth])
+
+  if (showGate) return <StartupScreen />
+  return <>{children}</>
+}
+
 const App = () => {
   return (
     <ErrorBoundary>
       <BrowserRouter>
         <ThemeProvider>
         <AuthProvider>
+          <BackendGate>
           <ModalProvider>
             <DataRefreshProvider>
               <ToastProvider>
@@ -66,6 +106,7 @@ const App = () => {
             </ToastProvider>
             </DataRefreshProvider>
           </ModalProvider>
+          </BackendGate>
         </AuthProvider>
         </ThemeProvider>
       </BrowserRouter>

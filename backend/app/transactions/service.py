@@ -11,7 +11,6 @@ from app.categories.service import CategoryService
 
 
 class TransactionService:
-
     def __init__(
         self,
         repo: TransactionRepo,
@@ -51,20 +50,25 @@ class TransactionService:
         self,
         user_id: uuid.UUID,
         limit: int,
-        offset: int,
+        cursor: str | None,
         txn_type: TransactionType | None,
         start: datetime | None,
         end: datetime | None,
     ):
         return await self.repo.get_transactions(
-            user_id, limit, offset, txn_type, start, end
+            user_id, limit, cursor, txn_type, start, end
         )
 
     async def get_transaction_by_id(self, user_id: uuid.UUID, txn_id: uuid.UUID):
         return await self.repo.get_by_id(user_id, txn_id)
 
     async def _reverse_txn(
-        self, user_id: uuid.UUID, account_id: uuid.UUID, txn_type: TransactionType, amount: Decimal, to_account_id: uuid.UUID | None = None
+        self,
+        user_id: uuid.UUID,
+        account_id: uuid.UUID,
+        txn_type: TransactionType,
+        amount: Decimal,
+        to_account_id: uuid.UUID | None = None,
     ):
         if txn_type == TransactionType.INCOME:
             await self.accounts_service.decrease_balance(user_id, account_id, amount)
@@ -75,10 +79,17 @@ class TransactionService:
         elif txn_type == TransactionType.TRANSFER:
             await self.accounts_service.increase_balance(user_id, account_id, amount)
             if to_account_id:
-                await self.accounts_service.decrease_balance(user_id, to_account_id, amount)
+                await self.accounts_service.decrease_balance(
+                    user_id, to_account_id, amount
+                )
 
     async def _apply_txn(
-        self, user_id: uuid.UUID, account_id: uuid.UUID, txn_type: TransactionType, amount: Decimal, to_account_id: uuid.UUID | None = None
+        self,
+        user_id: uuid.UUID,
+        account_id: uuid.UUID,
+        txn_type: TransactionType,
+        amount: Decimal,
+        to_account_id: uuid.UUID | None = None,
     ):
         if txn_type == TransactionType.INCOME:
             await self.accounts_service.increase_balance(user_id, account_id, amount)
@@ -89,56 +100,74 @@ class TransactionService:
         elif txn_type == TransactionType.TRANSFER:
             await self.accounts_service.decrease_balance(user_id, account_id, amount)
             if to_account_id:
-                await self.accounts_service.increase_balance(user_id, to_account_id, amount)
+                await self.accounts_service.increase_balance(
+                    user_id, to_account_id, amount
+                )
 
     async def update_transaction(
         self, user_id: uuid.UUID, txn_id: uuid.UUID, data: TransactionUpdate
     ):
         old = await self.repo.get_by_id(user_id, txn_id)
         if old.txn_type == TransactionType.ADJUSTMENT:
-            raise AuthorizationError("Adjustments are system-generated and cannot be modified.")
+            raise AuthorizationError(
+                "Adjustments are system-generated and cannot be modified."
+            )
 
         new_type = data.txn_type if data.txn_type is not None else old.txn_type
         new_amount = data.amount if data.amount is not None else old.amount
-        new_to_id = data.to_account_id if data.to_account_id is not None else old.to_account_id
+        new_to_id = (
+            data.to_account_id if data.to_account_id is not None else old.to_account_id
+        )
 
-        # Lock all affected accounts to prevent TOCTOU race conditions
-        locked = {old.account_id}
-        await self.accounts_service.lock_account(user_id, old.account_id)
-        if old.to_account_id and old.to_account_id not in locked:
-            locked.add(old.to_account_id)
-            await self.accounts_service.lock_account(user_id, old.to_account_id)
-        if data.account_id and data.account_id not in locked:
-            locked.add(data.account_id)
-            await self.accounts_service.lock_account(user_id, data.account_id)
-        if data.to_account_id and data.to_account_id not in locked:
-            await self.accounts_service.lock_account(user_id, data.to_account_id)
+        # Lock all affected accounts in sorted order to prevent deadlocks
+        lock_ids = {old.account_id}
+        if old.to_account_id:
+            lock_ids.add(old.to_account_id)
+        if data.account_id:
+            lock_ids.add(data.account_id)
+        if data.to_account_id:
+            lock_ids.add(data.to_account_id)
+        for aid in sorted(lock_ids):
+            await self.accounts_service.lock_account(user_id, aid)
 
         type_changed = data.txn_type is not None and data.txn_type != old.txn_type
         amount_changed = data.amount is not None and data.amount != old.amount
-        to_account_changed = data.to_account_id is not None and data.to_account_id != old.to_account_id
+        to_account_changed = (
+            data.to_account_id is not None and data.to_account_id != old.to_account_id
+        )
 
         if type_changed or amount_changed or to_account_changed:
-            await self._reverse_txn(user_id, old.account_id, old.txn_type, old.amount, old.to_account_id)
+            await self._reverse_txn(
+                user_id, old.account_id, old.txn_type, old.amount, old.to_account_id
+            )
             transaction = await self.repo.update(user_id, txn_id, data)
-            await self._apply_txn(user_id, transaction.account_id, new_type, new_amount, new_to_id)
+            await self._apply_txn(
+                user_id, transaction.account_id, new_type, new_amount, new_to_id
+            )
         else:
             transaction = await self.repo.update(user_id, txn_id, data)
 
         await self.repo.db.commit()
         return transaction
-      
+
     async def delete_transaction(self, user_id: uuid.UUID, txn_id: uuid.UUID):
         transaction = await self.repo.get_by_id(user_id, txn_id)
         if transaction.txn_type == TransactionType.ADJUSTMENT:
-            raise AuthorizationError("Adjustments are system-generated and cannot be deleted.")
+            raise AuthorizationError(
+                "Adjustments are system-generated and cannot be deleted."
+            )
 
-        # Lock affected accounts to prevent race conditions
-        await self.accounts_service.lock_account(user_id, transaction.account_id)
+        # Lock affected accounts in sorted order to prevent deadlocks
+        lock_ids = {transaction.account_id}
         if transaction.to_account_id:
-            await self.accounts_service.lock_account(user_id, transaction.to_account_id)
+            lock_ids.add(transaction.to_account_id)
+        for aid in sorted(lock_ids):
+            await self.accounts_service.lock_account(user_id, aid)
 
-        if transaction.txn_type == TransactionType.TRANSFER and transaction.to_account_id:
+        if (
+            transaction.txn_type == TransactionType.TRANSFER
+            and transaction.to_account_id
+        ):
             await self.accounts_service.increase_balance(
                 user_id, transaction.account_id, transaction.amount
             )

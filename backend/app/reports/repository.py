@@ -6,6 +6,7 @@ from decimal import Decimal
 from sqlalchemy import select, func, desc, case
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import selectinload
 
 from app.core.exceptions import RepositoryError
 from app.transactions.model import Transaction
@@ -33,45 +34,16 @@ class ReportRepo:
         except SQLAlchemyError as e:
             raise RepositoryError(f"Database error: {str(e)}") from e
 
-    async def get_total_assets(
+    async def get_account_overview(
         self, user_id: uuid.UUID
-    ) -> Decimal:
-        try:
-            query = select(func.coalesce(func.sum(Account.current_balance), 0)).where(
-                Account.user_id == user_id,
-                Account.status == AccountStatus.ACTIVE,
-                Account.type.in_([
-                    AccountType.CASH, AccountType.BANK,
-                    AccountType.INVESTMENT, AccountType.RECEIVABLES,
-                ]),
-            )
-            result = await self.db.execute(query)
-            return result.scalar()
-        except SQLAlchemyError as e:
-            raise RepositoryError(f"Database error: {str(e)}") from e
-
-    async def get_total_liabilities(
-        self, user_id: uuid.UUID
-    ) -> Decimal:
-        try:
-            query = select(func.coalesce(func.sum(Account.current_balance), 0)).where(
-                Account.user_id == user_id,
-                Account.status == AccountStatus.ACTIVE,
-                Account.type == AccountType.PAYABLES,
-            )
-            result = await self.db.execute(query)
-            return result.scalar()
-        except SQLAlchemyError as e:
-            raise RepositoryError(f"Database error: {str(e)}") from e
-
-    async def get_balance_by_type(
-        self, user_id: uuid.UUID
-    ) -> Sequence[dict]:
+    ) -> tuple[Decimal, Decimal, Sequence[dict]]:
         try:
             query = (
                 select(
                     Account.type.label("account_type"),
-                    func.coalesce(func.sum(Account.current_balance), 0).label("balance"),
+                    func.coalesce(func.sum(Account.current_balance), 0).label(
+                        "balance"
+                    ),
                 )
                 .where(
                     Account.user_id == user_id,
@@ -80,37 +52,113 @@ class ReportRepo:
                 .group_by(Account.type)
             )
             result = await self.db.execute(query)
-            return result.mappings().all()
+            rows = result.mappings().all()
+            asset_types = {
+                AccountType.CASH,
+                AccountType.BANK,
+                AccountType.INVESTMENT,
+                AccountType.RECEIVABLES,
+            }
+            total_assets = Decimal("0")
+            total_liabilities = Decimal("0")
+            for row in rows:
+                if row["account_type"] in asset_types:
+                    total_assets += row["balance"]
+                elif row["account_type"] == AccountType.PAYABLES:
+                    total_liabilities += row["balance"]
+            return total_assets, total_liabilities, rows
         except SQLAlchemyError as e:
             raise RepositoryError(f"Database error: {str(e)}") from e
 
-    async def get_period_income(
+    async def get_period_income_expenses(
         self, user_id: uuid.UUID, start: datetime, end: datetime
-    ) -> Decimal:
+    ) -> tuple[Decimal, Decimal]:
         try:
-            query = select(func.coalesce(func.sum(Transaction.amount), 0)).where(
+            query = select(
+                func.coalesce(
+                    func.sum(
+                        case(
+                            (
+                                Transaction.txn_type == TransactionType.INCOME,
+                                Transaction.amount,
+                            ),
+                            else_=0,
+                        )
+                    ),
+                    0,
+                ).label("income"),
+                func.coalesce(
+                    func.sum(
+                        case(
+                            (
+                                Transaction.txn_type == TransactionType.EXPENSE,
+                                Transaction.amount,
+                            ),
+                            else_=0,
+                        )
+                    ),
+                    0,
+                ).label("expenses"),
+            ).where(
                 Transaction.user_id == user_id,
-                Transaction.txn_type == TransactionType.INCOME,
                 Transaction.txn_date >= start,
                 Transaction.txn_date <= end,
             )
             result = await self.db.execute(query)
-            return result.scalar()
+            row = result.mappings().one()
+            return row["income"], row["expenses"]
         except SQLAlchemyError as e:
             raise RepositoryError(f"Database error: {str(e)}") from e
 
-    async def get_period_expenses(
+    async def get_period_income_expenses_adjustments(
         self, user_id: uuid.UUID, start: datetime, end: datetime
-    ) -> Decimal:
+    ) -> tuple[Decimal, Decimal, Decimal]:
         try:
-            query = select(func.coalesce(func.sum(Transaction.amount), 0)).where(
+            query = select(
+                func.coalesce(
+                    func.sum(
+                        case(
+                            (
+                                Transaction.txn_type == TransactionType.INCOME,
+                                Transaction.amount,
+                            ),
+                            else_=0,
+                        )
+                    ),
+                    0,
+                ).label("income"),
+                func.coalesce(
+                    func.sum(
+                        case(
+                            (
+                                Transaction.txn_type == TransactionType.EXPENSE,
+                                Transaction.amount,
+                            ),
+                            else_=0,
+                        )
+                    ),
+                    0,
+                ).label("expenses"),
+                func.coalesce(
+                    func.sum(
+                        case(
+                            (
+                                Transaction.txn_type == TransactionType.ADJUSTMENT,
+                                Transaction.amount,
+                            ),
+                            else_=0,
+                        )
+                    ),
+                    0,
+                ).label("adjustments"),
+            ).where(
                 Transaction.user_id == user_id,
-                Transaction.txn_type == TransactionType.EXPENSE,
                 Transaction.txn_date >= start,
                 Transaction.txn_date <= end,
             )
             result = await self.db.execute(query)
-            return result.scalar()
+            row = result.mappings().one()
+            return row["income"], row["expenses"], row["adjustments"]
         except SQLAlchemyError as e:
             raise RepositoryError(f"Database error: {str(e)}") from e
 
@@ -149,6 +197,11 @@ class ReportRepo:
         try:
             query = (
                 select(Transaction)
+                .options(
+                    selectinload(Transaction.category),
+                    selectinload(Transaction.account),
+                    selectinload(Transaction.to_account),
+                )
                 .where(Transaction.user_id == user_id)
                 .order_by(desc(Transaction.txn_date))
                 .limit(limit)
@@ -164,6 +217,11 @@ class ReportRepo:
         try:
             query = (
                 select(Transaction)
+                .options(
+                    selectinload(Transaction.category),
+                    selectinload(Transaction.account),
+                    selectinload(Transaction.to_account),
+                )
                 .where(
                     Transaction.user_id == user_id,
                     Transaction.txn_date >= start,
@@ -232,43 +290,6 @@ class ReportRepo:
         except SQLAlchemyError as e:
             raise RepositoryError(f"Database error: {str(e)}") from e
 
-    async def get_adjustments_by_month(
-        self, user_id: uuid.UUID, since: datetime
-    ) -> Sequence[dict]:
-        try:
-            query = (
-                select(
-                    func.to_char(Transaction.txn_date, "YYYY-MM").label("year_month"),
-                    func.coalesce(func.sum(Transaction.amount), 0).label("total"),
-                )
-                .where(
-                    Transaction.user_id == user_id,
-                    Transaction.txn_date >= since,
-                    Transaction.txn_type == TransactionType.ADJUSTMENT,
-                )
-                .group_by("year_month")
-                .order_by(desc("year_month"))
-            )
-            result = await self.db.execute(query)
-            return result.mappings().all()
-        except SQLAlchemyError as e:
-            raise RepositoryError(f"Database error: {str(e)}") from e
-
-    async def get_period_adjustments(
-        self, user_id: uuid.UUID, start: datetime, end: datetime
-    ) -> Decimal:
-        try:
-            query = select(func.coalesce(func.sum(Transaction.amount), 0)).where(
-                Transaction.user_id == user_id,
-                Transaction.txn_type == TransactionType.ADJUSTMENT,
-                Transaction.txn_date >= start,
-                Transaction.txn_date <= end,
-            )
-            result = await self.db.execute(query)
-            return result.scalar()
-        except SQLAlchemyError as e:
-            raise RepositoryError(f"Database error: {str(e)}") from e
-
     async def get_monthly_summary(
         self, user_id: uuid.UUID, since: datetime
     ) -> Sequence[dict]:
@@ -300,6 +321,18 @@ class ReportRepo:
                         ),
                         0,
                     ).label("expense"),
+                    func.coalesce(
+                        func.sum(
+                            case(
+                                (
+                                    Transaction.txn_type == TransactionType.ADJUSTMENT,
+                                    Transaction.amount,
+                                ),
+                                else_=0,
+                            )
+                        ),
+                        0,
+                    ).label("adjustment"),
                 )
                 .where(
                     Transaction.user_id == user_id,

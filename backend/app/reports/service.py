@@ -26,31 +26,34 @@ class ReportService:
         now = datetime.now(timezone.utc)
         start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
-        total_assets = await self.repo.get_total_assets(user_id)
-        total_liabilities = await self.repo.get_total_liabilities(user_id)
+        (
+            total_assets,
+            total_liabilities,
+            balance_by_type_data,
+        ) = await self.repo.get_account_overview(user_id)
         total_balance = total_assets - total_liabilities
-        income = await self.repo.get_period_income(user_id, start_of_month, now)
-        expenses = await self.repo.get_period_expenses(user_id, start_of_month, now)
+        income, expenses = await self.repo.get_period_income_expenses(
+            user_id, start_of_month, now
+        )
 
-        balance_by_type_data = await self.repo.get_balance_by_type(user_id)
         balance_by_type = [
             BalanceByType(account_type=row["account_type"], balance=row["balance"])
             for row in balance_by_type_data
         ]
 
         since_5y = now - timedelta(days=1825)
-        monthly_net_data = await self.repo.get_monthly_summary(user_id, since_5y)
-        adj_data = await self.repo.get_adjustments_by_month(user_id, since_5y)
-        adj_by_month = {r["year_month"]: r["total"] for r in adj_data}
+        monthly_rows = await self.repo.get_monthly_summary(user_id, since_5y)
 
-        monthly_sorted = sorted(monthly_net_data, key=lambda r: r["year_month"])
+        monthly_sorted = sorted(monthly_rows, key=lambda r: r["year_month"])
         cumulative = Decimal("0")
         raw_history: list[NetWorthHistoryItem] = []
         for row in monthly_sorted:
-            adj = adj_by_month.get(row["year_month"], Decimal("0"))
+            adj = row.get("adjustment", Decimal("0"))
             net_change = row["income"] - row["expense"] + adj
             cumulative += net_change
-            raw_history.append(NetWorthHistoryItem(date=row["year_month"], net_worth=cumulative))
+            raw_history.append(
+                NetWorthHistoryItem(date=row["year_month"], net_worth=cumulative)
+            )
 
         if raw_history:
             offset = total_balance - raw_history[-1].net_worth
@@ -71,7 +74,9 @@ class ReportService:
                 category_name=row["category_name"],
                 icon=row["icon"],
                 total=row["total"],
-                percentage=float(row["total"] / total_expenses * 100) if total_expenses > 0 else 0,
+                percentage=float(row["total"] / total_expenses * 100)
+                if total_expenses > 0
+                else 0,
                 transaction_count=row["transaction_count"],
             )
             for row in top_categories_data
@@ -168,10 +173,7 @@ class ReportService:
             post_expenses = post.get("expenses", Decimal("0"))
             post_adjustments = post.get("adjustments", Decimal("0"))
             balance_as_of_end = (
-                row["balance"]
-                - post_income
-                + post_expenses
-                - post_adjustments
+                row["balance"] - post_income + post_expenses - post_adjustments
             )
             result.append(
                 AccountSummaryItem(
@@ -193,24 +195,44 @@ class ReportService:
         if month == 12:
             end = datetime(year + 1, 1, 1, tzinfo=timezone.utc) - timedelta(seconds=1)
         else:
-            end = datetime(year, month + 1, 1, tzinfo=timezone.utc) - timedelta(seconds=1)
+            end = datetime(year, month + 1, 1, tzinfo=timezone.utc) - timedelta(
+                seconds=1
+            )
 
         now = datetime.now(timezone.utc)
 
         current_total = await self.repo.get_total_balance(user_id)
-        income_since_start = await self.repo.get_period_income(user_id, start, now)
-        expenses_since_start = await self.repo.get_period_expenses(user_id, start, now)
-        adjustments_since_start = await self.repo.get_period_adjustments(user_id, start, now)
-        opening_balance = current_total - income_since_start + expenses_since_start - adjustments_since_start
+        (
+            income_since_start,
+            expenses_since_start,
+            adjustments_since_start,
+        ) = await self.repo.get_period_income_expenses_adjustments(user_id, start, now)
+        opening_balance = (
+            current_total
+            - income_since_start
+            + expenses_since_start
+            - adjustments_since_start
+        )
 
-        total_income = await self.repo.get_period_income(user_id, start, end)
-        total_expenses = await self.repo.get_period_expenses(user_id, start, end)
-        closing_balance = opening_balance + total_income - total_expenses
+        total_income, total_expenses = await self.repo.get_period_income_expenses(
+            user_id, start, end
+        )
+        (
+            _,
+            _,
+            adjustments_in_period,
+        ) = await self.repo.get_period_income_expenses_adjustments(
+            user_id, start, end
+        )
+        closing_balance = (
+            opening_balance + total_income - total_expenses + adjustments_in_period
+        )
 
         transactions = await self.repo.get_period_transactions(user_id, start, end)
 
         income_txns: list[IncomeStatementItem] = []
         expense_txns: list[IncomeStatementItem] = []
+        adjustment_txns: list[IncomeStatementItem] = []
         for t in transactions:
             item = IncomeStatementItem(
                 txn_date=t.txn_date,
@@ -225,13 +247,17 @@ class ReportService:
                 income_txns.append(item)
             elif t.txn_type == TransactionType.EXPENSE:
                 expense_txns.append(item)
+            elif t.txn_type == TransactionType.ADJUSTMENT:
+                adjustment_txns.append(item)
 
         return IncomeStatementResponse(
             opening_balance=opening_balance,
             closing_balance=closing_balance,
             total_income=total_income,
             total_expenses=total_expenses,
-            net=total_income - total_expenses,
+            total_adjustments=adjustments_in_period,
+            net=total_income - total_expenses + adjustments_in_period,
             income_transactions=income_txns,
             expense_transactions=expense_txns,
+            adjustment_transactions=adjustment_txns,
         )

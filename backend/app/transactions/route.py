@@ -1,16 +1,22 @@
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, status, HTTPException, Query
+from fastapi import APIRouter, Request, Response, status, HTTPException, Query
 
+from app.transactions.model import Transaction
 from app.transactions.schema import (
     TransactionRead,
+    TransactionSummary,
+    CursorPage,
     TransactionCreate,
     TransactionUpdate,
 )
 from app.core.enums import TransactionType
+from app.core.cache import compute_resource_etag, handle_etag
 
-from app.core.dependencies import TransactionServiceDep, CurrentUserDep
+from app.core.dependencies import TransactionServiceDep, CurrentUserDep, SessionDep
 
 
 router = APIRouter()
@@ -36,13 +42,13 @@ async def create_transaction(
     return await service.create_transaction(current_user.id, data)
 
 
-@router.get("/", response_model=list[TransactionRead], status_code=status.HTTP_200_OK)
+@router.get("/", response_model=CursorPage[TransactionSummary])
 async def read_transactions(
     service: TransactionServiceDep,
     current_user: CurrentUserDep,
     txn_type: TransactionType | None = None,
-    limit: int = Query(default=100, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    limit: int = Query(default=50, ge=1, le=200),
+    cursor: str | None = Query(default=None),
     start: datetime | None = None,
     end: datetime | None = None,
 ):
@@ -51,22 +57,47 @@ async def read_transactions(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid date range"
         )
 
-    return await service.get_transactions(
+    transactions, next_cursor, has_more = await service.get_transactions(
         user_id=current_user.id,
         txn_type=txn_type,
         limit=limit,
-        offset=offset,
+        cursor=cursor,
         start=start,
         end=end,
     )
 
+    items = [
+        TransactionSummary(
+            id=t.id,
+            txn_date=t.txn_date,
+            txn_type=t.txn_type,
+            amount=t.amount,
+            description=t.description,
+            account_id=t.account_id,
+            account_name=t.account.name,
+            to_account_id=t.to_account_id,
+            to_account_name=t.to_account.name if t.to_account else None,
+            category_id=t.category_id,
+            category_name=t.category.name if t.category else None,
+        )
+        for t in transactions
+    ]
+
+    return CursorPage(items=items, next_cursor=next_cursor, has_more=has_more)
+
 
 @router.get("/{txn_id}", response_model=TransactionRead, status_code=status.HTTP_200_OK)
 async def read_transaction(
+    request: Request,
+    response: Response,
     service: TransactionServiceDep,
     current_user: CurrentUserDep,
+    db: SessionDep,
     txn_id: uuid.UUID,
 ):
+    etag = await compute_resource_etag(db, Transaction, txn_id)
+    if await handle_etag(request, response, etag):
+        return Response(status_code=304)
     return await service.get_transaction_by_id(current_user.id, txn_id)
 
 

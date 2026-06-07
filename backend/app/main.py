@@ -5,6 +5,8 @@ from pathlib import Path
 
 from collections.abc import AsyncGenerator
 
+from alembic.config import Config
+from alembic import command
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
@@ -21,40 +23,64 @@ from app.core.exceptions import (
     RepositoryError,
     ResourceNotFoundError,
 )
+from app.core.health import mark_ready
 
 logger = logging.getLogger(__name__)
 
 
-MIGRATION_LOCK_ID = 123456789  # Any arbitrary int — just needs to be consistent
+MIGRATION_LOCK_ID = 123456789
+
+
+async def _check_revision(cfg: Config) -> bool:
+    from alembic.script import ScriptDirectory
+    from sqlalchemy import text
+
+    script = ScriptDirectory.from_config(cfg)
+    head = script.get_current_head()
+    from app.core.database import SessionFactory
+
+    try:
+        async with SessionFactory() as session:
+            result = await session.execute(
+                text("SELECT version_num FROM alembic_version")
+            )
+            row = result.scalar_one_or_none()
+            return row == head
+    except Exception:
+        return False
+
+
+async def run_migrations_background():
+    logger.info("Starting background migrations...")
+    try:
+        alembic_ini = Path(__file__).parent.parent / "alembic.ini"
+        cfg = Config(alembic_ini)
+
+        if await _check_revision(cfg):
+            logger.info("DB already at head, skipping migrations.")
+            mark_ready()
+            logger.info("Backend ready.")
+            return
+
+        async with get_raw_connection() as conn:
+            await conn.execute(f"SELECT pg_advisory_lock({MIGRATION_LOCK_ID})")
+            try:
+                logger.info("Running migrations...")
+                await asyncio.to_thread(command.upgrade, cfg, "head")
+                logger.info("Migrations complete.")
+            finally:
+                await conn.execute(f"SELECT pg_advisory_unlock({MIGRATION_LOCK_ID})")
+        mark_ready()
+        logger.info("Backend ready.")
+    except Exception:
+        logger.exception("Migration failed")
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Starting up...")
     await create_database_if_not_exists()
-
-    alembic_ini = Path(__file__).parent.parent / "alembic.ini"
-    logger.info("Acquiring migration lock...")
-
-    async with get_raw_connection() as conn:
-        # Blocks until this instance is the only one holding the lock
-        await conn.execute(f"SELECT pg_advisory_lock({MIGRATION_LOCK_ID})")
-        try:
-            logger.info("Running migrations...")
-            proc = await asyncio.create_subprocess_exec(
-                "python", "-m", "alembic", "upgrade", "head",
-                cwd=alembic_ini.parent,
-            )
-            rc = await proc.wait()
-            if rc != 0:
-                raise RuntimeError(f"Alembic exited with code {rc}")
-            logger.info("Migrations complete.")
-        except Exception:
-            logger.exception("Migration failed")
-            raise  # Re-raise so the instance doesn't start in a broken state
-        finally:
-            await conn.execute(f"SELECT pg_advisory_unlock({MIGRATION_LOCK_ID})")
-
+    asyncio.create_task(run_migrations_background())
     yield
     logger.info("Shutting down...")
 
