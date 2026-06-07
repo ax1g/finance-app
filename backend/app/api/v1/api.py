@@ -6,9 +6,11 @@ from app.accounts.route import router as accounts_route
 from app.categories.route import router as categories_route
 from app.users.auth import router as auth_route
 from app.reports.route import router as reports_route
+from app.core.health import router as health_route
 
 
 api_router = APIRouter()
+api_router.include_router(health_route, tags=["Health"])
 api_router.include_router(user_route, prefix="/user", tags=["User"])
 api_router.include_router(
     transactions_route, prefix="/transactions", tags=["Transactions"]

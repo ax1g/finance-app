@@ -2,9 +2,10 @@ FROM python:3.14-slim-bookworm AS builder
 
 WORKDIR /app
 
-COPY backend/pyproject.toml backend/uv.lock ./
+COPY pyproject.toml uv.lock ./
+COPY backend/pyproject.toml backend/
 
-RUN pip install uv && uv sync --no-dev --frozen
+RUN pip install uv && uv sync --no-dev --frozen --package backend
 
 FROM python:3.14-slim-bookworm
 

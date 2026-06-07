@@ -29,14 +29,14 @@ services:
     env_file:
       - .env
     environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-finance_db}
       POSTGRES_SERVER: db
       POSTGRES_PORT: 5432
       POSTGRES_DB: ${POSTGRES_DB:-finance_db}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       ENVIRONMENT: ${ENVIRONMENT:-production}
-    command: >
-      sh -c "python -m alembic upgrade head && python -m uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"
 
