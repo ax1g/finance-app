@@ -296,7 +296,7 @@ class ReportRepo:
         try:
             query = (
                 select(
-                    func.to_char(Transaction.txn_date, "YYYY-MM").label("year_month"),
+                    func.to_char(func.date_trunc("month", Transaction.txn_date), "YYYY-MM").label("year_month"),
                     func.coalesce(
                         func.sum(
                             case(
@@ -338,8 +338,8 @@ class ReportRepo:
                     Transaction.user_id == user_id,
                     Transaction.txn_date >= since,
                 )
-                .group_by("year_month")
-                .order_by(desc("year_month"))
+                .group_by(func.date_trunc("month", Transaction.txn_date))
+                .order_by(desc(func.date_trunc("month", Transaction.txn_date)))
             )
             result = await self.db.execute(query)
             return result.mappings().all()
