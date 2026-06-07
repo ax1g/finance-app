@@ -25,7 +25,7 @@ async def compute_etag(
         return None
 
     latest = max(max_dates)
-    raw = hashlib.md5(str(latest.timestamp()).encode()).hexdigest()
+    raw = hashlib.md5(latest.isoformat().encode()).hexdigest()
     return f'"{raw}"'
 
 
@@ -39,7 +39,7 @@ async def compute_resource_etag(
     updated_at = result.scalar_one_or_none()
     if updated_at is None:
         return None
-    raw = hashlib.md5(str(updated_at.timestamp()).encode()).hexdigest()
+    raw = hashlib.md5(updated_at.isoformat().encode()).hexdigest()
     return f'"{raw}"'
 
 
