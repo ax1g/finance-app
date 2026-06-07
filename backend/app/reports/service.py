@@ -217,12 +217,22 @@ class ReportService:
         total_income, total_expenses = await self.repo.get_period_income_expenses(
             user_id, start, end
         )
-        closing_balance = opening_balance + total_income - total_expenses
+        (
+            _,
+            _,
+            adjustments_in_period,
+        ) = await self.repo.get_period_income_expenses_adjustments(
+            user_id, start, end
+        )
+        closing_balance = (
+            opening_balance + total_income - total_expenses + adjustments_in_period
+        )
 
         transactions = await self.repo.get_period_transactions(user_id, start, end)
 
         income_txns: list[IncomeStatementItem] = []
         expense_txns: list[IncomeStatementItem] = []
+        adjustment_txns: list[IncomeStatementItem] = []
         for t in transactions:
             item = IncomeStatementItem(
                 txn_date=t.txn_date,
@@ -237,13 +247,17 @@ class ReportService:
                 income_txns.append(item)
             elif t.txn_type == TransactionType.EXPENSE:
                 expense_txns.append(item)
+            elif t.txn_type == TransactionType.ADJUSTMENT:
+                adjustment_txns.append(item)
 
         return IncomeStatementResponse(
             opening_balance=opening_balance,
             closing_balance=closing_balance,
             total_income=total_income,
             total_expenses=total_expenses,
-            net=total_income - total_expenses,
+            total_adjustments=adjustments_in_period,
+            net=total_income - total_expenses + adjustments_in_period,
             income_transactions=income_txns,
             expense_transactions=expense_txns,
+            adjustment_transactions=adjustment_txns,
         )

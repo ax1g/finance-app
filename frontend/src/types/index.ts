@@ -233,7 +233,9 @@ export interface IncomeStatementResponse {
   closing_balance: string
   total_income: string
   total_expenses: string
+  total_adjustments: string
   net: string
   income_transactions: IncomeStatementItem[]
   expense_transactions: IncomeStatementItem[]
+  adjustment_transactions: IncomeStatementItem[]
 }
