@@ -1,16 +1,18 @@
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, status, HTTPException, Query
+from fastapi import APIRouter, Request, Response, status, HTTPException, Query
 
+from app.transactions.model import Transaction
 from app.transactions.schema import (
     TransactionRead,
     TransactionCreate,
     TransactionUpdate,
 )
 from app.core.enums import TransactionType
+from app.core.cache import compute_etag, compute_resource_etag, handle_etag
 
-from app.core.dependencies import TransactionServiceDep, CurrentUserDep
+from app.core.dependencies import TransactionServiceDep, CurrentUserDep, SessionDep
 
 
 router = APIRouter()
@@ -38,8 +40,11 @@ async def create_transaction(
 
 @router.get("/", response_model=list[TransactionRead], status_code=status.HTTP_200_OK)
 async def read_transactions(
+    request: Request,
+    response: Response,
     service: TransactionServiceDep,
     current_user: CurrentUserDep,
+    db: SessionDep,
     txn_type: TransactionType | None = None,
     limit: int = Query(default=100, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
@@ -50,6 +55,10 @@ async def read_transactions(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid date range"
         )
+
+    etag = await compute_etag(db, current_user.id, Transaction)
+    if await handle_etag(request, response, etag):
+        return Response(status_code=304)
 
     return await service.get_transactions(
         user_id=current_user.id,
@@ -63,10 +72,16 @@ async def read_transactions(
 
 @router.get("/{txn_id}", response_model=TransactionRead, status_code=status.HTTP_200_OK)
 async def read_transaction(
+    request: Request,
+    response: Response,
     service: TransactionServiceDep,
     current_user: CurrentUserDep,
+    db: SessionDep,
     txn_id: uuid.UUID,
 ):
+    etag = await compute_resource_etag(db, Transaction, txn_id)
+    if await handle_etag(request, response, etag):
+        return Response(status_code=304)
     return await service.get_transaction_by_id(current_user.id, txn_id)
 
 
