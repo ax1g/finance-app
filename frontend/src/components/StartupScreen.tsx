@@ -1,15 +1,11 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { Loader2 } from "lucide-react"
 
 export default function StartupScreen() {
-  const [visible, setVisible] = useState(true)
-
   useEffect(() => {
     document.title = "Neco — Starting up"
     return () => { document.title = "Neco" }
   }, [])
-
-  if (!visible) return null
 
   return (
     <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-6 bg-background animate-fade-in">
