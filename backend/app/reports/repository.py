@@ -6,6 +6,7 @@ from decimal import Decimal
 from sqlalchemy import select, func, desc, case
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import selectinload
 
 from app.core.exceptions import RepositoryError
 from app.transactions.model import Transaction
@@ -196,6 +197,11 @@ class ReportRepo:
         try:
             query = (
                 select(Transaction)
+                .options(
+                    selectinload(Transaction.category),
+                    selectinload(Transaction.account),
+                    selectinload(Transaction.to_account),
+                )
                 .where(Transaction.user_id == user_id)
                 .order_by(desc(Transaction.txn_date))
                 .limit(limit)
@@ -211,6 +217,11 @@ class ReportRepo:
         try:
             query = (
                 select(Transaction)
+                .options(
+                    selectinload(Transaction.category),
+                    selectinload(Transaction.account),
+                    selectinload(Transaction.to_account),
+                )
                 .where(
                     Transaction.user_id == user_id,
                     Transaction.txn_date >= start,
