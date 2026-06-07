@@ -48,7 +48,7 @@ export type TransactionType = "income" | "expense" | "adjustment" | "transfer"
 
 export type AccountType = "cash" | "bank" | "investment" | "receivables" | "payables"
 
-export type CategoryType = "income" | "expense"
+export type CategoryType = "income" | "expense" | "system"
 
 export interface TransactionRead {
   id: string
