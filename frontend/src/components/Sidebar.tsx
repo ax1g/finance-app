@@ -45,7 +45,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`relative flex flex-col border-r border-border bg-card transition-all duration-300 ${
+      className={`relative hidden flex-col border-r border-border bg-card transition-all duration-300 md:flex ${
         collapsed ? "w-16" : "w-60"
       }`}
     >

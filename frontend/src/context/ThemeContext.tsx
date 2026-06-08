@@ -56,6 +56,10 @@ function applyTheme(resolved: "light" | "dark", colors: ThemeColors) {
   }
   root.style.setProperty("--color-income", colors.income)
   root.style.setProperty("--color-expense", colors.expense)
+  const meta = document.querySelector('meta[name="theme-color"]')
+  if (meta) {
+    meta.setAttribute("content", resolved === "dark" ? "#1a1a1a" : "#fafafa")
+  }
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)

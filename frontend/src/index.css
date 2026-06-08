@@ -167,3 +167,13 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+/* Safe area padding for notched devices */
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Tap highlight color for mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
