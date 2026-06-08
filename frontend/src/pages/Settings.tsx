@@ -344,17 +344,17 @@ export default function Settings() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               <Select
                 value={selectedCurrency}
                 onValueChange={setSelectedCurrency}
               >
-                <SelectTrigger className="flex-1">
+                <SelectTrigger className="flex-1 min-w-0">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-w-[80vw]">
                   {CURRENCIES.map((c) => (
-                    <SelectItem key={c.code} value={c.code}>
+                    <SelectItem key={c.code} value={c.code} className="truncate">
                       {c.symbol} — {c.label} ({c.code})
                     </SelectItem>
                   ))}
