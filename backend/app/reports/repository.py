@@ -338,8 +338,8 @@ class ReportRepo:
                     Transaction.user_id == user_id,
                     Transaction.txn_date >= since,
                 )
-                .group_by(func.date_trunc("month", Transaction.txn_date))
-                .order_by(desc(func.date_trunc("month", Transaction.txn_date)))
+                .group_by("year_month")
+                .order_by(desc("year_month"))
             )
             result = await self.db.execute(query)
             return result.mappings().all()
