@@ -2,6 +2,8 @@ import type { AuthTokens } from "../types"
 
 const API_BASE = "/api/v1"
 
+const responseCache = new Map<string, unknown>()
+
 function getTokens(): AuthTokens | null {
   try {
     const raw = localStorage.getItem("auth_tokens")
@@ -24,10 +26,25 @@ export function isAuthenticated(): boolean {
   return !!getTokens()
 }
 
+function cacheKey(path: string, options: RequestInit): string {
+  return `${options.method || "GET"}:${path}`
+}
+
+function clearCache(): void {
+  responseCache.clear()
+}
+
 export async function apiFetch<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
+  const key = cacheKey(path, options)
+  const isMutation = options.method && options.method !== "GET"
+  if (isMutation) {
+    responseCache.delete(key)
+    responseCache.delete(`GET:${path}`)
+  }
+
   const tokens = getTokens()
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -41,10 +58,21 @@ export async function apiFetch<T>(
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers })
 
   if (res.status === 204) {
+    responseCache.delete(key)
     return undefined as T
   }
 
+  if (res.status === 304) {
+    const cached = responseCache.get(key)
+    if (cached !== undefined) {
+      return cached as T
+    }
+    const retryRes = await fetch(`${API_BASE}${path}`, { ...options, headers, cache: "no-store" })
+    return processResponse<T>(retryRes, key)
+  }
+
   if (res.status === 401) {
+    responseCache.clear()
     clearTokens()
     window.dispatchEvent(new CustomEvent("auth:unauthorized"))
     try {
@@ -62,6 +90,10 @@ export async function apiFetch<T>(
     }
   }
 
+  return processResponse<T>(res, key)
+}
+
+async function processResponse<T>(res: Response, key: string): Promise<T> {
   const text = await res.text()
   if (!text) {
     throw new Error(`Request failed: ${res.status}`)
@@ -83,5 +115,6 @@ export async function apiFetch<T>(
     throw new Error(detail)
   }
 
+  responseCache.set(key, data)
   return data as T
 }
