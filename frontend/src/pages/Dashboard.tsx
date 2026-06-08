@@ -215,22 +215,22 @@ export default function Dashboard() {
               No history yet
             </div>
           ) : (
-            <div className="h-[180px] sm:h-[250px] w-full">
+            <div className="h-[180px] sm:h-[250px] w-full -mx-2 sm:mx-0">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 10 }}>
+                <LineChart data={chartData} margin={{ top: 5, right: 0, left: 0, bottom: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
                   <XAxis
                     dataKey="label"
-                    className="text-xs text-muted-foreground"
+                    className="text-[10px] text-muted-foreground"
                     tickLine={false}
                     axisLine={false}
-                    dy={14}
+                    dy={10}
                   />
                   <YAxis
-                    className="text-xs text-muted-foreground"
+                    className="text-[10px] text-muted-foreground"
                     tickLine={false}
                     axisLine={false}
-                    tickMargin={6}
+                    tickMargin={4}
                     tickFormatter={(v) => fmt(v).charAt(0) === "$" ? `$${(v / 1000).toFixed(0)}k` : `${(v / 1000).toFixed(0)}k`}
                   />
                   <Tooltip
