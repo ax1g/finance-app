@@ -748,7 +748,7 @@ function IncomeStatement() {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-4xl">Monthly Statement</CardTitle>
+            <CardTitle className="text-lg">Monthly Statement</CardTitle>
             <p className="mt-1 text-sm text-muted-foreground">
               For the month of{" "}
               {new Date(year, month - 1).toLocaleString("en-US", {
