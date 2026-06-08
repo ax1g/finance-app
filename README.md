@@ -17,11 +17,11 @@ Track income, expenses, and account balances with a clean FastAPI + React stack.
 
 | Dashboard | Reports | Transactions |
 |---|---|---|
-| `screenshots/dashboard.png` | `screenshots/reports.png` | `screenshots/transactions.png` |
+| ![Dashboard](screenshots/dashboard.png) | ![Reports](screenshots/reports.png) | ![Transactions](screenshots/transactions.png) |
 
-| Account Summary | Monthly Statement | Category Management |
+| Accounts | Monthly Statement | Categories |
 |---|---|---|
-| `screenshots/accounts.png` | `screenshots/statement.png` | `screenshots/categories.png` |
+| ![Accounts](screenshots/accounts.png) | ![Statement](screenshots/statement.png) | ![Categories](screenshots/categories.png) |
 
 ## Features
 
