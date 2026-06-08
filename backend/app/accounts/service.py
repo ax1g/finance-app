@@ -52,7 +52,7 @@ class AccountService:
             if not category:
                 category = Category(
                     name="Opening Balance",
-                    type=CategoryType.EXPENSE,
+                    type=CategoryType.SYSTEM,
                     icon="\U0001f3e6",
                     description="System-generated opening balance adjustment",
                     sort_order=0,
