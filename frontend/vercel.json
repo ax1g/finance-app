@@ -8,7 +8,7 @@
       "destination": "https://neco-080aad15.fastapicloud.dev/api/v1/:path"
     },
     {
-      "source": "/(.*)",
+      "source": "/:path((?!.*\\.[a-zA-Z0-9]+$).*)",
       "destination": "/index.html"
     }
   ]
