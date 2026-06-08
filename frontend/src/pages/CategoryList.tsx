@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { fetchCategories } from "@/api/categories"
 import { useDataRefresh } from "@/context/DataRefreshContext"
+import { useToast } from "@/context/ToastContext"
 import type { CategoryRead } from "@/types"
 import { Button } from "@/components/ui/button"
 import { useModal } from "@/context/ModalContext"
@@ -100,22 +101,21 @@ function SectionGrid({
 export default function CategoryList() {
   const { openModal } = useModal()
   const { version } = useDataRefresh()
+  const { toast } = useToast()
   const [categories, setCategories] = useState<CategoryRead[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
 
   useEffect(() => {
     let cancelled = false
 
     setLoading(true)
-    setError("")
     fetchCategories()
       .then((data) => {
         if (!cancelled) setCategories(data)
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message)
+        if (!cancelled) toast({ title: "Error", description: err.message, variant: "destructive" });
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -179,10 +179,7 @@ export default function CategoryList() {
           Loading...
         </div>
       )}
-      {error && (
-        <p className="py-8 text-center text-sm text-destructive">{error}</p>
-      )}
-      {!loading && !error && categories.length === 0 && (
+      {!loading && categories.length === 0 && (
         <p className="py-8 text-center text-sm text-muted-foreground">
           No categories yet.{" "}
           <button
@@ -193,7 +190,7 @@ export default function CategoryList() {
           </button>
         </p>
       )}
-      {!loading && !error && categories.length > 0 && (
+      {!loading && categories.length > 0 && (
         <div className="space-y-6">
           {viewMode === "grid" ? (
             <>

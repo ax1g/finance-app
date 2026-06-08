@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react"
 import { fetchDashboard } from "@/api/reports"
 import type { DashboardResponse } from "@/types"
 import { useDataRefresh } from "@/context/DataRefreshContext"
+import { useToast } from "@/context/ToastContext"
 import {
   Card,
   CardContent,
@@ -57,10 +58,10 @@ function AnimatedNumber({ value, visible }: { value: string; visible: boolean })
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardResponse | null>(null)
-  const [error, setError] = useState("")
   const [showBalance, setShowBalance] = useState(true)
   const [historyRange, setHistoryRange] = useState<"1M" | "1Y" | "ALL">("1Y")
   const { version } = useDataRefresh()
+  const { toast } = useToast()
 
   useEffect(() => {
     let cancelled = false
@@ -70,7 +71,7 @@ export default function Dashboard() {
         if (!cancelled) setData(d)
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message)
+        if (!cancelled) toast({ title: "Error", description: err.message, variant: "destructive" });
       })
 
     return () => {
@@ -78,11 +79,14 @@ export default function Dashboard() {
     }
   }, [version.transactions, version.accounts])
 
-  const loading = data === null && !error
+  const loading = data === null
 
-  if (error) {
+  if (loading) {
     return (
-      <p className="py-8 text-center text-sm text-destructive">{error}</p>
+      <div className="flex items-center justify-center py-16 text-muted-foreground">
+        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+        Loading...
+      </div>
     )
   }
 

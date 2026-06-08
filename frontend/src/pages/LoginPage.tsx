@@ -34,7 +34,6 @@ export default function LoginPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showResetPw, setShowResetPw] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   if (isAuth) {
@@ -43,18 +42,17 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setSubmitting(true);
 
     try {
       if (mode === "signup") {
         if (form.password !== form.confirmPassword) {
-          setError("Passwords do not match");
+          toast({ title: "Error", description: "Passwords do not match", variant: "destructive" });
           return;
         }
         const pwErr = getPasswordError(form.password);
         if (pwErr) {
-          setError(pwErr);
+          toast({ title: "Error", description: pwErr, variant: "destructive" });
           return;
         }
         await signup({
@@ -75,7 +73,7 @@ export default function LoginPage() {
         navigate("/", { replace: true });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      toast({ title: "Error", description: err instanceof Error ? err.message : "Something went wrong", variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -83,7 +81,6 @@ export default function LoginPage() {
 
   const handleForgotEmail = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setSubmitting(true);
     try {
       const res = await forgotPassword(form.email);
@@ -91,7 +88,7 @@ export default function LoginPage() {
       setResetForm({ ...resetForm, token: res.reset_token });
       setForgotStep("reset");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      toast({ title: "Error", description: err instanceof Error ? err.message : "Something went wrong", variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -99,14 +96,13 @@ export default function LoginPage() {
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     if (resetForm.password !== resetForm.confirmPassword) {
-      setError("Passwords do not match");
+      toast({ title: "Error", description: "Passwords do not match", variant: "destructive" });
       return;
     }
     const pwErr = getPasswordError(resetForm.password);
     if (pwErr) {
-      setError(pwErr);
+      toast({ title: "Error", description: pwErr, variant: "destructive" });
       return;
     }
     setSubmitting(true);
@@ -118,9 +114,8 @@ export default function LoginPage() {
       setResetToken("");
       setResetForm({ token: "", password: "", confirmPassword: "" });
       setForm({ ...form, email: "", password: "" });
-      setError("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      toast({ title: "Error", description: err instanceof Error ? err.message : "Something went wrong", variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -131,13 +126,11 @@ export default function LoginPage() {
     setForgotStep("email");
     setResetToken("");
     setResetForm({ token: "", password: "", confirmPassword: "" });
-    setError("");
   };
 
   const backToLogin = () => {
     setMode("login");
     setForgotStep("email");
-    setError("");
   };
 
   return (
@@ -177,7 +170,6 @@ export default function LoginPage() {
                     required
                   />
                 </div>
-                {error && <p className="text-sm text-destructive">{error}</p>}
                 <Button type="submit" className="w-full" disabled={submitting}>
                   {submitting ? "Sending..." : "Send Reset Token"}
                 </Button>
@@ -238,7 +230,6 @@ export default function LoginPage() {
                     </button>
                   </div>
                 </div>
-                {error && <p className="text-sm text-destructive">{error}</p>}
                 <Button type="submit" className="w-full" disabled={submitting}>
                   {submitting ? "Resetting..." : "Reset Password"}
                 </Button>
@@ -317,7 +308,6 @@ export default function LoginPage() {
                   </div>
                 </div>
               )}
-              {error && <p className="text-sm text-destructive">{error}</p>}
               <Button type="submit" className="w-full" disabled={submitting}>
                 {submitting
                   ? "Please wait..."
@@ -348,10 +338,7 @@ export default function LoginPage() {
                 <div>
                   Don&apos;t have an account?{" "}
                   <button
-                    onClick={() => {
-                      setMode("signup");
-                      setError("");
-                    }}
+                    onClick={() => setMode("signup")}
                     className="text-primary underline underline-offset-4 hover:text-primary/80"
                   >
                     Register
@@ -362,10 +349,7 @@ export default function LoginPage() {
               <>
                 Already have an account?{" "}
                 <button
-                  onClick={() => {
-                    setMode("login");
-                    setError("");
-                  }}
+                  onClick={() => setMode("login")}
                   className="text-primary underline underline-offset-4 hover:text-primary/80"
                 >
                   Login
