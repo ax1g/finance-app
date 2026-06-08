@@ -205,59 +205,52 @@ class ReportService:
         (
             income_since_start,
             expenses_since_start,
-            adjustments_since_start,
-        ) = await self.repo.get_period_income_expenses_adjustments(user_id, start, now)
-        opening_balance = (
-            current_total
-            - income_since_start
-            + expenses_since_start
-            - adjustments_since_start
-        )
+        ) = await self.repo.get_period_income_expenses(user_id, start, now)
+        opening_balance = current_total - income_since_start + expenses_since_start
 
         total_income, total_expenses = await self.repo.get_period_income_expenses(
             user_id, start, end
         )
-        (
-            _,
-            _,
-            adjustments_in_period,
-        ) = await self.repo.get_period_income_expenses_adjustments(
-            user_id, start, end
-        )
-        closing_balance = (
-            opening_balance + total_income - total_expenses + adjustments_in_period
-        )
+        closing_balance = opening_balance + total_income - total_expenses
 
         transactions = await self.repo.get_period_transactions(user_id, start, end)
 
         income_txns: list[IncomeStatementItem] = []
         expense_txns: list[IncomeStatementItem] = []
-        adjustment_txns: list[IncomeStatementItem] = []
         for t in transactions:
-            item = IncomeStatementItem(
-                txn_date=t.txn_date,
-                txn_type=t.txn_type,
-                description=t.description,
-                amount=t.amount,
-                category_name=t.category.name if t.category else None,
-                account_name=t.account.name if t.account else "",
-                to_account_name=t.to_account.name if t.to_account else None,
-            )
-            if t.txn_type == TransactionType.INCOME:
-                income_txns.append(item)
+            if t.txn_type in (TransactionType.INCOME, TransactionType.ADJUSTMENT):
+                income_txns.append(
+                    IncomeStatementItem(
+                        txn_date=t.txn_date,
+                        txn_type=t.txn_type,
+                        description=t.description,
+                        amount=t.amount,
+                        category_name=t.category.name if t.category else None,
+                        account_name=t.account.name if t.account else "",
+                        to_account_name=t.to_account.name if t.to_account else None,
+                    )
+                )
             elif t.txn_type == TransactionType.EXPENSE:
-                expense_txns.append(item)
-            elif t.txn_type == TransactionType.ADJUSTMENT:
-                adjustment_txns.append(item)
+                expense_txns.append(
+                    IncomeStatementItem(
+                        txn_date=t.txn_date,
+                        txn_type=t.txn_type,
+                        description=t.description,
+                        amount=t.amount,
+                        category_name=t.category.name if t.category else None,
+                        account_name=t.account.name if t.account else "",
+                        to_account_name=t.to_account.name if t.to_account else None,
+                    )
+                )
 
         return IncomeStatementResponse(
             opening_balance=opening_balance,
             closing_balance=closing_balance,
             total_income=total_income,
             total_expenses=total_expenses,
-            total_adjustments=adjustments_in_period,
-            net=total_income - total_expenses + adjustments_in_period,
+            total_adjustments=Decimal("0"),
+            net=total_income - total_expenses,
             income_transactions=income_txns,
             expense_transactions=expense_txns,
-            adjustment_transactions=adjustment_txns,
+            adjustment_transactions=[],
         )

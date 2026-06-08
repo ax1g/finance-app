@@ -698,7 +698,6 @@ function IncomeStatement() {
       ["Opening Balance", data.opening_balance],
       ["Total Income", data.total_income],
       ["Total Expenses", data.total_expenses],
-      ["Adjustments", data.total_adjustments],
       ["Net", data.net],
       ["Closing Balance", data.closing_balance],
       [""],
@@ -712,14 +711,6 @@ function IncomeStatement() {
         t.amount,
       ]),
       ...data.expense_transactions.map((t) => [
-        t.txn_date.slice(0, 10),
-        t.txn_type,
-        t.description ?? "",
-        t.category_name,
-        t.account_name,
-        t.amount,
-      ]),
-      ...data.adjustment_transactions.map((t) => [
         t.txn_date.slice(0, 10),
         t.txn_type,
         t.description ?? "",
@@ -853,14 +844,6 @@ function IncomeStatement() {
                       {fmt(data.total_income)}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-base text-muted-foreground">
-                      Adjustments
-                    </span>
-                    <span className="font-number text-xl font-semibold text-[var(--color-income)]">
-                      {fmt(data.total_adjustments)}
-                    </span>
-                  </div>
                 </div>
               </div>
               <div className="rounded-lg bg-muted p-6">
@@ -990,49 +973,7 @@ function IncomeStatement() {
               </div>
             </div>
 
-            {data.adjustment_transactions.length > 0 && (
-              <div>
-                <h3 className="text-sm font-semibold mb-2">
-                  Adjustment Transactions
-                </h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="border-b border-border text-left text-muted-foreground">
-                        <th className="pb-1.5 pr-2 font-medium">Date</th>
-                        <th className="pb-1.5 pr-2 font-medium">
-                          Particulars
-                        </th>
-                        <th className="pb-1.5 pr-2 font-medium">
-                          Category
-                        </th>
-                        <th className="pb-1.5 pr-2 font-medium">Mode</th>
-                        <th className="pb-1.5 text-right font-medium">
-                          Amount
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data.adjustment_transactions.map((t, i) => (
-                        <tr key={i} className="border-b border-border/50">
-                          <td className="py-1.5 pr-2 whitespace-nowrap font-number">
-                            {t.txn_date.slice(0, 10)}
-                          </td>
-                          <td className="py-1.5 pr-2">
-                            {t.description ?? "—"}
-                          </td>
-                          <td className="py-1.5 pr-2">{t.category_name}</td>
-                          <td className="py-1.5 pr-2">{t.account_name}</td>
-                          <td className="py-1.5 text-right font-number">
-                            {fmt(t.amount)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
+
           </div>
         ) : null}
       </CardContent>
