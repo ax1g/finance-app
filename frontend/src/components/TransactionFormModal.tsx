@@ -336,11 +336,11 @@ export default function TransactionFormModal() {
                   <SelectContent
                     position="popper"
                     align="start"
-                    className="min-w-[220px]"
+                    className="min-w-[160px] max-w-[85vw]"
                     style={{ maxHeight: "15rem" }}
                   >
                     {filteredCategories.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
+                      <SelectItem key={c.id} value={c.id} className="truncate">
                         {c.icon ? `${c.icon} ${c.name}` : c.name}
                       </SelectItem>
                     ))}
