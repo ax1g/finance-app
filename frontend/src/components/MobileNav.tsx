@@ -23,12 +23,12 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
 
 const links = [
   { to: "/", icon: LayoutGrid, label: "Home", end: true },
-  { to: "/transactions", icon: History, label: "Transactions", end: true },
+  { to: "/accounts", icon: Landmark, label: "Accounts", end: true },
   { to: "/reports", icon: BarChart3, label: "Reports", end: true },
 ]
 
 const moreItems = [
-  { to: "/accounts", icon: Landmark, label: "Accounts" },
+  { to: "/transactions", icon: History, label: "Transactions" },
   { to: "/categories", icon: Tag, label: "Categories" },
   { to: "/calendar", icon: Calendar, label: "Calendar" },
   { to: "/settings", icon: SettingsIcon, label: "Settings" },
