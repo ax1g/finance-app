@@ -301,48 +301,46 @@ export default function AccountList() {
     .reduce((s, a) => s + parseFloat(a.current_balance), 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">Accounts</h1>
-          <Button variant="outline" size="sm" onClick={openCreateModal}>
-            <Plus className="mr-1 h-4 w-4" />
-            New
-          </Button>
-        </div>
-        <div className="flex items-center gap-3">
-          {!loading && (
-            <p className="text-sm text-muted-foreground">
-              Net:{" "}
-              <span
-                className={`font-semibold font-number ${
-                  netAssets - netLiabilities >= 0
-                    ? "text-[var(--color-income)]"
-                    : "text-[var(--color-expense)]"
-                }`}
-              >
-                {fmt(netAssets - netLiabilities)}
-              </span>
-            </p>
-          )}
-          <div className="flex items-center rounded-md border border-border">
-            <button
-              onClick={() => setViewMode("grid")}
-              className={`rounded-l-md p-1.5 transition-colors ${
-                viewMode === "grid" ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"
+        <h1 className="text-2xl font-semibold tracking-tight">Accounts</h1>
+        <Button variant="outline" size="sm" onClick={openCreateModal}>
+          <Plus className="mr-1 h-4 w-4" />
+          New
+        </Button>
+      </div>
+      <div className="flex items-center justify-between">
+        {!loading && (
+          <p className="text-sm text-muted-foreground">
+            Net:{" "}
+            <span
+              className={`font-semibold font-number ${
+                netAssets - netLiabilities >= 0
+                  ? "text-[var(--color-income)]"
+                  : "text-[var(--color-expense)]"
               }`}
             >
-              <LayoutGrid className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={`rounded-r-md p-1.5 transition-colors ${
-                viewMode === "list" ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <List className="h-4 w-4" />
-            </button>
-          </div>
+              {fmt(netAssets - netLiabilities)}
+            </span>
+          </p>
+        )}
+        <div className="flex items-center rounded-md border border-border">
+          <button
+            onClick={() => setViewMode("grid")}
+            className={`rounded-l-md p-1.5 transition-colors ${
+              viewMode === "grid" ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <LayoutGrid className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setViewMode("list")}
+            className={`rounded-r-md p-1.5 transition-colors ${
+              viewMode === "list" ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <List className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
