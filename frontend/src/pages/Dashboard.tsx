@@ -22,6 +22,7 @@ import {
 } from "lucide-react"
 import { fmt, formatDate } from "@/lib/utils"
 import { Link } from "react-router-dom"
+import OnboardingModal, { isOnboardingDone } from "@/components/OnboardingModal"
 
 function AnimatedNumber({ value, visible }: { value: string; visible: boolean }) {
   const [display, setDisplay] = useState("$0.00")
@@ -60,6 +61,7 @@ export default function Dashboard() {
   const [data, setData] = useState<DashboardResponse | null>(null)
   const [showBalance, setShowBalance] = useState(true)
   const [historyRange, setHistoryRange] = useState<"1M" | "1Y" | "ALL">("1Y")
+  const [showOnboarding, setShowOnboarding] = useState(false)
   const { version } = useDataRefresh()
   const { toast } = useToast()
 
@@ -78,6 +80,13 @@ export default function Dashboard() {
       cancelled = true
     }
   }, [version.transactions, version.accounts])
+
+  useEffect(() => {
+    if (data && !showOnboarding && !isOnboardingDone()) {
+      const hasAccounts = data.balance_by_type && data.balance_by_type.some((b) => parseFloat(b.balance) > 0)
+      if (!hasAccounts) setShowOnboarding(true)
+    }
+  }, [data])
 
   const loading = data === null
 
@@ -415,6 +424,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+      {showOnboarding && <OnboardingModal onClose={() => setShowOnboarding(false)} />}
     </div>
   )
 }
