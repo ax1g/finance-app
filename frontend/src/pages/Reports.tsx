@@ -821,159 +821,161 @@ function IncomeStatement() {
           <LoadingInline />
         ) : data ? (
           <div className="space-y-6">
-            {/* Income card */}
-            <div className="rounded-lg bg-muted p-4 sm:p-6">
-              <h3 className="text-base sm:text-xl font-semibold text-muted-foreground mb-3 sm:mb-4">
-                Income
-              </h3>
-              <div className="space-y-2 sm:space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm sm:text-base text-muted-foreground truncate">
-                    Opening Balance
-                  </span>
-                  <span className="font-number text-base sm:text-xl font-semibold shrink-0">
-                    {fmt(data.opening_balance)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm sm:text-base text-muted-foreground truncate">
-                    Total Income
-                  </span>
-                  <span className="font-number text-base sm:text-xl font-semibold text-[var(--color-income)] shrink-0">
-                    {fmt(data.total_income)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Income table */}
-            <div>
-              <h3 className="text-sm font-semibold mb-2">
-                Income Transactions
-              </h3>
-              <div className="min-h-0">
-                {data.income_transactions.length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-4 text-center">
-                    No income this month.
-                  </p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr className="border-b border-border text-left text-muted-foreground">
-                          <th className="pb-1.5 pr-2 font-medium">Date</th>
-                          <th className="pb-1.5 pr-2 font-medium">
-                            Particulars
-                          </th>
-                          <th className="pb-1.5 pr-2 font-medium">
-                            Category
-                          </th>
-                          <th className="pb-1.5 pr-2 font-medium">Mode</th>
-                          <th className="pb-1.5 text-right font-medium">
-                            Amount
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {data.income_transactions.map((t, i) => (
-                          <tr key={i} className="border-b border-border/50">
-                            <td className="py-1.5 pr-2 whitespace-nowrap font-number text-[11px]">
-                              {new Date(t.txn_date).toLocaleDateString("en-US", { month: "short", day: "2-digit" })}
-                            </td>
-                            <td className="py-1.5 pr-2">
-                              {t.description ?? "—"}
-                            </td>
-                            <td className="py-1.5 pr-2">{t.category_name}</td>
-                            <td className="py-1.5 pr-2">{t.account_name}</td>
-                            <td className="py-1.5 text-right font-number text-[var(--color-income)]">
-                              {fmt(t.amount)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              {/* Income card */}
+              <div className="rounded-lg bg-muted p-4 sm:p-6">
+                <h3 className="text-base sm:text-xl font-semibold text-muted-foreground mb-3 sm:mb-4">
+                  Income
+                </h3>
+                <div className="space-y-2 sm:space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm sm:text-base text-muted-foreground truncate">
+                      Opening Balance
+                    </span>
+                    <span className="font-number text-base sm:text-xl font-semibold shrink-0">
+                      {fmt(data.opening_balance)}
+                    </span>
                   </div>
-                )}
-              </div>
-            </div>
-
-            {/* Expense card */}
-            <div className="rounded-lg bg-muted p-4 sm:p-6">
-              <h3 className="text-base sm:text-xl font-semibold text-muted-foreground mb-3 sm:mb-4">
-                Expenses
-              </h3>
-              <div className="space-y-2 sm:space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm sm:text-base text-muted-foreground truncate">
-                    Total Expenses
-                  </span>
-                  <span className="font-number text-base sm:text-xl font-semibold text-[var(--color-expense)] shrink-0">
-                    -{fmt(data.total_expenses)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm sm:text-base text-muted-foreground truncate">
-                    Closing Balance
-                  </span>
-                  <span className="font-number text-base sm:text-xl font-semibold shrink-0">
-                    {fmt(data.closing_balance)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Expense table */}
-            <div>
-              <h3 className="text-sm font-semibold mb-2">
-                Expense Transactions
-              </h3>
-              <div className="min-h-0">
-                {data.expense_transactions.length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-4 text-center">
-                    No expenses this month.
-                  </p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr className="border-b border-border text-left text-muted-foreground">
-                          <th className="pb-1.5 pr-2 font-medium">Date</th>
-                          <th className="pb-1.5 pr-2 font-medium">
-                            Particulars
-                          </th>
-                          <th className="pb-1.5 pr-2 font-medium">
-                            Category
-                          </th>
-                          <th className="pb-1.5 pr-2 font-medium">Mode</th>
-                          <th className="pb-1.5 text-right font-medium">
-                            Amount
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {data.expense_transactions.map((t, i) => (
-                          <tr key={i} className="border-b border-border/50">
-                            <td className="py-1.5 pr-2 whitespace-nowrap font-number text-[11px]">
-                              {new Date(t.txn_date).toLocaleDateString("en-US", { month: "short", day: "2-digit" })}
-                            </td>
-                            <td className="py-1.5 pr-2">
-                              {t.description ?? "—"}
-                            </td>
-                            <td className="py-1.5 pr-2">{t.category_name}</td>
-                            <td className="py-1.5 pr-2">{t.account_name}</td>
-                            <td className="py-1.5 text-right font-number text-[var(--color-expense)]">
-                              -{fmt(t.amount)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm sm:text-base text-muted-foreground truncate">
+                      Total Income
+                    </span>
+                    <span className="font-number text-base sm:text-xl font-semibold text-[var(--color-income)] shrink-0">
+                      {fmt(data.total_income)}
+                    </span>
                   </div>
-                )}
+                </div>
+              </div>
+
+              {/* Expense card */}
+              <div className="rounded-lg bg-muted p-4 sm:p-6">
+                <h3 className="text-base sm:text-xl font-semibold text-muted-foreground mb-3 sm:mb-4">
+                  Expenses
+                </h3>
+                <div className="space-y-2 sm:space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm sm:text-base text-muted-foreground truncate">
+                      Total Expenses
+                    </span>
+                    <span className="font-number text-base sm:text-xl font-semibold text-[var(--color-expense)] shrink-0">
+                      -{fmt(data.total_expenses)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm sm:text-base text-muted-foreground truncate">
+                      Closing Balance
+                    </span>
+                    <span className="font-number text-base sm:text-xl font-semibold shrink-0">
+                      {fmt(data.closing_balance)}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              {/* Income table */}
+              <div>
+                <h3 className="text-sm font-semibold mb-2">
+                  Income Transactions
+                </h3>
+                <div className="min-h-0">
+                  {data.income_transactions.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-4 text-center">
+                      No income this month.
+                    </p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b border-border text-left text-muted-foreground">
+                            <th className="pb-1.5 pr-2 font-medium">Date</th>
+                            <th className="pb-1.5 pr-2 font-medium">
+                              Particulars
+                            </th>
+                            <th className="pb-1.5 pr-2 font-medium">
+                              Category
+                            </th>
+                            <th className="pb-1.5 pr-2 font-medium">Mode</th>
+                            <th className="pb-1.5 text-right font-medium">
+                              Amount
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {data.income_transactions.map((t, i) => (
+                            <tr key={i} className="border-b border-border/50">
+                              <td className="py-1.5 pr-2 whitespace-nowrap font-number text-[11px]">
+                                {new Date(t.txn_date).toLocaleDateString("en-US", { month: "short", day: "2-digit" })}
+                              </td>
+                              <td className="py-1.5 pr-2">
+                                {t.description ?? "—"}
+                              </td>
+                              <td className="py-1.5 pr-2">{t.category_name}</td>
+                              <td className="py-1.5 pr-2">{t.account_name}</td>
+                              <td className="py-1.5 text-right font-number text-[var(--color-income)]">
+                                {fmt(t.amount)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
 
+              {/* Expense table */}
+              <div>
+                <h3 className="text-sm font-semibold mb-2">
+                  Expense Transactions
+                </h3>
+                <div className="min-h-0">
+                  {data.expense_transactions.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-4 text-center">
+                      No expenses this month.
+                    </p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b border-border text-left text-muted-foreground">
+                            <th className="pb-1.5 pr-2 font-medium">Date</th>
+                            <th className="pb-1.5 pr-2 font-medium">
+                              Particulars
+                            </th>
+                            <th className="pb-1.5 pr-2 font-medium">
+                              Category
+                            </th>
+                            <th className="pb-1.5 pr-2 font-medium">Mode</th>
+                            <th className="pb-1.5 text-right font-medium">
+                              Amount
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {data.expense_transactions.map((t, i) => (
+                            <tr key={i} className="border-b border-border/50">
+                              <td className="py-1.5 pr-2 whitespace-nowrap font-number text-[11px]">
+                                {new Date(t.txn_date).toLocaleDateString("en-US", { month: "short", day: "2-digit" })}
+                              </td>
+                              <td className="py-1.5 pr-2">
+                                {t.description ?? "—"}
+                              </td>
+                              <td className="py-1.5 pr-2">{t.category_name}</td>
+                              <td className="py-1.5 pr-2">{t.account_name}</td>
+                              <td className="py-1.5 text-right font-number text-[var(--color-expense)]">
+                                -{fmt(t.amount)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         ) : null}
       </CardContent>
