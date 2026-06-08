@@ -1,10 +1,7 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Query, Request, Response, status
+from fastapi import APIRouter, Query, status
 
-from app.accounts.model import Account
-from app.categories.model import Category
-from app.transactions.model import Transaction
 from app.reports.schema import (
     DashboardResponse,
     SpendingByCategoryItem,
@@ -12,8 +9,7 @@ from app.reports.schema import (
     AccountSummaryItem,
     IncomeStatementResponse,
 )
-from app.core.cache import compute_etag, handle_etag
-from app.core.dependencies import ReportServiceDep, CurrentUserDep, SessionDep
+from app.core.dependencies import ReportServiceDep, CurrentUserDep
 
 
 router = APIRouter()
@@ -25,15 +21,9 @@ router = APIRouter()
     status_code=status.HTTP_200_OK,
 )
 async def dashboard(
-    request: Request,
-    response: Response,
     service: ReportServiceDep,
     current_user: CurrentUserDep,
-    db: SessionDep,
 ):
-    etag = await compute_etag(db, current_user.id, Transaction, Account)
-    if await handle_etag(request, response, etag):
-        return Response(status_code=304)
     return await service.get_dashboard(current_user.id)
 
 
@@ -43,20 +33,14 @@ async def dashboard(
     status_code=status.HTTP_200_OK,
 )
 async def spending_by_category(
-    request: Request,
-    response: Response,
     service: ReportServiceDep,
     current_user: CurrentUserDep,
-    db: SessionDep,
     start_date: datetime | None = Query(default=None),
     end_date: datetime | None = Query(default=None),
 ):
     now = datetime.now(timezone.utc)
     start = start_date or now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     end = end_date or now
-    etag = await compute_etag(db, current_user.id, Transaction, Category)
-    if await handle_etag(request, response, etag):
-        return Response(status_code=304)
     return await service.get_spending_by_category(current_user.id, start, end)
 
 
@@ -66,20 +50,14 @@ async def spending_by_category(
     status_code=status.HTTP_200_OK,
 )
 async def income_by_category(
-    request: Request,
-    response: Response,
     service: ReportServiceDep,
     current_user: CurrentUserDep,
-    db: SessionDep,
     start_date: datetime | None = Query(default=None),
     end_date: datetime | None = Query(default=None),
 ):
     now = datetime.now(timezone.utc)
     start = start_date or now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     end = end_date or now
-    etag = await compute_etag(db, current_user.id, Transaction, Category)
-    if await handle_etag(request, response, etag):
-        return Response(status_code=304)
     return await service.get_income_by_category(current_user.id, start, end)
 
 
@@ -89,16 +67,10 @@ async def income_by_category(
     status_code=status.HTTP_200_OK,
 )
 async def monthly_summary(
-    request: Request,
-    response: Response,
     service: ReportServiceDep,
     current_user: CurrentUserDep,
-    db: SessionDep,
     months: int = Query(default=12, ge=1, le=60),
 ):
-    etag = await compute_etag(db, current_user.id, Transaction)
-    if await handle_etag(request, response, etag):
-        return Response(status_code=304)
     return await service.get_monthly_summary(current_user.id, months)
 
 
@@ -108,20 +80,14 @@ async def monthly_summary(
     status_code=status.HTTP_200_OK,
 )
 async def account_summary(
-    request: Request,
-    response: Response,
     service: ReportServiceDep,
     current_user: CurrentUserDep,
-    db: SessionDep,
     start_date: datetime | None = Query(default=None),
     end_date: datetime | None = Query(default=None),
 ):
     now = datetime.now(timezone.utc)
     start = start_date or now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     end = end_date or now
-    etag = await compute_etag(db, current_user.id, Account, Transaction)
-    if await handle_etag(request, response, etag):
-        return Response(status_code=304)
     return await service.get_account_summary(current_user.id, start, end)
 
 
@@ -131,15 +97,9 @@ async def account_summary(
     status_code=status.HTTP_200_OK,
 )
 async def income_statement(
-    request: Request,
-    response: Response,
     service: ReportServiceDep,
     current_user: CurrentUserDep,
-    db: SessionDep,
     year: int = Query(...),
     month: int = Query(..., ge=1, le=12),
 ):
-    etag = await compute_etag(db, current_user.id, Transaction, Account)
-    if await handle_etag(request, response, etag):
-        return Response(status_code=304)
     return await service.get_income_statement(current_user.id, year, month)

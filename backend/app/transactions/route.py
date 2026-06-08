@@ -3,9 +3,8 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, Request, Response, status, HTTPException, Query
+from fastapi import APIRouter, status, HTTPException, Query
 
-from app.transactions.model import Transaction
 from app.transactions.schema import (
     TransactionRead,
     TransactionSummary,
@@ -14,9 +13,8 @@ from app.transactions.schema import (
     TransactionUpdate,
 )
 from app.core.enums import TransactionType
-from app.core.cache import compute_resource_etag, handle_etag
 
-from app.core.dependencies import TransactionServiceDep, CurrentUserDep, SessionDep
+from app.core.dependencies import TransactionServiceDep, CurrentUserDep
 
 
 router = APIRouter()
@@ -88,16 +86,10 @@ async def read_transactions(
 
 @router.get("/{txn_id}", response_model=TransactionRead, status_code=status.HTTP_200_OK)
 async def read_transaction(
-    request: Request,
-    response: Response,
     service: TransactionServiceDep,
     current_user: CurrentUserDep,
-    db: SessionDep,
     txn_id: uuid.UUID,
 ):
-    etag = await compute_resource_etag(db, Transaction, txn_id)
-    if await handle_etag(request, response, etag):
-        return Response(status_code=304)
     return await service.get_transaction_by_id(current_user.id, txn_id)
 
 
