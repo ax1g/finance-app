@@ -30,10 +30,6 @@ function cacheKey(path: string, options: RequestInit): string {
   return `${options.method || "GET"}:${path}`
 }
 
-function clearCache(): void {
-  responseCache.clear()
-}
-
 export async function apiFetch<T>(
   path: string,
   options: RequestInit = {},
