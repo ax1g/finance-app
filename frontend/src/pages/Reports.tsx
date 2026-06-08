@@ -853,18 +853,18 @@ function IncomeStatement() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-base text-muted-foreground">
-                      Closing Balance
-                    </span>
-                    <span className="font-number text-xl font-semibold">
-                      {fmt(data.closing_balance)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-base text-muted-foreground">
                       Total Expenses
                     </span>
                     <span className="font-number text-xl font-semibold text-[var(--color-expense)]">
                       -{fmt(data.total_expenses)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-base text-muted-foreground">
+                      Closing Balance
+                    </span>
+                    <span className="font-number text-xl font-semibold">
+                      {fmt(data.closing_balance)}
                     </span>
                   </div>
                 </div>
