@@ -144,7 +144,7 @@ export default function Dashboard() {
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <p className="text-sm font-medium text-muted-foreground">Net Worth</p>
-              <p className="mt-2 text-2xl sm:text-4xl font-bold font-number tracking-tight truncate">
+              <p className="mt-2 text-3xl sm:text-4xl font-bold font-number tracking-tight truncate">
                 {loading ? "..." : showBalance ? (
                   <AnimatedNumber value={data?.total_balance ?? "0"} visible={showBalance} />
                 ) : (
@@ -162,7 +162,7 @@ export default function Dashboard() {
             )}
           </div>
           {!loading && data && (
-            <div className="mt-4 flex items-center gap-6 text-sm">
+            <div className="mt-4 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-6 text-sm">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-[var(--color-income)]" />
                 <span className="text-muted-foreground">Assets</span>
@@ -183,12 +183,12 @@ export default function Dashboard() {
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pb-3">
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
             Net Worth Progress
           </CardTitle>
-          <div className="flex items-center gap-1 rounded-lg bg-muted p-0.5">
+          <div className="flex items-center gap-1 rounded-lg bg-muted p-0.5 self-start sm:self-auto">
             {(["1M", "1Y", "ALL"] as const).map((p) => (
               <button
                 key={p}
@@ -215,7 +215,7 @@ export default function Dashboard() {
               No history yet
             </div>
           ) : (
-            <div className="h-[250px] w-full">
+            <div className="h-[180px] sm:h-[250px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />

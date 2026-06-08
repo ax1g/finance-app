@@ -137,11 +137,11 @@ export default function TransactionList() {
               <Link
                 key={txn.id}
                 to={`/transactions/${txn.id}`}
-                className="flex items-center justify-between rounded-lg border border-border px-4 py-3 transition-colors outline-none hover:bg-muted/50 focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                className="flex flex-col gap-1.5 rounded-lg border border-border px-4 py-3 transition-colors outline-none hover:bg-muted/50 focus-visible:ring-[3px] focus-visible:ring-ring/50"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <div
-                    className={`flex h-9 w-9 items-center justify-center rounded-full ${
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
                       txn.txn_type === "expense"
                         ? "bg-[var(--color-expense)]/10 text-[var(--color-expense)]"
                         : txn.txn_type === "adjustment"
@@ -161,7 +161,7 @@ export default function TransactionList() {
                       <ArrowUpRight className="h-4 w-4" />
                     )}
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium leading-none truncate">
                       {txn.description || txn.category_name || "Transfer"}
                     </p>
@@ -175,7 +175,7 @@ export default function TransactionList() {
                       </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex justify-end">
                   <Badge
                     className={`font-number text-xs ${
                       txn.txn_type === "expense"

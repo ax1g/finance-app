@@ -147,7 +147,7 @@ function MonthlyTrends() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px] w-full [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-surface]:bg-transparent">
+        <div className="h-[200px] sm:h-[250px] w-full [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-surface]:bg-transparent [&_.recharts-bar-rectangle]:hover:opacity-80 [&_.recharts-default-tooltip]:!bg-background">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}
@@ -413,12 +413,12 @@ function AccountSummaryCard() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="flex items-center gap-2 text-base">
             <LandmarkIcon />
             Account Summary
           </CardTitle>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-start sm:self-auto">
             <Button
               variant="outline"
               size="sm"
@@ -746,7 +746,7 @@ function IncomeStatement() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="text-lg">Monthly Statement</CardTitle>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -757,7 +757,7 @@ function IncomeStatement() {
               })}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 self-start sm:self-auto">
             <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
               <Button
                 variant="ghost"
