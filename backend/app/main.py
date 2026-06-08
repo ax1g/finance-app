@@ -110,6 +110,13 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def no_cache_middleware(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Cache-Control"] = "private, no-cache, no-store"
+    return response
+
+
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
