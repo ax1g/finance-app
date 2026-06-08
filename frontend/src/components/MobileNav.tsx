@@ -54,7 +54,7 @@ export default function MobileNav() {
   return (
     <>
       <nav className="fixed inset-x-0 bottom-0 z-50 grid h-16 grid-cols-5 items-center border-t border-border bg-card pb-safe md:hidden">
-        {links.map(({ to, icon: Icon, label, end }) => (
+        {links.slice(0, 2).map(({ to, icon: Icon, label, end }) => (
           <NavLink key={to} to={to} end={end} className={linkClass}>
             {({ isActive }) => (
               <div className={`flex flex-col items-center gap-0.5 ${isActive ? "text-foreground" : ""}`}>
@@ -68,10 +68,21 @@ export default function MobileNav() {
         <button
           type="button"
           onClick={() => openModal("new-transaction", <TransactionFormModal />)}
-          className="flex size-11 items-center justify-center justify-self-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform active:scale-95"
+          className="flex size-11 items-center justify-center justify-self-center rounded-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 text-primary-foreground shadow-lg shadow-primary/40 ring-2 ring-primary/20 ring-offset-2 ring-offset-background transition-all duration-200 active:scale-95"
         >
           <Plus className="h-5 w-5" />
         </button>
+
+        {links.slice(2).map(({ to, icon: Icon, label, end }) => (
+          <NavLink key={to} to={to} end={end} className={linkClass}>
+            {({ isActive }) => (
+              <div className={`flex flex-col items-center gap-0.5 ${isActive ? "text-foreground" : ""}`}>
+                <Icon className="h-5 w-5" />
+                <span>{label}</span>
+              </div>
+            )}
+          </NavLink>
+        ))}
 
         <div ref={menuRef} className="relative flex justify-center">
           <button
