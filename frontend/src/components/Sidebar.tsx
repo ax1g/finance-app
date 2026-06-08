@@ -56,7 +56,7 @@ export default function Sidebar() {
       >
         <ChevronLeft className={`size-3 transition-transform duration-300 ${collapsed ? "rotate-180" : ""}`} />
       </button>
-      <div className="flex items-center gap-3 border-b border-border px-4 py-3">
+      <div className="flex items-center gap-3 border-b border-border px-4 py-3 ml-[3px]">
         <Snowflake className="h-6 w-6 shrink-0 text-primary" />
         <NavLabel collapsed={collapsed}>
           <span className="font-bold text-xl text-foreground whitespace-nowrap">
