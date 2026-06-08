@@ -45,7 +45,7 @@ async def read_transactions(
     service: TransactionServiceDep,
     current_user: CurrentUserDep,
     txn_type: TransactionType | None = None,
-    limit: int = Query(default=50, ge=1, le=200),
+    limit: int = Query(default=50, ge=1, le=500),
     cursor: str | None = Query(default=None),
     start: datetime | None = None,
     end: datetime | None = None,
