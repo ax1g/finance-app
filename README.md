@@ -23,8 +23,6 @@ Track income, expenses, and account balances with a clean FastAPI + React stack.
 |---|---|---|
 | `screenshots/accounts.png` | `screenshots/statement.png` | `screenshots/categories.png` |
 
-> **To add screenshots**: capture each page and save as 1280×800 PNG files in a `screenshots/` directory at the repo root. Replace the placeholder paths above with relative links like `screenshots/dashboard.png`.
-
 ## Features
 
 - **Dashboard** — net worth, income/expense summary, monthly trends bar chart
