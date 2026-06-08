@@ -4,6 +4,7 @@ import { fetchAccounts } from "@/api/accounts";
 import { fetchCategories } from "@/api/categories";
 import { useModal } from "@/context/ModalContext";
 import { useDataRefresh } from "@/context/DataRefreshContext";
+import { useToast } from "@/context/ToastContext";
 import type { AccountRead, CategoryRead, TransactionType } from "@/types";
 import { Button } from "@/components/ui/button";
 import { cn, toLocalDatetime, getCurrencySymbol } from "@/lib/utils";
@@ -29,11 +30,11 @@ const CATEGORY_TYPE_MAP: Record<string, string[]> = {
 export default function TransactionFormModal() {
   const { closeTopModal, openModal } = useModal();
   const { signal } = useDataRefresh();
+  const { toast } = useToast();
   const [accounts, setAccounts] = useState<AccountRead[]>([]);
   const [categories, setCategories] = useState<CategoryRead[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
 
   const [form, setForm] = useState({
     txn_date: toLocalDatetime(new Date()).replace(" ", "T"),
@@ -62,7 +63,7 @@ export default function TransactionFormModal() {
         setAccounts(accts);
         setCategories(cats);
       })
-      .catch((err) => setError(err.message))
+      .catch((err) => toast({ title: "Error", description: err instanceof Error ? err.message : "Failed to load data", variant: "destructive" }))
       .finally(() => setLoading(false));
   };
 
@@ -73,19 +74,18 @@ export default function TransactionFormModal() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.txn_type || !form.account_id || !form.amount) {
-      setError("Please fill in all required fields");
+      toast({ title: "Error", description: "Please fill in all required fields", variant: "destructive" });
       return;
     }
     if (form.txn_type === "transfer" && !form.to_account_id) {
-      setError("Please select a destination account");
+      toast({ title: "Error", description: "Please select a destination account", variant: "destructive" });
       return;
     }
     if (form.txn_type !== "transfer" && !form.category_id) {
-      setError("Please select a category");
+      toast({ title: "Error", description: "Please select a category", variant: "destructive" });
       return;
     }
     setSubmitting(true);
-    setError("");
 
     try {
       await createTransaction({
@@ -97,12 +97,11 @@ export default function TransactionFormModal() {
         category_id: form.txn_type === "transfer" ? null : form.category_id,
         to_account_id: form.txn_type === "transfer" ? form.to_account_id : null,
       });
+      toast({ title: "Transaction created", variant: "success" });
       signal("transactions");
       closeTopModal();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to create transaction",
-      );
+      toast({ title: "Error", description: err instanceof Error ? err.message : "Failed to create transaction", variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -370,8 +369,6 @@ export default function TransactionFormModal() {
               }
             />
           </div>
-
-          {error && <p className="text-sm text-destructive">{error}</p>}
 
           <div className="flex gap-3 pt-2">
             <Button

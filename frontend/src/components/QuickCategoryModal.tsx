@@ -25,7 +25,6 @@ export default function QuickCategoryModal({ onCreated }: Props) {
   const { toast } = useToast()
   const { signal } = useDataRefresh()
   const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState("")
   const [form, setForm] = useState({
     name: "",
     type: "" as CategoryType | "",
@@ -35,11 +34,10 @@ export default function QuickCategoryModal({ onCreated }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.name || !form.type) {
-      setError("Name and type are required")
+      toast({ title: "Error", description: "Name and type are required", variant: "destructive" })
       return
     }
     setSubmitting(true)
-    setError("")
 
     try {
       const created = await createCategory({
@@ -53,7 +51,6 @@ export default function QuickCategoryModal({ onCreated }: Props) {
       closeTopModal()
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to create category"
-      setError(msg)
       toast({ title: "Error", description: msg, variant: "destructive" })
     } finally {
       setSubmitting(false)
@@ -99,7 +96,6 @@ export default function QuickCategoryModal({ onCreated }: Props) {
             onChange={(e) => setForm({ ...form, description: e.target.value })}
           />
         </div>
-        {error && <p className="text-sm text-destructive">{error}</p>}
         <div className="flex gap-3 pt-1">
           <Button type="button" variant="outline" className="flex-1" onClick={closeTopModal}>
             Cancel
