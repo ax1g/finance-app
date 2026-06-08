@@ -70,7 +70,12 @@ export default function Dashboard() {
 
     fetchDashboard()
       .then((d) => {
-        if (!cancelled) setData(d)
+        if (cancelled) return
+        setData(d)
+        if (!isOnboardingDone()) {
+          const hasAccounts = d.balance_by_type?.some((b) => parseFloat(b.balance) > 0) ?? false
+          if (!hasAccounts) setShowOnboarding(true)
+        }
       })
       .catch((err) => {
         if (!cancelled) toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -80,13 +85,6 @@ export default function Dashboard() {
       cancelled = true
     }
   }, [version.transactions, version.accounts])
-
-  useEffect(() => {
-    if (data && !showOnboarding && !isOnboardingDone()) {
-      const hasAccounts = data.balance_by_type && data.balance_by_type.some((b) => parseFloat(b.balance) > 0)
-      if (!hasAccounts) setShowOnboarding(true)
-    }
-  }, [data])
 
   const loading = data === null
 
