@@ -296,7 +296,9 @@ class ReportRepo:
         try:
             query = (
                 select(
-                    func.to_char(func.date_trunc("month", Transaction.txn_date), "YYYY-MM").label("year_month"),
+                    func.to_char(
+                        func.date_trunc("month", Transaction.txn_date), "YYYY-MM"
+                    ).label("year_month"),
                     func.coalesce(
                         func.sum(
                             case(
@@ -398,6 +400,26 @@ class ReportRepo:
             )
             result = await self.db.execute(query)
             return result.mappings().all()
+        except SQLAlchemyError as e:
+            raise RepositoryError(f"Database error: {str(e)}") from e
+
+    async def get_period_opening_balance_adjustments(
+        self, user_id: uuid.UUID, start: datetime, end: datetime
+    ) -> Decimal:
+        try:
+            query = (
+                select(func.coalesce(func.sum(Transaction.amount), 0))
+                .join(Category, Transaction.category_id == Category.id)
+                .where(
+                    Transaction.user_id == user_id,
+                    Transaction.txn_type == TransactionType.ADJUSTMENT,
+                    Category.name == "Opening Balance",
+                    Transaction.txn_date >= start,
+                    Transaction.txn_date <= end,
+                )
+            )
+            result = await self.db.execute(query)
+            return result.scalar()
         except SQLAlchemyError as e:
             raise RepositoryError(f"Database error: {str(e)}") from e
 

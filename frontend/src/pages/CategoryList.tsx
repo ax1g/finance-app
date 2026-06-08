@@ -4,6 +4,7 @@ import { useDataRefresh } from "@/context/DataRefreshContext"
 import { useToast } from "@/context/ToastContext"
 import type { CategoryRead } from "@/types"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { useModal } from "@/context/ModalContext"
 import QuickCategoryModal from "@/components/QuickCategoryModal"
 import { Loader2, Plus, Pencil, Trash2, X } from "lucide-react"
@@ -35,43 +36,125 @@ function CategoryCard({
   const meta = TYPE_META[category.type]
   return (
     <div
-      className={`relative flex flex-col items-center gap-2 rounded-xl border p-4 transition-colors ${
+      className={`relative flex items-center gap-3 rounded-xl border p-3 transition-colors ${
         editing ? "cursor-default" : "hover:bg-accent/50"
       } ${selected ? "border-primary ring-1 ring-primary" : "border-border"}`}
     >
       {editing && (
-        <input
-          type="checkbox"
+        <Checkbox
           checked={selected}
-          onChange={() => onToggle(category.id)}
-          className="absolute left-3 top-3 h-4 w-4 rounded border-border accent-primary"
+          onCheckedChange={() => onToggle(category.id)}
+          className="shrink-0"
         />
       )}
       <button
         type="button"
         onClick={() => editing && onEdit(category)}
-        className="flex flex-col items-center gap-2"
+        className="flex items-center gap-3 min-w-0 flex-1 text-left"
       >
         <div
-          className={`flex h-12 w-12 items-center justify-center rounded-full ${meta.color}`}
+          className={`flex size-10 shrink-0 items-center justify-center rounded-full ${meta.color}`}
         >
-          <span className="text-lg">{category.icon || "📦"}</span>
+          <span className="text-base">{category.icon || "📦"}</span>
         </div>
-        <p className="text-sm font-medium text-center leading-tight">{category.name}</p>
-        {category.description && (
-          <p className="text-xs text-muted-foreground text-center line-clamp-2">
-            {category.description}
-          </p>
-        )}
+        <div className="min-w-0">
+          <p className="text-sm font-medium leading-tight truncate">{category.name}</p>
+          {category.description && (
+            <p className="text-xs text-muted-foreground truncate">
+              {category.description}
+            </p>
+          )}
+        </div>
       </button>
       {editing && (
         <button
           type="button"
           onClick={() => onEdit(category)}
-          className="absolute right-3 top-3 rounded-md p-1 text-muted-foreground hover:text-foreground"
+          className="shrink-0 rounded-md p-1 text-muted-foreground hover:text-foreground"
         >
           <Pencil className="h-3.5 w-3.5" />
         </button>
+      )}
+    </div>
+  )
+}
+
+function Section({
+  title,
+  type,
+  cats,
+  editMode,
+  selected,
+  deleting,
+  onToggleEdit,
+  onDelete,
+  onToggle,
+  onEdit,
+}: {
+  title: string
+  type: "income" | "expense"
+  cats: CategoryRead[]
+  editMode: "income" | "expense" | null
+  selected: Set<string>
+  deleting: boolean
+  onToggleEdit: (type: "income" | "expense") => void
+  onDelete: () => void
+  onToggle: (id: string) => void
+  onEdit: (cat: CategoryRead) => void
+}) {
+  const isEditing = editMode === type
+  return (
+    <div>
+      <div className="mb-3 flex items-center justify-between">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {title}
+        </p>
+        <div className="flex items-center gap-2">
+          {isEditing && selected.size > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={onDelete}
+              disabled={deleting}
+            >
+              {deleting ? (
+                <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="mr-1 h-3.5 w-3.5" />
+              )}
+              Delete {selected.size}
+            </Button>
+          )}
+          <button
+            type="button"
+            onClick={() => onToggleEdit(type)}
+            className={`rounded-md p-1.5 transition-colors ${
+              isEditing
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {isEditing ? <X className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+          </button>
+        </div>
+      </div>
+      {cats.length === 0 ? (
+        <p className="py-4 text-sm text-muted-foreground">
+          No {title.toLowerCase()} categories yet.
+        </p>
+      ) : (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {cats.map((c) => (
+            <CategoryCard
+              key={c.id}
+              category={c}
+              editing={isEditing}
+              selected={selected.has(c.id)}
+              onToggle={onToggle}
+              onEdit={onEdit}
+            />
+          ))}
+        </div>
       )}
     </div>
   )
@@ -89,7 +172,6 @@ export default function CategoryList() {
 
   useEffect(() => {
     let cancelled = false
-    setLoading(true)
     fetchCategories()
       .then((data) => {
         if (!cancelled) setCategories(data)
@@ -101,7 +183,7 @@ export default function CategoryList() {
         if (!cancelled) setLoading(false)
       })
     return () => { cancelled = true }
-  }, [version.categories])
+  }, [version.categories, toast])
 
   const incomeCategories = categories.filter((c) => c.type === "income")
   const expenseCategories = categories.filter((c) => c.type === "expense")
@@ -143,89 +225,24 @@ export default function CategoryList() {
     if (selected.size === 0) return
     if (!window.confirm(`Delete ${selected.size} categor${selected.size === 1 ? "y" : "ies"}?`)) return
     setDeleting(true)
-    let failed = 0
+    const errors: string[] = []
     for (const id of selected) {
       try {
         await deleteCategory(id)
-      } catch {
-        failed++
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Unknown error"
+        errors.push(msg)
       }
     }
     setDeleting(false)
     setSelected(new Set())
     setEditMode(null)
-    if (failed > 0) {
-      toast({ title: "Error", description: `Failed to delete ${failed} categor${failed === 1 ? "y" : "ies"}.`, variant: "destructive" })
+    signal("categories")
+    if (errors.length > 0) {
+      toast({ title: "Error", description: `Failed to delete ${errors.length} categor${errors.length === 1 ? "y" : "ies"}: ${errors[0]}${errors.length > 1 ? ` (+${errors.length - 1} more)` : ""}`, variant: "destructive" })
     } else {
       toast({ title: `Deleted ${selected.size} categor${selected.size === 1 ? "y" : "ies"}`, variant: "success" })
     }
-  }
-
-  function Section({
-    title,
-    type,
-    cats,
-  }: {
-    title: string
-    type: "income" | "expense"
-    cats: CategoryRead[]
-  }) {
-    const isEditing = editMode === type
-    return (
-      <div>
-        <div className="mb-3 flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            {title}
-          </p>
-          <div className="flex items-center gap-2">
-            {isEditing && selected.size > 0 && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleDeleteSelected}
-                disabled={deleting}
-              >
-                {deleting ? (
-                  <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Trash2 className="mr-1 h-3.5 w-3.5" />
-                )}
-                Delete {selected.size}
-              </Button>
-            )}
-            <button
-              type="button"
-              onClick={() => toggleEditMode(type)}
-              className={`rounded-md p-1.5 transition-colors ${
-                isEditing
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {isEditing ? <X className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
-            </button>
-          </div>
-        </div>
-        {cats.length === 0 ? (
-          <p className="py-4 text-sm text-muted-foreground">
-            No {title.toLowerCase()} categories yet.
-          </p>
-        ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {cats.map((c) => (
-              <CategoryCard
-                key={c.id}
-                category={c}
-                editing={isEditing}
-                selected={selected.has(c.id)}
-                onToggle={toggleSelected}
-                onEdit={openEditModal}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    )
   }
 
   return (
@@ -258,8 +275,30 @@ export default function CategoryList() {
       )}
       {!loading && categories.length > 0 && (
         <div className="space-y-6">
-          <Section title="Income" type="income" cats={incomeCategories} />
-          <Section title="Expense" type="expense" cats={expenseCategories} />
+          <Section
+            title="Income"
+            type="income"
+            cats={incomeCategories}
+            editMode={editMode}
+            selected={selected}
+            deleting={deleting}
+            onToggleEdit={toggleEditMode}
+            onDelete={handleDeleteSelected}
+            onToggle={toggleSelected}
+            onEdit={openEditModal}
+          />
+          <Section
+            title="Expense"
+            type="expense"
+            cats={expenseCategories}
+            editMode={editMode}
+            selected={selected}
+            deleting={deleting}
+            onToggleEdit={toggleEditMode}
+            onDelete={handleDeleteSelected}
+            onToggle={toggleSelected}
+            onEdit={openEditModal}
+          />
         </div>
       )}
     </div>

@@ -205,11 +205,21 @@ class ReportService:
         (
             income_since_start,
             expenses_since_start,
-        ) = await self.repo.get_period_income_expenses(user_id, start, now)
-        opening_balance = current_total - income_since_start + expenses_since_start
+            adjustments_since_start,
+        ) = await self.repo.get_period_income_expenses_adjustments(user_id, start, now)
 
-        total_income, total_expenses = await self.repo.get_period_income_expenses(
-            user_id, start, end
+        (
+            total_income,
+            total_expenses,
+            adjustments_within_period,
+        ) = await self.repo.get_period_income_expenses_adjustments(user_id, start, end)
+
+        opening_balance = (
+            current_total
+            - income_since_start
+            + expenses_since_start
+            - adjustments_since_start
+            + adjustments_within_period
         )
         closing_balance = opening_balance + total_income - total_expenses
 
@@ -248,7 +258,7 @@ class ReportService:
             closing_balance=closing_balance,
             total_income=total_income,
             total_expenses=total_expenses,
-            total_adjustments=Decimal("0"),
+            total_adjustments=adjustments_within_period,
             net=total_income - total_expenses,
             income_transactions=income_txns,
             expense_transactions=expense_txns,

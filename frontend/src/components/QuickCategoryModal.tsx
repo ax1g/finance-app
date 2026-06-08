@@ -31,6 +31,7 @@ export default function QuickCategoryModal({ onCreated, category }: Props) {
     name: category?.name ?? "",
     type: (category?.type ?? "") as CategoryType | "",
     description: category?.description ?? "",
+    icon: category?.icon ?? "",
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,6 +48,7 @@ export default function QuickCategoryModal({ onCreated, category }: Props) {
           name: form.name,
           type: form.type as CategoryType,
           description: form.description || null,
+          icon: form.icon || null,
         })
         signal("categories")
         toast({ title: "Category updated", variant: "success" })
@@ -56,6 +58,7 @@ export default function QuickCategoryModal({ onCreated, category }: Props) {
           name: form.name,
           type: form.type as CategoryType,
           description: form.description || null,
+          icon: form.icon || null,
         })
         signal("categories")
         toast({ title: "Category created", variant: "success" })
@@ -112,6 +115,23 @@ export default function QuickCategoryModal({ onCreated, category }: Props) {
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
           />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="quick-cat-icon">Icon</Label>
+          <div className="flex items-center gap-2">
+            <Input
+              id="quick-cat-icon"
+              placeholder="Type or paste any emoji"
+              value={form.icon}
+              onChange={(e) => setForm({ ...form, icon: e.target.value })}
+              className="flex-1"
+            />
+            {form.icon && (
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-md border bg-muted text-lg">
+                {form.icon}
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex gap-3 pt-1">
           <Button type="button" variant="outline" className="flex-1" onClick={closeTopModal}>
