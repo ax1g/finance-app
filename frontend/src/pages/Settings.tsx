@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import InstallPWA from "@/components/InstallPWA"
 import {
   Select,
   SelectContent,
@@ -412,6 +413,8 @@ export default function Settings() {
       </Card>
 
       <Separator />
+
+      <InstallPWA />
 
       <div className="flex justify-end">
         <Button variant="destructive" onClick={logout}>
