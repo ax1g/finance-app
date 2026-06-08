@@ -87,8 +87,8 @@ class TransactionRepo:
 
             query = query.order_by(
                 desc(Transaction.txn_date),
-                desc(Transaction.created_at),
-                desc(Transaction.id),
+                Transaction.created_at,
+                Transaction.id,
             ).limit(limit + 1)
 
             result = await self.db.execute(query)
