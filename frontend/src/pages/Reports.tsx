@@ -903,8 +903,8 @@ function IncomeStatement() {
                         <tbody>
                           {data.income_transactions.map((t, i) => (
                             <tr key={i} className="border-b border-border/50">
-                              <td className="py-1.5 pr-2 whitespace-nowrap font-number">
-                                {t.txn_date.slice(0, 10)}
+                              <td className="py-1.5 pr-2 whitespace-nowrap font-number text-[11px]">
+                                {new Date(t.txn_date).toLocaleDateString("en-US", { month: "short", day: "2-digit" })}
                               </td>
                               <td className="py-1.5 pr-2">
                                 {t.description ?? "—"}
@@ -952,8 +952,8 @@ function IncomeStatement() {
                         <tbody>
                           {data.expense_transactions.map((t, i) => (
                             <tr key={i} className="border-b border-border/50">
-                              <td className="py-1.5 pr-2 whitespace-nowrap font-number">
-                                {t.txn_date.slice(0, 10)}
+                              <td className="py-1.5 pr-2 whitespace-nowrap font-number text-[11px]">
+                                {new Date(t.txn_date).toLocaleDateString("en-US", { month: "short", day: "2-digit" })}
                               </td>
                               <td className="py-1.5 pr-2">
                                 {t.description ?? "—"}

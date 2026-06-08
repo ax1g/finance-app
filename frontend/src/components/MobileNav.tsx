@@ -68,7 +68,7 @@ export default function MobileNav() {
         <button
           type="button"
           onClick={() => openModal("new-transaction", <TransactionFormModal />)}
-          className="flex size-11 items-center justify-center justify-self-center rounded-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 text-primary-foreground shadow-lg shadow-primary/40 ring-2 ring-primary/20 ring-offset-2 ring-offset-background transition-all duration-200 active:scale-95"
+          className="flex size-11 items-center justify-center justify-self-center rounded-full bg-gradient-to-br from-foreground via-foreground/80 to-foreground/60 text-background dark:from-white dark:via-white/90 dark:to-white/80 dark:text-black shadow-lg shadow-foreground/20 ring-2 ring-foreground/20 ring-offset-2 ring-offset-background transition-all duration-200 active:scale-95"
         >
           <Plus className="h-5 w-5" />
         </button>
