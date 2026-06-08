@@ -1,11 +1,11 @@
 {
-  "framework": null,
+  "framework": "vue",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/api/v1/:path*",
-      "destination": "https://neco-080aad15.fastapicloud.dev/api/v1/:path*"
+      "source": "/api/v1/:path(.*)",
+      "destination": "https://neco-080aad15.fastapicloud.dev/api/v1/:path"
     },
     {
       "source": "/(.*)",
