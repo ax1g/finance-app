@@ -162,7 +162,7 @@ function Section({
 
 export default function CategoryList() {
   const { openModal } = useModal()
-  const { version } = useDataRefresh()
+  const { version, signal } = useDataRefresh()
   const { toast } = useToast()
   const [categories, setCategories] = useState<CategoryRead[]>([])
   const [loading, setLoading] = useState(true)
