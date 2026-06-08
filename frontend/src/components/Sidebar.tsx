@@ -9,6 +9,7 @@ import {
   Plus,
   Settings,
   Snowflake,
+  ChevronLeft,
 } from "lucide-react";
 import { useState } from "react";
 import { useModal } from "@/context/ModalContext";
@@ -49,24 +50,21 @@ export default function Sidebar() {
         collapsed ? "w-16" : "w-60"
       }`}
     >
-      <div
+      <button
         onClick={() => setCollapsed((c) => !c)}
-        className="absolute inset-y-0 -right-1.5 z-10 w-3 cursor-ew-resize"
-      />
-      <div className=" space-y-1 px-3">
-        <button
-          onClick={() => setCollapsed((c) => !c)}
-          className="flex h-16 w-full items-center gap-3 border-b border-border px-3 py-2 text-left transition-colors outline-none hover:bg-accent/50 focus-visible:ring-[3px] focus-visible:ring-ring/50 cursor-ew-resize"
-        >
-          <Snowflake className="h-6 w-6 shrink-0 text-primary" />
-          <NavLabel collapsed={collapsed}>
-            <span className="font-bold text-xl text-foreground whitespace-nowrap">
-              Neco
-            </span>
-          </NavLabel>
-        </button>
+        className="absolute right-0 top-1/2 z-10 -translate-y-1/2 translate-x-1/2 flex size-5 items-center justify-center rounded-full border border-border bg-card shadow-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ChevronLeft className={`size-3 transition-transform duration-300 ${collapsed ? "rotate-180" : ""}`} />
+      </button>
+      <div className="flex items-center gap-3 border-b border-border px-4 py-3">
+        <Snowflake className="h-6 w-6 shrink-0 text-primary" />
+        <NavLabel collapsed={collapsed}>
+          <span className="font-bold text-xl text-foreground whitespace-nowrap">
+            Neco
+          </span>
+        </NavLabel>
       </div>
-      <div className="flex-1 space-y-1 px-3 pt-5">
+      <div className="flex-1 space-y-1 px-3 pt-3">
         <button
           onClick={() => openModal("new-transaction", <TransactionFormModal />)}
           className="flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors outline-none text-muted-foreground hover:bg-muted/50 hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
