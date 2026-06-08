@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { createCategory } from "@/api/categories"
+import { createCategory, updateCategory } from "@/api/categories"
 import { useModal } from "@/context/ModalContext"
 import { useToast } from "@/context/ToastContext"
 import { useDataRefresh } from "@/context/DataRefreshContext"
@@ -17,18 +17,20 @@ import {
 import { Loader2 } from "lucide-react"
 
 interface Props {
-  onCreated: (category: CategoryRead) => void
+  onCreated?: (category: CategoryRead) => void
+  category?: CategoryRead | null
 }
 
-export default function QuickCategoryModal({ onCreated }: Props) {
+export default function QuickCategoryModal({ onCreated, category }: Props) {
   const { closeTopModal } = useModal()
   const { toast } = useToast()
   const { signal } = useDataRefresh()
+  const isEditing = !!category
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState({
-    name: "",
-    type: "" as CategoryType | "",
-    description: "",
+    name: category?.name ?? "",
+    type: (category?.type ?? "") as CategoryType | "",
+    description: category?.description ?? "",
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,17 +42,28 @@ export default function QuickCategoryModal({ onCreated }: Props) {
     setSubmitting(true)
 
     try {
-      const created = await createCategory({
-        name: form.name,
-        type: form.type as CategoryType,
-        description: form.description || null,
-      })
-      signal("categories")
-      toast({ title: "Category created", variant: "success" })
-      onCreated(created)
+      if (isEditing && category) {
+        const updated = await updateCategory(category.id, {
+          name: form.name,
+          type: form.type as CategoryType,
+          description: form.description || null,
+        })
+        signal("categories")
+        toast({ title: "Category updated", variant: "success" })
+        onCreated?.(updated)
+      } else {
+        const created = await createCategory({
+          name: form.name,
+          type: form.type as CategoryType,
+          description: form.description || null,
+        })
+        signal("categories")
+        toast({ title: "Category created", variant: "success" })
+        onCreated?.(created)
+      }
       closeTopModal()
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to create category"
+      const msg = err instanceof Error ? err.message : "Failed to save category"
       toast({ title: "Error", description: msg, variant: "destructive" })
     } finally {
       setSubmitting(false)
@@ -59,8 +72,12 @@ export default function QuickCategoryModal({ onCreated }: Props) {
 
   return (
     <div className="p-6">
-      <h3 className="text-base font-semibold mb-1">New Category</h3>
-      <p className="text-sm text-muted-foreground mb-4">Create a new category on the fly</p>
+      <h3 className="text-base font-semibold mb-1">
+        {isEditing ? "Edit Category" : "New Category"}
+      </h3>
+      <p className="text-sm text-muted-foreground mb-4">
+        {isEditing ? "Update this category" : "Create a new category on the fly"}
+      </p>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div className="space-y-2">
           <Label htmlFor="quick-cat-name">Name</Label>
@@ -107,7 +124,7 @@ export default function QuickCategoryModal({ onCreated }: Props) {
                 Saving...
               </>
             ) : (
-              "Create"
+              isEditing ? "Save Changes" : "Create"
             )}
           </Button>
         </div>
