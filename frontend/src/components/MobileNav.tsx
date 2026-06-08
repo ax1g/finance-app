@@ -53,7 +53,7 @@ export default function MobileNav() {
 
   return (
     <>
-      <nav className="fixed inset-x-0 bottom-0 z-50 flex h-16 items-center justify-around border-t border-border bg-card pb-safe md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-50 grid h-16 grid-cols-5 items-center border-t border-border bg-card pb-safe md:hidden">
         {links.map(({ to, icon: Icon, label, end }) => (
           <NavLink key={to} to={to} end={end} className={linkClass}>
             {({ isActive }) => (
@@ -68,12 +68,12 @@ export default function MobileNav() {
         <button
           type="button"
           onClick={() => openModal("new-transaction", <TransactionFormModal />)}
-          className="relative -mt-4 flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform active:scale-95"
+          className="flex size-11 items-center justify-center justify-self-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform active:scale-95"
         >
-          <Plus className="h-6 w-6" />
+          <Plus className="h-5 w-5" />
         </button>
 
-        <div ref={menuRef} className="relative">
+        <div ref={menuRef} className="relative flex justify-center">
           <button
             type="button"
             onClick={() => setMoreOpen((o) => !o)}

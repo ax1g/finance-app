@@ -51,31 +51,31 @@ function BalancesCard({ data }: { data: DashboardResponse | null }) {
   const net = parseFloat(data.current_month_net);
 
   return (
-    <div className="grid grid-cols-3 gap-6">
-      <div className="rounded-xl bg-card p-6 shadow-sm">
-        <p className="text-sm font-medium text-muted-foreground">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-6">
+      <div className="rounded-xl bg-card p-4 sm:p-6 shadow-sm">
+        <p className="text-xs sm:text-sm font-medium text-muted-foreground">
           Income This Month
         </p>
-        <p className="mt-3 text-4xl font-bold font-number tracking-tight text-[var(--color-income)]">
+        <p className="mt-2 sm:mt-3 text-xl sm:text-3xl font-bold font-number tracking-tight text-[var(--color-income)] truncate">
           {fmt(data.current_month_income)}
         </p>
       </div>
-      <div className="rounded-xl bg-card p-6 shadow-sm">
-        <p className="text-sm font-medium text-muted-foreground">
+      <div className="rounded-xl bg-card p-4 sm:p-6 shadow-sm">
+        <p className="text-xs sm:text-sm font-medium text-muted-foreground">
           Expenses This Month
         </p>
-        <p className="mt-3 text-4xl font-bold font-number tracking-tight text-[var(--color-expense)]">
+        <p className="mt-2 sm:mt-3 text-xl sm:text-3xl font-bold font-number tracking-tight text-[var(--color-expense)] truncate">
           {fmt(data.current_month_expenses)}
         </p>
       </div>
-      <div className="rounded-xl bg-card p-6 shadow-sm">
-        <p className="text-sm font-medium text-muted-foreground">
+      <div className="rounded-xl bg-card p-4 sm:p-6 shadow-sm">
+        <p className="text-xs sm:text-sm font-medium text-muted-foreground">
           Net This Month
         </p>
         <p
-          className={`mt-3 text-4xl font-bold font-number tracking-tight ${net >= 0 ? "text-[var(--color-income)]" : "text-[var(--color-expense)]"}`}
+          className={`mt-2 sm:mt-3 text-xl sm:text-3xl font-bold font-number tracking-tight truncate ${net >= 0 ? "text-[var(--color-income)]" : "text-[var(--color-expense)]"}`}
         >
-          {net >= 0 ? "+" : "-"}
+          {net >= 0 ? "+" : ""}
           {fmt(Math.abs(net))}
         </p>
       </div>
@@ -822,48 +822,48 @@ function IncomeStatement() {
         ) : data ? (
           <div className="space-y-6">
             {/* Summary */}
-            <div className="grid grid-cols-2 gap-6">
-              <div className="rounded-lg bg-muted p-6">
-                <h3 className="text-xl font-semibold text-muted-foreground mb-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+              <div className="rounded-lg bg-muted p-4 sm:p-6">
+                <h3 className="text-base sm:text-xl font-semibold text-muted-foreground mb-3 sm:mb-4">
                   Income
                 </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-base text-muted-foreground">
+                <div className="space-y-2 sm:space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm sm:text-base text-muted-foreground truncate">
                       Opening Balance
                     </span>
-                    <span className="font-number text-xl font-semibold">
+                    <span className="font-number text-base sm:text-xl font-semibold shrink-0">
                       {fmt(data.opening_balance)}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-base text-muted-foreground">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm sm:text-base text-muted-foreground truncate">
                       Total Income
                     </span>
-                    <span className="font-number text-xl font-semibold text-[var(--color-income)]">
+                    <span className="font-number text-base sm:text-xl font-semibold text-[var(--color-income)] shrink-0">
                       {fmt(data.total_income)}
                     </span>
                   </div>
                 </div>
               </div>
-              <div className="rounded-lg bg-muted p-6">
-                <h3 className="text-xl font-semibold text-muted-foreground mb-4">
+              <div className="rounded-lg bg-muted p-4 sm:p-6">
+                <h3 className="text-base sm:text-xl font-semibold text-muted-foreground mb-3 sm:mb-4">
                   Expenses
                 </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-base text-muted-foreground">
+                <div className="space-y-2 sm:space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm sm:text-base text-muted-foreground truncate">
                       Total Expenses
                     </span>
-                    <span className="font-number text-xl font-semibold text-[var(--color-expense)]">
+                    <span className="font-number text-base sm:text-xl font-semibold text-[var(--color-expense)] shrink-0">
                       -{fmt(data.total_expenses)}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-base text-muted-foreground">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm sm:text-base text-muted-foreground truncate">
                       Closing Balance
                     </span>
-                    <span className="font-number text-xl font-semibold">
+                    <span className="font-number text-base sm:text-xl font-semibold shrink-0">
                       {fmt(data.closing_balance)}
                     </span>
                   </div>
@@ -872,7 +872,7 @@ function IncomeStatement() {
             </div>
 
             {/* Detail tables */}
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
               <div>
                 <h3 className="text-sm font-semibold mb-2">
                   Income Transactions

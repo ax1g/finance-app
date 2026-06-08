@@ -106,7 +106,7 @@ export default function TransactionList() {
               setSearchParams(next)
             }}
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-full sm:w-[140px]">
               <SelectValue placeholder="All Types" />
             </SelectTrigger>
             <SelectContent>
@@ -161,14 +161,14 @@ export default function TransactionList() {
                       <ArrowUpRight className="h-4 w-4" />
                     )}
                   </div>
-                  <div>
-                    <p className="text-sm font-medium leading-none">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium leading-none truncate">
                       {txn.description || txn.category_name || "Transfer"}
                     </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="mt-1 text-xs text-muted-foreground truncate">
                         {formatDate(txn.txn_date)} &middot;{" "}
                         {txn.txn_type === "transfer" ? (
-                          <>{txn.account_name} <ArrowRight className="inline h-3 w-3" /> {txn.to_account_name || "?"}</>
+                          <>{txn.account_name} <ArrowRight className="inline h-3 w-3 shrink-0" /> {txn.to_account_name || "?"}</>
                         ) : (
                           txn.account_name
                         )}

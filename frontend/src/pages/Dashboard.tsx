@@ -144,7 +144,7 @@ export default function Dashboard() {
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <p className="text-sm font-medium text-muted-foreground">Net Worth</p>
-              <p className="mt-2 text-4xl font-bold font-number tracking-tight truncate">
+              <p className="mt-2 text-2xl sm:text-4xl font-bold font-number tracking-tight truncate">
                 {loading ? "..." : showBalance ? (
                   <AnimatedNumber value={data?.total_balance ?? "0"} visible={showBalance} />
                 ) : (

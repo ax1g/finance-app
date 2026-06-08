@@ -147,10 +147,10 @@ function TypeSection({
                 <Link
                   key={a.id}
                   to={`/accounts/${a.id}`}
-                  className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-accent/50"
+                  className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-accent/50 min-w-0"
                 >
-                  <span>{a.name}</span>
-                  <span className="font-number tabular-nums">{fmt(a.current_balance)}</span>
+                  <span className="truncate min-w-0">{a.name}</span>
+                  <span className="font-number tabular-nums shrink-0">{fmt(a.current_balance)}</span>
                 </Link>
               ))}
             </div>
